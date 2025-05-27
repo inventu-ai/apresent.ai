@@ -1,112 +1,126 @@
-# 🚀 Como Executar o ALLWEONE AI Presentation Generator
+# 🚀 Como Executar o Sistema
 
-## ✅ Status da Configuração
+## ⚡ Execução Rápida (se já configurado)
 
-### Já Configurado:
-- ✅ Node.js v23.10.0 instalado
-- ✅ pnpm instalado
-- ✅ PostgreSQL 14.17 instalado
-- ✅ Arquivo .env criado com suas chaves de API
-- ✅ Script de configuração criado
-
-### Ainda Precisa Configurar:
-- ⚠️ Google OAuth Client ID (veja GOOGLE_OAUTH_SETUP.md)
-
-## 🎯 Passos para Executar
-
-### 1. Execute o Script de Configuração
 ```bash
-cd presentation-ai
-./setup.sh
+# 1. Instalar dependências
+pnpm install
+
+# 2. Executar o sistema
+pnpm dev
+
+# 3. Acessar
+http://localhost:3000
 ```
 
-Este script irá:
-- Instalar todas as dependências
-- Iniciar o PostgreSQL
-- Criar o banco de dados
-- Configurar o schema do banco
-- Gerar o cliente Prisma
+## 🔧 Primeira Configuração
 
-### 2. Configure o Google OAuth (Opcional mas Recomendado)
-- Siga o guia em `GOOGLE_OAUTH_SETUP.md`
-- Atualize o `GOOGLE_CLIENT_ID` no arquivo `.env`
+### 1. Configurar Supabase
 
-### 3. Execute a Aplicação
+1. **Criar projeto no Supabase:**
+   - Acesse [supabase.com](https://supabase.com)
+   - Crie um novo projeto
+   - Anote a senha do banco
+
+2. **Obter credenciais:**
+   - Vá em Settings → API
+   - Copie: Project URL, anon key, service_role key
+
+3. **Configurar banco:**
+   - Vá em SQL Editor no Supabase
+   - Execute o script `supabase_setup.sql`
+
+### 2. Configurar Variáveis de Ambiente
+
 ```bash
-npm run dev
+# Copiar arquivo de exemplo
+cp .env.example .env
 ```
 
-### 4. Acesse a Aplicação
-Abra seu navegador em: http://localhost:3000
+Editar `.env` com suas credenciais:
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="https://seu-projeto.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="sua-service-role-key"
 
-## 🔧 Comandos Úteis
+# NextAuth
+NEXTAUTH_SECRET="sua-secret-key-aleatoria"
+NEXTAUTH_URL="http://localhost:3000"
 
-### Desenvolvimento
-```bash
-npm run dev          # Servidor de desenvolvimento
-npm run build        # Build de produção
-npm run start        # Servidor de produção
-npm run lint         # Verificar código
+# Google OAuth (opcional)
+GOOGLE_CLIENT_ID="sua-google-client-id"
+GOOGLE_CLIENT_SECRET="sua-google-client-secret"
+
+# OpenAI (para IA)
+OPENAI_API_KEY="sua-openai-key"
 ```
 
-### Banco de Dados
+### 3. Executar
+
 ```bash
-npx prisma db push   # Sincronizar schema
-npx prisma studio    # Interface visual do banco
-npx prisma generate  # Gerar cliente Prisma
+# Instalar dependências
+pnpm install
+
+# Executar em desenvolvimento
+pnpm dev
 ```
 
-## 🎨 Funcionalidades Disponíveis
+## 🎯 Funcionalidades Disponíveis
 
-### Com as APIs Configuradas:
-- ✅ **OpenAI**: Geração de conteúdo de apresentações
-- ✅ **Together AI**: Geração de imagens para slides
-- ✅ **UploadThing**: Upload de arquivos e imagens
+### ✅ Autenticação
+- **Login com Email/Senha**: Criar conta e fazer login
+- **Login com Google**: OAuth integrado
+- **Registro**: Página de criação de conta
 
-### Sem Google OAuth:
-- ❌ Login com Google (mas a app ainda funciona)
-- ✅ Todas as outras funcionalidades de criação de apresentações
+### ✅ Apresentações
+- **Criar apresentações**: Com IA
+- **Editar slides**: Editor visual
+- **Temas personalizados**: Cores, fontes, logos
+- **Salvar/Carregar**: Persistência no Supabase
 
-## 🐛 Solução de Problemas
+### ✅ Banco de Dados
+- **Supabase**: Banco PostgreSQL na nuvem
+- **Row Level Security**: Segurança por usuário
+- **Backup automático**: Dados seguros
 
-### Erro de Conexão com Banco
-```bash
-# Verificar se PostgreSQL está rodando
-brew services list | grep postgresql
+## 🔍 Verificar se Funcionou
 
-# Iniciar PostgreSQL
-brew services start postgresql@14
+1. **Acesse:** `http://localhost:3000`
+2. **Teste login:** Crie uma conta ou use Google
+3. **Crie apresentação:** Teste a funcionalidade principal
+4. **Verifique Supabase:** Dados devem aparecer no dashboard
 
-# Recriar banco se necessário
-dropdb presentation_ai
-createdb presentation_ai
-npx prisma db push
-```
+## 🛠️ Solução de Problemas
 
-### Erro de Dependências
+### Erro de conexão com Supabase:
+- Verifique as URLs e chaves no `.env`
+- Confirme se o projeto Supabase está ativo
+
+### Erro de autenticação:
+- Verifique `NEXTAUTH_SECRET` no `.env`
+- Confirme se as tabelas foram criadas no Supabase
+
+### Erro de build:
 ```bash
 # Limpar cache e reinstalar
-rm -rf node_modules
-rm pnpm-lock.yaml
+rm -rf node_modules .next
 pnpm install
+pnpm dev
 ```
 
-### Erro de Porta em Uso
-```bash
-# Verificar o que está usando a porta 3000
-lsof -i :3000
+## 📚 Arquivos Importantes
 
-# Matar processo se necessário
-kill -9 <PID>
-```
-
-## 📝 Notas Importantes
-
-1. **Primeira execução**: Pode demorar alguns minutos para instalar todas as dependências
-2. **Google OAuth**: Não é obrigatório para testar a aplicação
-3. **APIs de IA**: Necessárias para funcionalidade completa
-4. **PostgreSQL**: Deve estar rodando para a aplicação funcionar
+- `INSTRUCOES_SUPABASE.md` - Guia completo do Supabase
+- `supabase_setup.sql` - Script para criar tabelas
+- `.env.example` - Exemplo de variáveis de ambiente
+- `src/lib/supabase.ts` - Cliente Supabase
+- `src/server/auth.ts` - Configuração de autenticação
 
 ## 🎉 Pronto!
 
-Após seguir estes passos, você terá o ALLWEONE AI Presentation Generator rodando localmente!
+Seu sistema de apresentações com IA está rodando com:
+- ✅ Banco Supabase
+- ✅ Autenticação completa
+- ✅ Interface moderna
+- ✅ IA integrada
