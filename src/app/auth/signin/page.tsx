@@ -114,9 +114,17 @@ export default function SignIn() {
                     required
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    A senha deve ter pelo menos 6 caracteres
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
+                      A senha deve ter pelo menos 6 caracteres
+                    </p>
+                    <Link 
+                      href="/auth/forgot-password" 
+                      className="text-xs text-blue-600 hover:text-blue-500"
+                    >
+                      Esqueci minha senha
+                    </Link>
+                  </div>
                 </div>
                 
                 {errorMessage && (

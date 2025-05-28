@@ -267,6 +267,35 @@ export type Database = {
           prompt?: string
         }
       }
+      password_reset_tokens: {
+        Row: {
+          id: string
+          user_id: string
+          email: string
+          token: string
+          expires_at: string
+          used: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email: string
+          token: string
+          expires_at: string
+          used?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email?: string
+          token?: string
+          expires_at?: string
+          used?: boolean
+          created_at?: string
+        }
+      }
     }
   }
 }

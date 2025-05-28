@@ -6,7 +6,10 @@ export async function middleware(request: NextRequest) {
   const session = await auth();
   const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
   const isPublicPage = request.nextUrl.pathname.startsWith("/terms") || 
-                      request.nextUrl.pathname.startsWith("/privacy");
+                      request.nextUrl.pathname.startsWith("/privacy") ||
+                      request.nextUrl.pathname.startsWith("/auth/forgot-password") ||
+                      request.nextUrl.pathname.startsWith("/auth/verify-code") ||
+                      request.nextUrl.pathname.startsWith("/auth/reset-password");
 
   // Always redirect from root to /presentation
   if (request.nextUrl.pathname === "/") {

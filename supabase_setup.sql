@@ -99,6 +99,17 @@ CREATE TABLE IF NOT EXISTS "GeneratedImage" (
     prompt TEXT NOT NULL
 );
 
+-- Create password_reset_tokens table
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Add foreign key constraint for CustomTheme in Presentation
 ALTER TABLE "Presentation" 
 ADD CONSTRAINT "Presentation_customThemeId_fkey" 
@@ -116,6 +127,10 @@ CREATE INDEX IF NOT EXISTS idx_custom_theme_public ON "CustomTheme"("isPublic");
 CREATE INDEX IF NOT EXISTS idx_favorite_document_user_id ON "FavoriteDocument"("userId");
 CREATE INDEX IF NOT EXISTS idx_favorite_document_document_id ON "FavoriteDocument"("documentId");
 CREATE INDEX IF NOT EXISTS idx_generated_image_user_id ON "GeneratedImage"("userId");
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_email ON password_reset_tokens(email);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -140,6 +155,7 @@ ALTER TABLE "Presentation" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "CustomTheme" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "FavoriteDocument" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "GeneratedImage" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for users table
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid()::text = id::text);
@@ -205,6 +221,12 @@ CREATE POLICY "Users can view own images" ON "GeneratedImage" FOR SELECT USING (
 CREATE POLICY "Users can insert own images" ON "GeneratedImage" FOR INSERT WITH CHECK (auth.uid()::text = "userId"::text);
 CREATE POLICY "Users can update own images" ON "GeneratedImage" FOR UPDATE USING (auth.uid()::text = "userId"::text);
 CREATE POLICY "Users can delete own images" ON "GeneratedImage" FOR DELETE USING (auth.uid()::text = "userId"::text);
+
+-- RLS Policies for password_reset_tokens table (allow public access for password reset flow)
+CREATE POLICY "Allow public insert for password reset" ON password_reset_tokens FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public select for password reset" ON password_reset_tokens FOR SELECT USING (true);
+CREATE POLICY "Allow public update for password reset" ON password_reset_tokens FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete for cleanup" ON password_reset_tokens FOR DELETE USING (true);
 
 -- Grant necessary permissions
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
