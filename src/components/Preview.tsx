@@ -3,8 +3,105 @@
 import { Gravity, MatterBody } from "@/components/ui/gravity"
 import PresentationHeader from "@/components/presentation/presentation-page/PresentationHeader"
 import { PresentationsSidebar } from "@/components/presentation/dashboard/PresentationsSidebar"
+import { Button } from "@/components/ui/button"
+import { ArrowUp, Loader2 } from "lucide-react"
+import { usePresentationState } from "@/states/presentation-state"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { createEmptyPresentation } from "@/app/_actions/presentation/presentationActions"
+import { useMemo } from "react"
 
 function Preview() {
+  const router = useRouter();
+  const {
+    presentationInput,
+    setPresentationInput,
+    isGeneratingOutline,
+    setCurrentPresentation,
+    setIsGeneratingOutline,
+  } = usePresentationState();
+
+  // Arrays de cores e fontes para randomização
+  const backgroundColors = [
+    'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
+    'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-orange-500',
+    'bg-teal-500', 'bg-cyan-500', 'bg-lime-500', 'bg-emerald-500',
+    'bg-violet-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-amber-500',
+    'bg-sky-500', 'bg-slate-500', 'bg-gray-500', 'bg-zinc-500'
+  ];
+
+  const fontFamilies = [
+    'font-sans', 'font-serif', 'font-mono',
+    'font-bold', 'font-semibold', 'font-medium',
+    'font-light', 'font-thin', 'font-normal'
+  ];
+
+  // Função para gerar estilo aleatório
+  const getRandomStyle = () => {
+    const bgColor = backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
+    const fontFamily = fontFamilies[Math.floor(Math.random() * fontFamilies.length)];
+    const textColor = Math.random() > 0.5 ? 'text-white' : 'text-black';
+    
+    return `text-2xl sm:text-3xl md:text-4xl ${bgColor} ${textColor} ${fontFamily} rounded-full hover:cursor-grab px-12 py-6`;
+  };
+
+  // Gerar estilos aleatórios para cada palavra (memoizado para não mudar a cada render)
+  const wordStyles = useMemo(() => ({
+    ai: getRandomStyle(),
+    design: getRandomStyle(),
+    templates: getRandomStyle(),
+    creative: getRandomStyle(),
+    fast: getRandomStyle(),
+    smart: getRandomStyle(),
+    slides: getRandomStyle(),
+    charts: getRandomStyle(),
+    visual: getRandomStyle(),
+    graphics: getRandomStyle(),
+    layout: getRandomStyle(),
+    themes: getRandomStyle(),
+    content: getRandomStyle(),
+    animate: getRandomStyle()
+  }), []);
+
+  const handleGenerate = async () => {
+    if (!presentationInput.trim()) {
+      toast.error("Please enter a topic for your presentation");
+      return;
+    }
+
+    // Set UI loading state
+    setIsGeneratingOutline(true);
+
+    try {
+      const result = await createEmptyPresentation(
+        presentationInput.substring(0, 50) || "Untitled Presentation"
+      );
+
+      if (result.success && result.presentation) {
+        // Set the current presentation
+        setCurrentPresentation(
+          result.presentation.id,
+          result.presentation.title
+        );
+        router.push(`/presentation/generate/${result.presentation.id}`);
+      } else {
+        setIsGeneratingOutline(false);
+        toast.error(result.message || "Failed to create presentation");
+      }
+    } catch (error) {
+      setIsGeneratingOutline(false);
+      console.error("Error creating presentation:", error);
+      toast.error("Failed to create presentation");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleGenerate();
+    }
+  };
+
   return (
     <div className="fixed inset-0 w-full h-full z-0 bg-black">
       <PresentationHeader title="Preview" />
@@ -22,7 +119,7 @@ function Preview() {
             x="30%"
             y="10%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#0015ff] text-white rounded-full hover:cursor-pointer px-12 py-6">
+            <div className={wordStyles.ai}>
               AI
             </div>
           </MatterBody>
@@ -31,7 +128,7 @@ function Preview() {
             x="30%"
             y="30%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#E794DA] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.design}>
               Design
             </div>
           </MatterBody>
@@ -41,7 +138,7 @@ function Preview() {
             y="20%"
             angle={10}
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#1f464d] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.templates}>
               Templates
             </div>
           </MatterBody>
@@ -50,7 +147,7 @@ function Preview() {
             x="75%"
             y="10%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#ff5941] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.creative}>
               Creative
             </div>
           </MatterBody>
@@ -59,7 +156,7 @@ function Preview() {
             x="80%"
             y="20%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-orange-500 text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.fast}>
               Fast
             </div>
           </MatterBody>
@@ -68,7 +165,7 @@ function Preview() {
             x="50%"
             y="10%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#ffd726] text-black rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.smart}>
               Smart
             </div>
           </MatterBody>
@@ -77,7 +174,7 @@ function Preview() {
             x="20%"
             y="15%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#9c27b0] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.slides}>
               Slides
             </div>
           </MatterBody>
@@ -86,7 +183,7 @@ function Preview() {
             x="60%"
             y="25%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#00bcd4] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.charts}>
               Charts
             </div>
           </MatterBody>
@@ -96,7 +193,7 @@ function Preview() {
             y="35%"
             angle={-15}
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#4caf50] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.visual}>
               Visual
             </div>
           </MatterBody>
@@ -105,7 +202,7 @@ function Preview() {
             x="15%"
             y="40%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#ff9800] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.graphics}>
               Graphics
             </div>
           </MatterBody>
@@ -115,7 +212,7 @@ function Preview() {
             y="35%"
             angle={20}
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#f44336] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.layout}>
               Layout
             </div>
           </MatterBody>
@@ -124,7 +221,7 @@ function Preview() {
             x="70%"
             y="40%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#673ab7] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.themes}>
               Themes
             </div>
           </MatterBody>
@@ -134,7 +231,7 @@ function Preview() {
             y="50%"
             angle={-10}
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#795548] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.content}>
               Content
             </div>
           </MatterBody>
@@ -143,11 +240,37 @@ function Preview() {
             x="55%"
             y="50%"
           >
-            <div className="text-2xl sm:text-3xl md:text-4xl bg-[#607d8b] text-white rounded-full hover:cursor-grab px-12 py-6">
+            <div className={wordStyles.animate}>
               Animate
             </div>
           </MatterBody>
         </Gravity>
+        
+        {/* Input ultra-minimalista - reposicionado */}
+        <div className="absolute top-[55%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 w-full max-w-2xl px-4">
+          <div className="relative">
+            <textarea
+              value={presentationInput}
+              onChange={(e) => setPresentationInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="What would you like to create a presentation about?"
+              className="w-full h-28 pr-16 pl-4 py-5 rounded-xl border border-white/10 bg-black/10 backdrop-blur-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30 focus:bg-black/20 resize-none transition-all duration-200"
+              rows={2}
+            />
+            <Button
+              onClick={handleGenerate}
+              disabled={!presentationInput.trim() || isGeneratingOutline}
+              className="absolute right-4 top-[65%] transform -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white/100 border-0 p-0 transition-all duration-200"
+              size="sm"
+            >
+              {isGeneratingOutline ? (
+                <Loader2 className="h-5 w-5 animate-spin text-gray-800" />
+              ) : (
+                <ArrowUp className="h-5 w-5 text-gray-800" />
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
