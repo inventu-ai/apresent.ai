@@ -11,7 +11,7 @@ import { toast } from "sonner"
 import { createEmptyPresentation } from "@/app/_actions/presentation/presentationActions"
 import { useMemo } from "react"
 
-function Preview() {
+function ApresentAI() {
   const router = useRouter();
   const {
     presentationInput,
@@ -83,7 +83,7 @@ function Preview() {
           result.presentation.id,
           result.presentation.title
         );
-        router.push(`/presentation/generate/${result.presentation.id}`);
+        router.push(`/apresentai/generate/${result.presentation.id}`);
       } else {
         setIsGeneratingOutline(false);
         toast.error(result.message || "Failed to create presentation");
@@ -104,7 +104,7 @@ function Preview() {
 
   return (
     <div className="fixed inset-0 w-full h-full z-0 bg-black">
-      <PresentationHeader title="Preview" />
+      <PresentationHeader title="ApresentAI" />
       <PresentationsSidebar />
       <div className="w-full h-[calc(100vh-3rem)] min-h-[500px] flex flex-col relative">
         <div className="pt-32 text-6xl sm:text-7xl md:text-8xl text-white w-full text-center font-normal">
@@ -276,4 +276,4 @@ function Preview() {
   );
 }
 
-export { Preview };
+export { ApresentAI };

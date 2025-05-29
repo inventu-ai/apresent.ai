@@ -21,11 +21,11 @@ interface PresentationHeaderProps {
 export default function PresentationHeader({ title }: PresentationHeaderProps) {
   const { currentPresentationTitle, isPresenting, setIsSheetOpen } = usePresentationState();
   const [presentationTitle, setPresentationTitle] =
-    useState<string>("Presentation");
+    useState<string>("ApresentAI");
   const pathname = usePathname();
 
   // Check if we're on the generate/outline page
-  const isPresentationPage = pathname?.includes("/presentation/");
+  const isPresentationPage = pathname?.includes("/apresentai/");
 
   // Function to open presentations sidebar
   const handleViewPresentations = () => {
