@@ -9,6 +9,7 @@ interface PresentationState {
   isGridView: boolean;
   isSheetOpen: boolean;
   numSlides: number;
+  isNumSlidesManuallySet: boolean; // Flag to track if user manually changed slide count
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   theme: Themes | string;
   customThemeData: ThemeProperties | null;
@@ -16,6 +17,7 @@ interface PresentationState {
   pageStyle: string;
   showTemplates: boolean;
   presentationInput: string;
+  originalPrompt: string; // Store the original full prompt
   imageModel: ImageModelList;
   presentationStyle: string;
   savingStatus: "idle" | "saving" | "saved";
@@ -35,7 +37,7 @@ interface PresentationState {
   setCurrentPresentation: (id: string | null, title: string | null) => void;
   setIsGridView: (isGrid: boolean) => void;
   setIsSheetOpen: (isOpen: boolean) => void;
-  setNumSlides: (num: number) => void;
+  setNumSlides: (num: number, isManual?: boolean) => void;
   setTheme: (
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     theme: Themes | string,
@@ -47,6 +49,7 @@ interface PresentationState {
   setPageStyle: (style: string) => void;
   setShowTemplates: (show: boolean) => void;
   setPresentationInput: (input: string) => void;
+  setOriginalPrompt: (prompt: string) => void;
   setOutline: (topics: string[]) => void;
   setImageModel: (model: ImageModelList) => void;
   setPresentationStyle: (style: string) => void;
@@ -82,11 +85,13 @@ export const usePresentationState = create<PresentationState>((set) => ({
   isSheetOpen: false,
   shouldShowExitHeader: false,
   setShouldShowExitHeader: (update) => set({ shouldShowExitHeader: update }),
-  numSlides: 7,
+  numSlides: 10,
+  isNumSlidesManuallySet: false,
   language: "en-US",
   pageStyle: "default",
   showTemplates: false,
   presentationInput: "",
+  originalPrompt: "",
   outline: [],
   theme: "mystique",
   customThemeData: null,
@@ -111,7 +116,13 @@ export const usePresentationState = create<PresentationState>((set) => ({
     set({ currentPresentationId: id, currentPresentationTitle: title }),
   setIsGridView: (isGrid) => set({ isGridView: isGrid }),
   setIsSheetOpen: (isOpen) => set({ isSheetOpen: isOpen }),
-  setNumSlides: (num) => set({ numSlides: num }),
+  setNumSlides: (num, isManual = false) => {
+    console.log('📊 setNumSlides called:', { num, isManual, from: new Error().stack?.split('\n')[2] });
+    set({ 
+      numSlides: num, 
+      isNumSlidesManuallySet: isManual 
+    });
+  },
   setLanguage: (lang) => set({ language: lang }),
   setTheme: (theme, customData = null) =>
     set({
@@ -121,6 +132,7 @@ export const usePresentationState = create<PresentationState>((set) => ({
   setPageStyle: (style) => set({ pageStyle: style }),
   setShowTemplates: (show) => set({ showTemplates: show }),
   setPresentationInput: (input) => set({ presentationInput: input }),
+  setOriginalPrompt: (prompt) => set({ originalPrompt: prompt }),
   setOutline: (topics) => set({ outline: topics }),
   setImageModel: (model) => set({ imageModel: model }),
   setPresentationStyle: (style) => set({ presentationStyle: style }),

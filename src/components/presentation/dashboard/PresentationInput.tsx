@@ -1,59 +1,37 @@
+import { Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
-import { ChatInput, ChatInputTextArea, ChatInputSubmit } from "@/components/ui/chat-input";
+import { AutosizeTextarea } from "@/components/ui/auto-resize-textarea";
 
-interface PresentationInputProps {
-  onSubmit?: () => void;
-}
-
-export function PresentationInput({ onSubmit }: PresentationInputProps) {
-  const { presentationInput, setPresentationInput, isGeneratingOutline } =
+export function PresentationInput() {
+  const { presentationInput, setPresentationInput, setShowTemplates } =
     usePresentationState();
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit();
-    }
-  };
-
-  // Block event propagation to prevent interference with gravity animation
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
-  const handleMouseUp = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   return (
-    <div 
-      className="flex justify-center pointer-events-auto"
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseMove={handleMouseMove}
-      onClick={handleClick}
-    >
-      <ChatInput
-        value={presentationInput}
-        onChange={(e) => setPresentationInput(e.target.value)}
-        onSubmit={handleSubmit}
-        loading={isGeneratingOutline}
-        className="w-full max-w-md bg-zinc-950/98 backdrop-blur-sm shadow-lg border-zinc-800"
-        variant="default"
-      >
-        <ChatInputTextArea
-          placeholder="What would you like to create a presentation about?"
-          className="text-white placeholder-gray-400 bg-transparent"
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          What would you like to present about?
+        </label>
+        <Button
+          variant="outline"
+          onClick={() => setShowTemplates(true)}
+          className="gap-2"
+        >
+          <Zap className="h-4 w-4" />
+          Templates
+        </Button>
+      </div>
+      <div className="relative">
+        <AutosizeTextarea
+          value={presentationInput}
+          onChange={(e) => setPresentationInput(e.target.value)}
+          placeholder="Describe your topic or paste your content here. Our AI will structure it into a compelling presentation."
+          className="w-full rounded-xl border border-gray-200 bg-white p-4 text-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-black dark:text-white resize-none"
+          minHeight={128}
+          maxHeight={300}
         />
-        <ChatInputSubmit />
-      </ChatInput>
+      </div>
     </div>
   );
 }

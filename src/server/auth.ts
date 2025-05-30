@@ -1,10 +1,11 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "@/env";
-import { db } from "@/server/db";
+import { supabaseAdmin } from "@/lib/supabase";
+import { SupabaseAdapter } from "@/lib/supabase-adapter";
 import NextAuth, { type Session, type DefaultSession } from "next-auth";
+import bcrypt from "bcryptjs";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -42,9 +43,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       // Handle updates
       if (trigger === "update" && (session as Session)?.user) {
-        const user = await db.user.findUnique({
-          where: { id: token.id as string },
-        });
+        const { data: user } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .eq('id', token.id as string)
+          .single();
+        
         console.log("Session", session, user);
         if (session) {
           token.name = (session as Session).user.name;
@@ -73,10 +77,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        const dbUser = await db.user.findUnique({
-          where: { email: user.email! },
-          select: { id: true, hasAccess: true, role: true },
-        });
+        const { data: dbUser } = await supabaseAdmin
+          .from('users')
+          .select('id, hasAccess, role')
+          .eq('email', user.email!)
+          .single();
 
         if (dbUser) {
           user.hasAccess = dbUser.hasAccess;
@@ -96,7 +101,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
 
-  adapter: PrismaAdapter(db) as Adapter,
+  adapter: SupabaseAdapter() as Adapter,
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
@@ -113,10 +118,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // For palliative access, we'll accept any email with a simple password check
-        // In a real application, you would validate against a database
-        const email = credentials.email;
-        const password = credentials.password;
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
         // Simple validation - password must be at least 6 characters
         if (password.length < 6) {
@@ -124,22 +127,30 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
 
         // Check if user exists in database
-        let user = await db.user.findUnique({
-          where: { email },
-        });
+        const { data: user } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .eq('email', email)
+          .single();
 
-        // If user doesn't exist, create a new one
         if (!user) {
-          user = await db.user.create({
-            data: {
-              email,
-              name: email.split('@')[0], // Use part of email as name
-              hasAccess: true,
-              role: "USER",
-            },
-          });
+          // User doesn't exist - return null to deny login
+          return null;
         }
 
+        // User exists - verify password
+        if (!user.password) {
+          // User exists but has no password (maybe OAuth only) - deny login
+          return null;
+        }
+
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+          // Invalid password - deny login
+          return null;
+        }
+
+        // Valid credentials - allow login
         return {
           id: user.id,
           email: user.email,

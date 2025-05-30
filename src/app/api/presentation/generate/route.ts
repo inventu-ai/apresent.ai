@@ -14,28 +14,18 @@ interface SlidesRequest {
 }
 
 const slidesTemplate = `
-You are an expert presentation designer. Your task is to create an engaging presentation in XML format.
-
-## LANGUAGE DETECTION
-IMPORTANT: Analyze the title and outline content to detect the language and generate the ENTIRE presentation in that SAME language.
-- If the content is in Portuguese, generate everything in Portuguese
-- If the content is in English, generate everything in English  
-- If the content is in Spanish, generate everything in Spanish
-- If the content is in French, generate everything in French
-- And so on for any other language detected
-
+You are an expert presentation designer.Your task is to create an engaging presentation in XML format.
 ## CORE REQUIREMENTS
 
 1. FORMAT: Use <SECTION> tags for each slide
 2. CONTENT: DO NOT copy outline verbatim - expand with examples, data, and context
 3. VARIETY: Each slide must use a DIFFERENT layout component
 4. VISUALS: Include detailed image queries (10+ words) on every slide
-5. LANGUAGE: Use the SAME language as detected in the title and outline
 
 ## PRESENTATION DETAILS
 - Title: {TITLE}
 - Outline (for reference only): {OUTLINE_FORMATTED}
-- Language: {LANGUAGE} (use this as fallback if detection fails)
+- Language: {LANGUAGE}
 - Tone: {TONE}
 - Total Slides: {TOTAL_SLIDES}
 

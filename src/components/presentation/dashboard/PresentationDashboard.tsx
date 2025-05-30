@@ -8,12 +8,12 @@ import { toast } from "sonner";
 import { PresentationInput } from "./PresentationInput";
 import { PresentationControls } from "./PresentationControls";
 import { PresentationTemplates } from "./PresentationTemplates";
+import { RecentPresentations } from "./RecentPresentations";
 import { PresentationExamples } from "./PresentationExamples";
 import { PresentationsSidebar } from "./PresentationsSidebar";
 import { useEffect } from "react";
 import { PresentationHeader } from "./PresentationHeader";
 import { createEmptyPresentation } from "@/app/_actions/presentation/presentationActions";
-import { Preview } from "./Preview";
 
 export function PresentationDashboard() {
   const router = useRouter();
@@ -88,16 +88,39 @@ export function PresentationDashboard() {
 
   return (
     <div className="notebook-section relative w-full">
-      <Preview />
       <PresentationsSidebar />
-      <div className="relative z-20 flex flex-col min-h-screen pointer-events-none">
+      <div className="mx-auto w-full max-w-4xl space-y-12 px-6 py-12">
         <PresentationHeader />
-        
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <div className="w-full max-w-2xl">
-            <PresentationInput onSubmit={handleGenerate} />
+
+        <div className="space-y-8">
+          <PresentationInput />
+          <PresentationControls />
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleGenerate}
+                disabled={!presentationInput.trim() || isGeneratingOutline}
+                variant={isGeneratingOutline ? "loading" : "default"}
+                className="gap-2"
+              >
+                <Wand2 className="h-4 w-4" />
+                Generate Presentation
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCreateBlank}
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create Blank
+              </Button>
+            </div>
           </div>
         </div>
+
+        <PresentationExamples />
+        <RecentPresentations />
+        <PresentationTemplates />
       </div>
     </div>
   );

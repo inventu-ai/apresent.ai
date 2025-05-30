@@ -2,10 +2,11 @@
 
 import { env } from "@/env";
 import Together from "together-ai";
-import { db } from "@/server/db";
+import { supabaseAdmin } from "@/lib/supabase";
 import { auth } from "@/server/auth";
 import { utapi } from "@/app/api/uploadthing/core";
 import { UTFile } from "uploadthing/server";
+import { randomUUID } from "crypto";
 
 const together = new Together({ apiKey: env.TOGETHER_AI_API_KEY });
 
@@ -83,14 +84,24 @@ export async function generateImageAction(
     const permanentUrl = uploadResult[0].data.ufsUrl;
     console.log(`Uploaded to UploadThing URL: ${permanentUrl}`);
 
-    // Store in database with the permanent URL
-    const generatedImage = await db.generatedImage.create({
-      data: {
+    // Store in database with the permanent URL using Supabase
+    const { data: generatedImage, error } = await supabaseAdmin
+      .from('GeneratedImage')
+      .insert({
+        id: randomUUID(),
         url: permanentUrl, // Store the UploadThing URL instead of the Together AI URL
         prompt: prompt,
         userId: session.user.id,
-      },
-    });
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error saving generated image:", error);
+      throw new Error("Failed to save image to database");
+    }
 
     return {
       success: true,

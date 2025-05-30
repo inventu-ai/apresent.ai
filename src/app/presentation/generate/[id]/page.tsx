@@ -150,7 +150,7 @@ export default function PresentationGenerateWithIdPage() {
   ]);
 
   const handleGenerate = () => {
-    router.push(`/presentation/${id}`);
+    router.push(`/apresentai/${id}`);
     startPresentationGeneration();
   };
 

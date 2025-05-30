@@ -2,8 +2,8 @@
 
 import { type PlateSlide } from "@/components/presentation/utils/parser";
 import { auth } from "@/server/auth";
-import { db } from "@/server/db";
-import { type InputJsonValue } from "@prisma/client/runtime/library";
+import { supabaseAdmin } from "@/lib/supabase";
+import { randomUUID } from "crypto";
 
 export async function createPresentation(
   content: {
@@ -23,32 +23,57 @@ export async function createPresentation(
   const userId = session.user.id;
 
   try {
-    const presentation = await db.baseDocument.create({
-      data: {
+    // Create BaseDocument first
+    const baseDocId = randomUUID();
+    const { data: baseDocument, error: baseError } = await supabaseAdmin
+      .from('BaseDocument')
+      .insert({
+        id: baseDocId,
         type: "PRESENTATION",
         documentType: "presentation",
         title: title ?? "Untitled Presentation",
         userId,
-        presentation: {
-          create: {
-            content: content as unknown as InputJsonValue,
-            theme: theme,
-            imageModel,
-            presentationStyle,
-            language,
-            outline: outline,
-          },
-        },
-      },
-      include: {
-        presentation: true,
-      },
-    });
+        isPublic: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (baseError) {
+      console.error('Error creating BaseDocument:', baseError);
+      throw baseError;
+    }
+
+    // Create Presentation (using the same ID as BaseDocument)
+    const { data: presentation, error: presentationError } = await supabaseAdmin
+      .from('Presentation')
+      .insert({
+        id: baseDocId, // Same ID as BaseDocument
+        content: content,
+        theme: theme,
+        imageModel,
+        presentationStyle,
+        language,
+        outline: outline,
+      })
+      .select()
+      .single();
+
+    if (presentationError) {
+      console.error('Error creating Presentation:', presentationError);
+      // Cleanup: delete the base document if presentation creation failed
+      await supabaseAdmin.from('BaseDocument').delete().eq('id', baseDocId);
+      throw presentationError;
+    }
 
     return {
       success: true,
       message: "Presentation created successfully",
-      presentation,
+      presentation: {
+        ...baseDocument,
+        presentation: presentation,
+      },
     };
   } catch (error) {
     console.error(error);
@@ -95,37 +120,64 @@ export async function updatePresentation({
   }
 
   try {
-    // Extract values from content if provided there
-    const effectiveTheme = theme;
-    const effectiveImageModel = imageModel;
-    const effectivePresentationStyle = presentationStyle;
-    const effectiveLanguage = language;
+    // Update BaseDocument if title is provided
+    if (title !== undefined) {
+      const { error: baseError } = await supabaseAdmin
+        .from('BaseDocument')
+        .update({
+          title,
+          updatedAt: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('userId', session.user.id);
 
-    // Update base document with all presentation data
-    const presentation = await db.baseDocument.update({
-      where: { id },
-      data: {
-        title: title,
-        presentation: {
-          update: {
-            content: content as unknown as InputJsonValue,
-            theme: effectiveTheme,
-            imageModel: effectiveImageModel,
-            presentationStyle: effectivePresentationStyle,
-            language: effectiveLanguage,
-            outline,
-          },
-        },
-      },
-      include: {
-        presentation: true,
-      },
-    });
+      if (baseError) {
+        console.error('Error updating BaseDocument:', baseError);
+        throw baseError;
+      }
+    }
+
+    // Update Presentation
+    const updateData: any = {};
+
+    if (content !== undefined) updateData.content = content;
+    if (theme !== undefined) updateData.theme = theme;
+    if (outline !== undefined) updateData.outline = outline;
+    if (imageModel !== undefined) updateData.imageModel = imageModel;
+    if (presentationStyle !== undefined) updateData.presentationStyle = presentationStyle;
+    if (language !== undefined) updateData.language = language;
+
+    const { data: presentation, error: presentationError } = await supabaseAdmin
+      .from('Presentation')
+      .update(updateData)
+      .eq('id', id) // Use id instead of baseDocumentId
+      .select()
+      .single();
+
+    if (presentationError) {
+      console.error('Error updating Presentation:', presentationError);
+      throw presentationError;
+    }
+
+    // Get the updated BaseDocument
+    const { data: baseDocument, error: baseDocError } = await supabaseAdmin
+      .from('BaseDocument')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (baseDocError) {
+      console.error('Error fetching BaseDocument:', baseDocError);
+      throw baseDocError;
+    }
 
     return {
       success: true,
       message: "Presentation updated successfully",
-      presentation,
+      presentation: {
+        ...baseDocument,
+        presentation: presentation,
+      },
     };
   } catch (error) {
     console.error(error);
@@ -143,18 +195,41 @@ export async function updatePresentationTitle(id: string, title: string) {
   }
 
   try {
-    const presentation = await db.baseDocument.update({
-      where: { id },
-      data: { title },
-      include: {
-        presentation: true,
-      },
-    });
+    const { data: baseDocument, error: baseError } = await supabaseAdmin
+      .from('BaseDocument')
+      .update({
+        title,
+        updatedAt: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('userId', session.user.id)
+      .select()
+      .single();
+
+    if (baseError) {
+      console.error('Error updating BaseDocument title:', baseError);
+      throw baseError;
+    }
+
+    // Get the presentation data
+    const { data: presentation, error: presentationError } = await supabaseAdmin
+      .from('Presentation')
+      .select('*')
+      .eq('id', id) // Use id instead of baseDocumentId
+      .single();
+
+    if (presentationError) {
+      console.error('Error fetching Presentation:', presentationError);
+      throw presentationError;
+    }
 
     return {
       success: true,
       message: "Presentation title updated successfully",
-      presentation,
+      presentation: {
+        ...baseDocument,
+        presentation: presentation,
+      },
     };
   } catch (error) {
     console.error(error);
@@ -176,17 +251,20 @@ export async function deletePresentations(ids: string[]) {
   }
 
   try {
-    // Delete the base documents using deleteMany (this will cascade delete the presentations)
-    const result = await db.baseDocument.deleteMany({
-      where: {
-        id: {
-          in: ids,
-        },
-        userId: session.user.id, // Ensure only user's own presentations can be deleted
-      },
-    });
+    // Delete the base documents (this will cascade delete the presentations due to foreign key constraints)
+    const { data: deletedDocs, error } = await supabaseAdmin
+      .from('BaseDocument')
+      .delete()
+      .in('id', ids)
+      .eq('userId', session.user.id)
+      .select('id');
 
-    const deletedCount = result.count;
+    if (error) {
+      console.error('Error deleting presentations:', error);
+      throw error;
+    }
+
+    const deletedCount = deletedDocs?.length || 0;
     const failedCount = ids.length - deletedCount;
 
     if (failedCount > 0) {
@@ -224,16 +302,36 @@ export async function getPresentation(id: string) {
   }
 
   try {
-    const presentation = await db.baseDocument.findUnique({
-      where: { id },
-      include: {
-        presentation: true,
-      },
-    });
+    // Get BaseDocument
+    const { data: baseDocument, error: baseError } = await supabaseAdmin
+      .from('BaseDocument')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (baseError) {
+      console.error('Error fetching BaseDocument:', baseError);
+      throw baseError;
+    }
+
+    // Get Presentation
+    const { data: presentation, error: presentationError } = await supabaseAdmin
+      .from('Presentation')
+      .select('*')
+      .eq('id', id) // Use id instead of baseDocumentId
+      .single();
+
+    if (presentationError) {
+      console.error('Error fetching Presentation:', presentationError);
+      throw presentationError;
+    }
 
     return {
       success: true,
-      presentation,
+      presentation: {
+        ...baseDocument,
+        presentation: presentation,
+      },
     };
   } catch (error) {
     console.error(error);
@@ -251,21 +349,15 @@ export async function getPresentationContent(id: string) {
   }
 
   try {
-    const presentation = await db.baseDocument.findUnique({
-      where: { id },
-      include: {
-        presentation: {
-          select: {
-            id: true,
-            content: true,
-            theme: true,
-            outline: true,
-          },
-        },
-      },
-    });
+    // Get BaseDocument to check permissions
+    const { data: baseDocument, error: baseError } = await supabaseAdmin
+      .from('BaseDocument')
+      .select('userId, isPublic')
+      .eq('id', id)
+      .single();
 
-    if (!presentation) {
+    if (baseError) {
+      console.error('Error fetching BaseDocument:', baseError);
       return {
         success: false,
         message: "Presentation not found",
@@ -273,16 +365,28 @@ export async function getPresentationContent(id: string) {
     }
 
     // Check if the user has access to this presentation
-    if (presentation.userId !== session.user.id && !presentation.isPublic) {
+    if (baseDocument.userId !== session.user.id && !baseDocument.isPublic) {
       return {
         success: false,
         message: "Unauthorized access",
       };
     }
 
+    // Get Presentation content
+    const { data: presentation, error: presentationError } = await supabaseAdmin
+      .from('Presentation')
+      .select('id, content, theme, outline')
+      .eq('id', id) // Use id instead of baseDocumentId
+      .single();
+
+    if (presentationError) {
+      console.error('Error fetching Presentation content:', presentationError);
+      throw presentationError;
+    }
+
     return {
       success: true,
-      presentation: presentation.presentation,
+      presentation: presentation,
     };
   } catch (error) {
     console.error(error);
@@ -300,10 +404,19 @@ export async function updatePresentationTheme(id: string, theme: string) {
   }
 
   try {
-    const presentation = await db.presentation.update({
-      where: { id },
-      data: { theme },
-    });
+    const { data: presentation, error } = await supabaseAdmin
+      .from('Presentation')
+      .update({
+        theme,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating presentation theme:', error);
+      throw error;
+    }
 
     return {
       success: true,
@@ -326,45 +439,87 @@ export async function duplicatePresentation(id: string, newTitle?: string) {
   }
 
   try {
-    // Get the original presentation
-    const original = await db.baseDocument.findUnique({
-      where: { id },
-      include: {
-        presentation: true,
-      },
-    });
+    // Get the original BaseDocument
+    const { data: originalBase, error: baseError } = await supabaseAdmin
+      .from('BaseDocument')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!original?.presentation) {
+    if (baseError) {
+      console.error('Error fetching original BaseDocument:', baseError);
       return {
         success: false,
         message: "Original presentation not found",
       };
     }
 
-    // Create a new presentation with the same content
-    const duplicated = await db.baseDocument.create({
-      data: {
+    // Get the original Presentation
+    const { data: originalPresentation, error: presentationError } = await supabaseAdmin
+      .from('Presentation')
+      .select('*')
+      .eq('id', id) // Use id instead of baseDocumentId
+      .single();
+
+    if (presentationError) {
+      console.error('Error fetching original Presentation:', presentationError);
+      return {
+        success: false,
+        message: "Original presentation not found",
+      };
+    }
+
+    // Create new BaseDocument
+    const newBaseDocId = randomUUID();
+    const { data: newBaseDocument, error: newBaseError } = await supabaseAdmin
+      .from('BaseDocument')
+      .insert({
+        id: newBaseDocId,
         type: "PRESENTATION",
         documentType: "presentation",
-        title: newTitle ?? `${original.title} (Copy)`,
+        title: newTitle ?? `${originalBase.title} (Copy)`,
         userId: session.user.id,
         isPublic: false,
-        presentation: {
-          create: {
-            content: original.presentation.content as unknown as InputJsonValue,
-            theme: original.presentation.theme,
-          },
-        },
-      },
-      include: {
-        presentation: true,
-      },
-    });
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (newBaseError) {
+      console.error('Error creating new BaseDocument:', newBaseError);
+      throw newBaseError;
+    }
+
+    // Create new Presentation (using the same ID as BaseDocument)
+    const { data: newPresentation, error: newPresentationError } = await supabaseAdmin
+      .from('Presentation')
+      .insert({
+        id: newBaseDocId, // Same ID as BaseDocument
+        content: originalPresentation.content,
+        theme: originalPresentation.theme,
+        imageModel: originalPresentation.imageModel,
+        presentationStyle: originalPresentation.presentationStyle,
+        language: originalPresentation.language,
+        outline: originalPresentation.outline,
+      })
+      .select()
+      .single();
+
+    if (newPresentationError) {
+      console.error('Error creating new Presentation:', newPresentationError);
+      // Cleanup: delete the base document if presentation creation failed
+      await supabaseAdmin.from('BaseDocument').delete().eq('id', newBaseDocId);
+      throw newPresentationError;
+    }
 
     return {
       success: true,
       message: "Presentation duplicated successfully",
-      presentation: duplicated,
+      presentation: {
+        ...newBaseDocument,
+        presentation: newPresentation,
+      },
     };
   } catch (error) {
     console.error(error);
