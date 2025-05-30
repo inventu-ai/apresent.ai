@@ -1,6 +1,7 @@
 import React from "react";
 import { PresentationGenerationManager } from "@/components/presentation/dashboard/PresentationGenerationManager";
 import PresentationHeader from "@/components/presentation/presentation-page/PresentationHeader";
+import { PresentationsSidebar } from "@/components/presentation/dashboard/PresentationsSidebar";
 
 export default function PresentationLayout({
   children,
@@ -10,6 +11,7 @@ export default function PresentationLayout({
   return (
     <>
       <PresentationGenerationManager />
+      <PresentationsSidebar />
       <div className="flex h-screen w-screen flex-col supports-[(height:100dvh)]:h-[100dvh]">
         <PresentationHeader />
         <main className="relative flex flex-1 overflow-hidden">

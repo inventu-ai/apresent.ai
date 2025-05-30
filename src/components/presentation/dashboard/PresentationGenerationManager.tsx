@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { usePresentationState } from "@/states/presentation-state";
 import { SlideParser } from "../utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
+import { extractSlideCount } from "@/lib/utils/prompt-parser";
 
 export function PresentationGenerationManager() {
   const {
@@ -21,6 +22,8 @@ export function PresentationGenerationManager() {
     setOutline,
     setSlides,
     setIsGeneratingPresentation,
+    setNumSlides,
+    isNumSlidesManuallySet,
   } = usePresentationState();
 
   // Create a ref for the streaming parser to persist between renders
@@ -137,11 +140,50 @@ export function PresentationGenerationManager() {
   // Watch for outline generation start
   useEffect(() => {
     const startOutlineGeneration = async (): Promise<void> => {
-      const { presentationInput, numSlides, language } =
-        usePresentationState.getState();
       if (shouldStartOutlineGeneration) {
         try {
           setIsGeneratingOutline(true);
+
+          // Get current state
+          const { presentationInput } = usePresentationState.getState();
+          
+          // Debug logs
+          console.log('=== SLIDE COUNT DEBUG ===');
+          console.log('isNumSlidesManuallySet:', isNumSlidesManuallySet);
+          console.log('current numSlides:', numSlides);
+          console.log('presentationInput:', presentationInput);
+          
+          let finalSlideCount = numSlides;
+
+          // Only extract from prompt if user hasn't manually set the slide count
+          if (!isNumSlidesManuallySet) {
+            const extractedSlideCount = extractSlideCount(presentationInput ?? "");
+            
+            // Update the numSlides state with the extracted count (but don't mark as manual)
+            setNumSlides(extractedSlideCount, false);
+            finalSlideCount = extractedSlideCount;
+            
+            if (extractedSlideCount === 10 && presentationInput?.match(/\d+/)) {
+              // Check if original request was over limit
+              const originalMatch = presentationInput?.match(/(\d+)/);
+              const originalCount = originalMatch?.[1] ? parseInt(originalMatch[1], 10) : 0;
+              if (originalCount > 15) {
+                console.log(`✅ Extracted ${extractedSlideCount} slides (limited from ${originalCount}) from prompt: "${presentationInput ?? ''}"`);
+              } else {
+                console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput ?? ''}"`);
+              }
+            } else {
+              console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput ?? ''}"`);
+            }
+          } else {
+            console.log(`✅ Using manually set slide count: ${numSlides}`);
+          }
+          
+          console.log('finalSlideCount:', finalSlideCount);
+          console.log('========================');
+
+          // Get the updated state after setting numSlides
+          const { language } = usePresentationState.getState();
 
           // Start the RAF cycle for outline updates
           if (outlineRafIdRef.current === null) {
@@ -152,7 +194,7 @@ export function PresentationGenerationManager() {
           await generateOutline(presentationInput ?? "", {
             body: {
               prompt: presentationInput ?? "",
-              numberOfCards: numSlides,
+              numberOfCards: finalSlideCount, // Use the final count (extracted or manual)
               language,
             },
           });
@@ -167,7 +209,7 @@ export function PresentationGenerationManager() {
     };
 
     void startOutlineGeneration();
-  }, [shouldStartOutlineGeneration]);
+  }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet]);
 
   const { completion: presentationCompletion, complete: generatePresentation } =
     useCompletion({
