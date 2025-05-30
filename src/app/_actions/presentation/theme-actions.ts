@@ -1,9 +1,10 @@
 "use server";
 
 import { auth } from "@/server/auth";
-import { db } from "@/server/db";
+import { supabaseAdmin } from "@/lib/supabase";
 import { z } from "zod";
 import { utapi } from "@/app/api/uploadthing/core";
+import { randomUUID } from "crypto";
 
 // Schema for creating/updating a theme
 const themeSchema = z.object({
@@ -29,16 +30,29 @@ export async function createCustomTheme(formData: ThemeFormData) {
 
     const validatedData = themeSchema.parse(formData);
 
-    const newTheme = await db.customTheme.create({
-      data: {
+    const { data: newTheme, error } = await supabaseAdmin
+      .from('CustomTheme')
+      .insert({
+        id: randomUUID(),
         name: validatedData.name,
         description: validatedData.description,
         themeData: validatedData.themeData,
         logoUrl: validatedData.logoUrl,
         isPublic: validatedData.isPublic,
         userId: session.user.id,
-      },
-    });
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating custom theme:", error);
+      return {
+        success: false,
+        message: "Database error. Please try again later.",
+      };
+    }
 
     return {
       success: true,
@@ -53,11 +67,6 @@ export async function createCustomTheme(formData: ThemeFormData) {
       return {
         success: false,
         message: "Invalid theme data. Please check your inputs and try again.",
-      };
-    } else if (error instanceof Error && error.message.includes("Prisma")) {
-      return {
-        success: false,
-        message: "Database error. Please try again later.",
       };
     } else {
       return {
@@ -85,11 +94,14 @@ export async function updateCustomTheme(
     const validatedData = themeSchema.parse(formData);
 
     // Verify ownership
-    const existingTheme = await db.customTheme.findUnique({
-      where: { id: themeId },
-    });
+    const { data: existingTheme, error: fetchError } = await supabaseAdmin
+      .from('CustomTheme')
+      .select('userId')
+      .eq('id', themeId)
+      .single();
 
-    if (!existingTheme) {
+    if (fetchError) {
+      console.error("Error fetching theme:", fetchError);
       return { success: false, message: "Theme not found" };
     }
 
@@ -97,17 +109,25 @@ export async function updateCustomTheme(
       return { success: false, message: "Not authorized to update this theme" };
     }
 
-    await db.customTheme.update({
-      where: { id: themeId },
-      data: {
+    const { error: updateError } = await supabaseAdmin
+      .from('CustomTheme')
+      .update({
         name: validatedData.name,
         description: validatedData.description,
         themeData: validatedData.themeData,
         logoUrl: validatedData.logoUrl,
         isPublic: validatedData.isPublic,
-        updatedAt: new Date(),
-      },
-    });
+        updatedAt: new Date().toISOString(),
+      })
+      .eq('id', themeId);
+
+    if (updateError) {
+      console.error("Error updating theme:", updateError);
+      return {
+        success: false,
+        message: "Database error. Please try again later.",
+      };
+    }
 
     return {
       success: true,
@@ -121,11 +141,6 @@ export async function updateCustomTheme(
       return {
         success: false,
         message: "Invalid theme data. Please check your inputs and try again.",
-      };
-    } else if (error instanceof Error && error.message.includes("Prisma")) {
-      return {
-        success: false,
-        message: "Database error. Please try again later.",
       };
     } else {
       return {
@@ -147,12 +162,15 @@ export async function deleteCustomTheme(themeId: string) {
       };
     }
 
-    // Verify ownership
-    const existingTheme = await db.customTheme.findUnique({
-      where: { id: themeId },
-    });
+    // Verify ownership and get theme data
+    const { data: existingTheme, error: fetchError } = await supabaseAdmin
+      .from('CustomTheme')
+      .select('userId, logoUrl')
+      .eq('id', themeId)
+      .single();
 
-    if (!existingTheme) {
+    if (fetchError) {
+      console.error("Error fetching theme:", fetchError);
       return { success: false, message: "Theme not found" };
     }
 
@@ -173,9 +191,18 @@ export async function deleteCustomTheme(themeId: string) {
       }
     }
 
-    await db.customTheme.delete({
-      where: { id: themeId },
-    });
+    const { error: deleteError } = await supabaseAdmin
+      .from('CustomTheme')
+      .delete()
+      .eq('id', themeId);
+
+    if (deleteError) {
+      console.error("Error deleting theme:", deleteError);
+      return {
+        success: false,
+        message: "Database error. Please try again later.",
+      };
+    }
 
     return {
       success: true,
@@ -203,18 +230,24 @@ export async function getUserCustomThemes() {
       };
     }
 
-    const themes = await db.customTheme.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const { data: themes, error } = await supabaseAdmin
+      .from('CustomTheme')
+      .select('*')
+      .eq('userId', session.user.id)
+      .order('createdAt', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching custom themes:", error);
+      return {
+        success: false,
+        message: "Unable to load themes at this time. Please try again later.",
+        themes: [],
+      };
+    }
 
     return {
       success: true,
-      themes,
+      themes: themes || [],
     };
   } catch (error) {
     console.error("Failed to fetch custom themes:", error);
@@ -229,25 +262,28 @@ export async function getUserCustomThemes() {
 // Get all public themes
 export async function getPublicCustomThemes() {
   try {
-    const themes = await db.customTheme.findMany({
-      where: {
-        isPublic: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
+    const { data: themes, error } = await supabaseAdmin
+      .from('CustomTheme')
+      .select(`
+        *,
+        user:users(name)
+      `)
+      .eq('isPublic', true)
+      .order('createdAt', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching public themes:", error);
+      return {
+        success: false,
+        message:
+          "Unable to load public themes at this time. Please try again later.",
+        themes: [],
+      };
+    }
 
     return {
       success: true,
-      themes,
+      themes: themes || [],
     };
   } catch (error) {
     console.error("Failed to fetch public themes:", error);
@@ -263,18 +299,28 @@ export async function getPublicCustomThemes() {
 // Get a single theme by ID
 export async function getCustomThemeById(themeId: string) {
   try {
-    const theme = await db.customTheme.findUnique({
-      where: { id: themeId },
-      include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
+    // Check if themeId is a valid UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    
+    if (!uuidRegex.test(themeId)) {
+      // If it's not a valid UUID, it's probably a predefined theme name like "default"
+      return { 
+        success: false, 
+        message: "Invalid theme ID format - not a custom theme" 
+      };
+    }
 
-    if (!theme) {
+    const { data: theme, error } = await supabaseAdmin
+      .from('CustomTheme')
+      .select(`
+        *,
+        user:users(name)
+      `)
+      .eq('id', themeId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching theme:", error);
       return { success: false, message: "Theme not found" };
     }
 
