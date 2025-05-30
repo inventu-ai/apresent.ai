@@ -24,8 +24,8 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
     useState<string>("ApresentAI");
   const pathname = usePathname();
 
-  // Check if we're on the generate/outline page
-  const isPresentationPage = pathname?.includes("/apresentai/");
+  // Check if we're on the final presentation page (not outline/generate)
+  const isPresentationPage = pathname?.includes("/apresentai/") && !pathname?.includes("/generate");
 
   // Function to open presentations sidebar
   const handleViewPresentations = () => {

@@ -9,6 +9,7 @@ interface PresentationState {
   isGridView: boolean;
   isSheetOpen: boolean;
   numSlides: number;
+  isNumSlidesManuallySet: boolean; // Flag to track if user manually changed slide count
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   theme: Themes | string;
   customThemeData: ThemeProperties | null;
@@ -35,7 +36,7 @@ interface PresentationState {
   setCurrentPresentation: (id: string | null, title: string | null) => void;
   setIsGridView: (isGrid: boolean) => void;
   setIsSheetOpen: (isOpen: boolean) => void;
-  setNumSlides: (num: number) => void;
+  setNumSlides: (num: number, isManual?: boolean) => void;
   setTheme: (
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     theme: Themes | string,
@@ -83,6 +84,7 @@ export const usePresentationState = create<PresentationState>((set) => ({
   shouldShowExitHeader: false,
   setShouldShowExitHeader: (update) => set({ shouldShowExitHeader: update }),
   numSlides: 10,
+  isNumSlidesManuallySet: false,
   language: "en-US",
   pageStyle: "default",
   showTemplates: false,
@@ -111,7 +113,13 @@ export const usePresentationState = create<PresentationState>((set) => ({
     set({ currentPresentationId: id, currentPresentationTitle: title }),
   setIsGridView: (isGrid) => set({ isGridView: isGrid }),
   setIsSheetOpen: (isOpen) => set({ isSheetOpen: isOpen }),
-  setNumSlides: (num) => set({ numSlides: num }),
+  setNumSlides: (num, isManual = false) => {
+    console.log('📊 setNumSlides called:', { num, isManual, from: new Error().stack?.split('\n')[2] });
+    set({ 
+      numSlides: num, 
+      isNumSlidesManuallySet: isManual 
+    });
+  },
   setLanguage: (lang) => set({ language: lang }),
   setTheme: (theme, customData = null) =>
     set({

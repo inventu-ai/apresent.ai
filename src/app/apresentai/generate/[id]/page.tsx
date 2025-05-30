@@ -19,7 +19,10 @@ import { ThemeBackground } from "@/components/presentation/theme/ThemeBackground
 import { ThemeSettings } from "@/components/presentation/theme/ThemeSettings";
 import { Header } from "@/components/presentation/outline/Header";
 import { PromptInput } from "@/components/presentation/outline/PromptInput";
+import { RegenerateButton } from "@/components/presentation/outline/RegenerateButton";
 import { OutlineList } from "@/components/presentation/outline/OutlineList";
+import PresentationHeader from "@/components/presentation/presentation-page/PresentationHeader";
+import { PresentationsSidebar } from "@/components/presentation/dashboard/PresentationsSidebar";
 
 export default function ApresentAIGenerateWithIdPage() {
   const router = useRouter();
@@ -154,56 +157,72 @@ export default function ApresentAIGenerateWithIdPage() {
     startPresentationGeneration();
   };
 
+  const handleBack = () => {
+    router.push('/apresentai');
+  };
+
   if (isLoadingPresentation) {
     return (
-      <ThemeBackground>
-        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
-          <div className="relative">
-            <Spinner className="h-10 w-10 text-primary" />
+      <div className="min-h-screen bg-background">
+        <PresentationHeader title="Loading..." />
+        <PresentationsSidebar />
+        <ThemeBackground>
+          <div className="flex h-[calc(100vh-3rem)] flex-col items-center justify-center">
+            <div className="relative">
+              <Spinner className="h-10 w-10 text-primary" />
+            </div>
+            <div className="space-y-2 text-center">
+              <h2 className="text-2xl font-bold">Loading Presentation Outline</h2>
+              <p className="text-muted-foreground">Please wait a moment...</p>
+            </div>
           </div>
-          <div className="space-y-2 text-center">
-            <h2 className="text-2xl font-bold">Loading Presentation Outline</h2>
-            <p className="text-muted-foreground">Please wait a moment...</p>
-          </div>
-        </div>
-      </ThemeBackground>
+        </ThemeBackground>
+      </div>
     );
   }
+
   return (
-    <ThemeBackground>
-      <Button
+    <div className="min-h-screen bg-background">
+      <PresentationHeader title="Generate Outline" />
+      <PresentationsSidebar />
+      
+      <ThemeBackground>
+        <Button
         variant="ghost"
-        className="absolute left-4 top-4 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+        className="absolute left-10 top-16 flex items-center gap-2 text-muted-foreground hover:text-foreground"
         onClick={() => router.push('/apresentai')}
       >
         <ArrowLeft className="h-4 w-4" />
         Back
       </Button>
+        <div className="mx-auto max-w-4xl space-y-8 p-8 pt-6">
+          {/* Back button positioned correctly below navbar */}
 
-      <div className="mx-auto max-w-4xl space-y-8 p-8 pt-6">
-        <div className="space-y-8">
-          <Header />
-          <PromptInput />
-          <OutlineList />
+          <div className="space-y-8">
+            <Header />
+            <PromptInput />
+            <RegenerateButton />
+            <OutlineList />
 
-          <div className="!mb-32 space-y-4 rounded-lg border bg-muted/30 p-6">
-            <h2 className="text-lg font-semibold">Customize Theme</h2>
-            <ThemeSettings />
+            <div className="!mb-32 space-y-4 rounded-lg border bg-muted/30 p-6">
+              <h2 className="text-lg font-semibold">Customize Theme</h2>
+              <ThemeSettings />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center border-t bg-background/80 p-4 backdrop-blur-sm z-50">
-        <Button
-          size="lg"
-          className="gap-2 px-8"
-          onClick={handleGenerate}
-          disabled={isGeneratingPresentation}
-        >
-          <Wand2 className="h-5 w-5" />
-          {isGeneratingPresentation ? "Generating..." : "Generate Presentation"}
-        </Button>
-      </div>
-    </ThemeBackground>
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center border-t bg-background/80 p-4 backdrop-blur-sm z-50">
+          <Button
+            size="lg"
+            className="gap-2 px-8"
+            onClick={handleGenerate}
+            disabled={isGeneratingPresentation}
+          >
+            <Wand2 className="h-5 w-5" />
+            {isGeneratingPresentation ? "Generating..." : "Generate Presentation"}
+          </Button>
+        </div>
+      </ThemeBackground>
+    </div>
   );
 }
