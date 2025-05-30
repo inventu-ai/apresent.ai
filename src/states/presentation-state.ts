@@ -17,6 +17,7 @@ interface PresentationState {
   pageStyle: string;
   showTemplates: boolean;
   presentationInput: string;
+  originalPrompt: string; // Store the original full prompt
   imageModel: ImageModelList;
   presentationStyle: string;
   savingStatus: "idle" | "saving" | "saved";
@@ -48,6 +49,7 @@ interface PresentationState {
   setPageStyle: (style: string) => void;
   setShowTemplates: (show: boolean) => void;
   setPresentationInput: (input: string) => void;
+  setOriginalPrompt: (prompt: string) => void;
   setOutline: (topics: string[]) => void;
   setImageModel: (model: ImageModelList) => void;
   setPresentationStyle: (style: string) => void;
@@ -89,6 +91,7 @@ export const usePresentationState = create<PresentationState>((set) => ({
   pageStyle: "default",
   showTemplates: false,
   presentationInput: "",
+  originalPrompt: "",
   outline: [],
   theme: "mystique",
   customThemeData: null,
@@ -129,6 +132,7 @@ export const usePresentationState = create<PresentationState>((set) => ({
   setPageStyle: (style) => set({ pageStyle: style }),
   setShowTemplates: (show) => set({ showTemplates: show }),
   setPresentationInput: (input) => set({ presentationInput: input }),
+  setOriginalPrompt: (prompt) => set({ originalPrompt: prompt }),
   setOutline: (topics) => set({ outline: topics }),
   setImageModel: (model) => set({ imageModel: model }),
   setPresentationStyle: (style) => set({ presentationStyle: style }),

@@ -1,6 +1,7 @@
 import { Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
+import { AutosizeTextarea } from "@/components/ui/auto-resize-textarea";
 
 export function PresentationInput() {
   const { presentationInput, setPresentationInput, setShowTemplates } =
@@ -22,11 +23,13 @@ export function PresentationInput() {
         </Button>
       </div>
       <div className="relative">
-        <textarea
+        <AutosizeTextarea
           value={presentationInput}
           onChange={(e) => setPresentationInput(e.target.value)}
           placeholder="Describe your topic or paste your content here. Our AI will structure it into a compelling presentation."
-          className="h-32 w-full rounded-xl border border-gray-200 bg-white p-4 text-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-black dark:text-white"
+          className="w-full rounded-xl border border-gray-200 bg-white p-4 text-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-black dark:text-white resize-none"
+          minHeight={128}
+          maxHeight={300}
         />
       </div>
     </div>

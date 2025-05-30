@@ -163,7 +163,18 @@ export function PresentationGenerationManager() {
             setNumSlides(extractedSlideCount, false);
             finalSlideCount = extractedSlideCount;
             
-            console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput}"`);
+            if (extractedSlideCount === 10 && presentationInput?.match(/\d+/)) {
+              // Check if original request was over limit
+              const originalMatch = presentationInput?.match(/(\d+)/);
+              const originalCount = originalMatch?.[1] ? parseInt(originalMatch[1], 10) : 0;
+              if (originalCount > 15) {
+                console.log(`✅ Extracted ${extractedSlideCount} slides (limited from ${originalCount}) from prompt: "${presentationInput ?? ''}"`);
+              } else {
+                console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput ?? ''}"`);
+              }
+            } else {
+              console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput ?? ''}"`);
+            }
           } else {
             console.log(`✅ Using manually set slide count: ${numSlides}`);
           }

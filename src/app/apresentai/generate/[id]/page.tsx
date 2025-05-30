@@ -86,7 +86,9 @@ export default function ApresentAIGenerateWithIdPage() {
   useEffect(() => {
     if (presentationData && !isLoadingPresentation) {
       setCurrentPresentation(presentationData.id, presentationData.title);
-      setPresentationInput(presentationData.title);
+      // Use the original prompt if available, otherwise use the title
+      const { originalPrompt } = usePresentationState.getState();
+      setPresentationInput(originalPrompt || presentationData.title);
 
       if (presentationData.presentation?.outline) {
         setOutline(presentationData.presentation.outline);

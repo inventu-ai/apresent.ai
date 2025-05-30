@@ -19,6 +19,7 @@ function ApresentAI() {
     isGeneratingOutline,
     setCurrentPresentation,
     setIsGeneratingOutline,
+    setOriginalPrompt,
   } = usePresentationState();
 
   // Arrays de cores e fontes para randomização
@@ -68,6 +69,9 @@ function ApresentAI() {
       toast.error("Please enter a topic for your presentation");
       return;
     }
+
+    // Store the original prompt before creating the presentation
+    setOriginalPrompt(presentationInput);
 
     // Set UI loading state
     setIsGeneratingOutline(true);

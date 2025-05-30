@@ -47,9 +47,13 @@ export function extractSlideCount(prompt: string): number {
     if (match && match[1]) {
       const count = parseInt(match[1], 10);
       
-      // Validate the number is reasonable (between 1 and 30)
-      if (count >= 1 && count <= 30) {
+      // Validate the number is reasonable (between 1 and 15)
+      // If user requests more than 15, fallback to default (10)
+      if (count >= 1 && count <= 15) {
         return count;
+      } else if (count > 15) {
+        console.log(`🚫 User requested ${count} slides, limiting to 10 (max allowed: 15)`);
+        return 10; // Fallback to default when over limit
       }
     }
   }
