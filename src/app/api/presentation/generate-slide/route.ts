@@ -161,6 +161,282 @@ const model = new ChatOpenAI({
   streaming: true,
 });
 
+/**
+ * Função auxiliar para garantir que um valor seja uma string
+ */
+function ensureString(value: string | undefined | null, defaultValue: string): string {
+  if (value === undefined || value === null) {
+    return defaultValue;
+  }
+  return value;
+}
+
+/**
+ * Gera um XML de fallback com layout variado
+ */
+function getRandomFallbackXml(topic: string, slideIndex: number): string {
+  // Função para gerar um número aleatório de itens (2 ou 3)
+  const getRandomItemCount = (): number => Math.random() > 0.5 ? 2 : 3;
+  
+  // Gerar layouts com número variável de itens
+  const layouts: string[] = [];
+  
+  // Layout com colunas numeradas - versão com 2 itens
+  layouts.push(`<SECTION layout="left">
+  <H1>${topic}</H1>
+  <COLUMNS>
+    <DIV>
+      <H3>1</H3>
+      <H3>Aspecto Principal</H3>
+      <P>Detalhes importantes sobre ${topic} incluindo estatísticas e exemplos relevantes para contextualização.</P>
+    </DIV>
+    <DIV>
+      <H3>2</H3>
+      <H3>Impacto e Relevância</H3>
+      <P>Como ${topic} influencia o cenário atual e sua importância para o desenvolvimento futuro.</P>
+    </DIV>
+  </COLUMNS>
+  <IMG query="professional visualization of ${topic} concept with detailed infographics in modern style" />
+</SECTION>`);
+
+  // Layout com colunas numeradas - versão com 3 itens
+  layouts.push(`<SECTION layout="left">
+  <H1>${topic}</H1>
+  <COLUMNS>
+    <DIV>
+      <H3>1</H3>
+      <H3>Conceito Básico</H3>
+      <P>Fundamentos e princípios essenciais de ${topic} para compreensão inicial.</P>
+    </DIV>
+    <DIV>
+      <H3>2</H3>
+      <H3>Aplicações</H3>
+      <P>Como ${topic} é aplicado em diferentes contextos e situações práticas.</P>
+    </DIV>
+    <DIV>
+      <H3>3</H3>
+      <H3>Tendências Futuras</H3>
+      <P>Direções emergentes e desenvolvimentos esperados para ${topic}.</P>
+    </DIV>
+  </COLUMNS>
+  <IMG query="professional visualization of ${topic} concept with detailed infographics in modern style" />
+</SECTION>`);
+
+  // Layout com bullets - versão com 2 itens
+  layouts.push(`<SECTION layout="right">
+  <H1>${topic}</H1>
+  <BULLETS>
+    <DIV><H3>Ponto Chave 1</H3><P>Análise detalhada do primeiro aspecto de ${topic} com exemplos práticos.</P></DIV>
+    <DIV><H3>Ponto Chave 2</H3><P>Exploração do segundo aspecto relevante com dados estatísticos de suporte.</P></DIV>
+  </BULLETS>
+  <IMG query="detailed illustration of ${topic} with professional design elements and data visualization" />
+</SECTION>`);
+
+  // Layout com bullets - versão com 3 itens
+  layouts.push(`<SECTION layout="right">
+  <H1>${topic}</H1>
+  <BULLETS>
+    <DIV><H3>Ponto Chave 1</H3><P>Análise detalhada do primeiro aspecto de ${topic} com exemplos práticos.</P></DIV>
+    <DIV><H3>Ponto Chave 2</H3><P>Exploração do segundo aspecto relevante com dados estatísticos de suporte.</P></DIV>
+    <DIV><H3>Ponto Chave 3</H3><P>Considerações importantes sobre o impacto e as tendências futuras.</P></DIV>
+  </BULLETS>
+  <IMG query="detailed illustration of ${topic} with professional design elements and data visualization" />
+</SECTION>`);
+
+  // Layout com ícones - versão com 2 itens
+  layouts.push(`<SECTION layout="vertical">
+  <H1>${topic}</H1>
+  <ICONS>
+    <DIV><ICON query="lightbulb" /><H3>Inovação</H3><P>Como ${topic} está transformando o cenário atual com abordagens inovadoras.</P></DIV>
+    <DIV><ICON query="chart-line" /><H3>Crescimento</H3><P>Tendências de crescimento e desenvolvimento relacionadas a ${topic}.</P></DIV>
+  </ICONS>
+  <IMG query="conceptual image of ${topic} with modern design elements and professional aesthetic" />
+</SECTION>`);
+
+  // Layout com ícones - versão com 3 itens
+  layouts.push(`<SECTION layout="vertical">
+  <H1>${topic}</H1>
+  <ICONS>
+    <DIV><ICON query="lightbulb" /><H3>Inovação</H3><P>Como ${topic} está transformando o cenário atual com abordagens inovadoras.</P></DIV>
+    <DIV><ICON query="chart-line" /><H3>Crescimento</H3><P>Tendências de crescimento e desenvolvimento relacionadas a ${topic}.</P></DIV>
+    <DIV><ICON query="users" /><H3>Impacto Social</H3><P>O efeito de ${topic} na sociedade e nas comunidades.</P></DIV>
+  </ICONS>
+  <IMG query="conceptual image of ${topic} with modern design elements and professional aesthetic" />
+</SECTION>`);
+
+  // Layout com ciclo - versão com 3 itens
+  layouts.push(`<SECTION layout="right">
+  <H1>${topic}</H1>
+  <CYCLE>
+    <DIV><H3>Fase 1</H3><P>Início do processo relacionado a ${topic} com detalhes importantes.</P></DIV>
+    <DIV><H3>Fase 2</H3><P>Desenvolvimento e evolução dos conceitos principais.</P></DIV>
+    <DIV><H3>Fase 3</H3><P>Implementação e avaliação final dos resultados.</P></DIV>
+  </CYCLE>
+  <IMG query="cyclical process diagram illustrating ${topic} with professional design elements" />
+</SECTION>`);
+
+  // Layout com ciclo - versão com 4 itens
+  layouts.push(`<SECTION layout="right">
+  <H1>${topic}</H1>
+  <CYCLE>
+    <DIV><H3>Fase 1</H3><P>Início do processo relacionado a ${topic} com detalhes importantes.</P></DIV>
+    <DIV><H3>Fase 2</H3><P>Desenvolvimento e evolução dos conceitos principais.</P></DIV>
+    <DIV><H3>Fase 3</H3><P>Implementação e aplicação prática no contexto atual.</P></DIV>
+    <DIV><H3>Fase 4</H3><P>Avaliação de resultados e planejamento futuro.</P></DIV>
+  </CYCLE>
+  <IMG query="cyclical process diagram illustrating ${topic} with professional design elements" />
+</SECTION>`);
+
+  // Layout com timeline - versão com 2 itens
+  layouts.push(`<SECTION layout="left">
+  <H1>${topic}</H1>
+  <TIMELINE>
+    <DIV><H3>Passado</H3><P>Origens e desenvolvimento histórico de ${topic} com marcos importantes.</P></DIV>
+    <DIV><H3>Futuro</H3><P>Tendências emergentes e potencial de evolução nos próximos anos.</P></DIV>
+  </TIMELINE>
+  <IMG query="timeline visualization of the evolution of ${topic} with detailed infographics" />
+</SECTION>`);
+
+  // Layout com timeline - versão com 3 itens
+  layouts.push(`<SECTION layout="left">
+  <H1>${topic}</H1>
+  <TIMELINE>
+    <DIV><H3>Passado</H3><P>Origens e desenvolvimento histórico de ${topic} com marcos importantes.</P></DIV>
+    <DIV><H3>Presente</H3><P>Estado atual e aplicações contemporâneas em diversos contextos.</P></DIV>
+    <DIV><H3>Futuro</H3><P>Tendências emergentes e potencial de evolução nos próximos anos.</P></DIV>
+  </TIMELINE>
+  <IMG query="timeline visualization of the evolution of ${topic} with detailed infographics" />
+</SECTION>`);
+
+  // Escolher um layout aleatório
+  const randomIndex = Math.floor(Math.random() * layouts.length);
+  return layouts[randomIndex];
+}
+
+/**
+ * Adiciona um layout complexo a um XML existente
+ */
+function addComplexLayoutToXml(xml: string, topic: string): string {
+  // Verificar se o XML já tem um layout complexo
+  if (
+    xml.includes("<COLUMNS") ||
+    xml.includes("<BULLETS") ||
+    xml.includes("<ICONS") ||
+    xml.includes("<CYCLE") ||
+    xml.includes("<ARROWS") ||
+    xml.includes("<TIMELINE") ||
+    xml.includes("<PYRAMID") ||
+    xml.includes("<STAIRCASE") ||
+    xml.includes("<CHART")
+  ) {
+    return xml; // Já tem layout complexo, retornar sem modificar
+  }
+
+  // Extrair o título do slide, se existir
+  const titleMatch = xml.match(/<H1>(.*?)<\/H1>/i);
+  const title = ensureString(titleMatch?.[1], topic);
+
+  // Extrair o conteúdo de texto, se existir
+  const contentMatch = xml.match(/<P>(.*?)<\/P>/i);
+  const content = ensureString(contentMatch?.[1], `Conteúdo sobre ${topic}`);
+
+  // Extrair a consulta de imagem, se existir
+  const imgMatch = xml.match(/query="([^"]*)"/i);
+  const imgQuery = ensureString(imgMatch?.[1], `detailed visualization of ${topic}`);
+
+  // Extrair o atributo de layout, se existir
+  const layoutMatch = xml.match(/layout="([^"]*)"/i);
+  const layout = ensureString(layoutMatch?.[1], "right");
+
+  // Função para decidir aleatoriamente entre 2 ou 3 itens
+  const useThreeItems = Math.random() > 0.5;
+  
+  // Array de layouts complexos possíveis
+  const complexLayouts: string[] = [];
+  
+  // Layout com colunas - versão com 2 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <COLUMNS>
+    <DIV>
+      <H3>Aspectos Principais</H3>
+      <P>${content}</P>
+    </DIV>
+    <DIV>
+      <H3>Impacto e Relevância</H3>
+      <P>Análise do impacto e da importância de ${topic} no contexto atual.</P>
+    </DIV>
+  </COLUMNS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com colunas - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <COLUMNS>
+    <DIV>
+      <H3>Conceito</H3>
+      <P>${content}</P>
+    </DIV>
+    <DIV>
+      <H3>Aplicações</H3>
+      <P>Como ${topic} é aplicado em diferentes contextos e situações.</P>
+    </DIV>
+    <DIV>
+      <H3>Tendências</H3>
+      <P>Desenvolvimentos futuros e direções emergentes para ${topic}.</P>
+    </DIV>
+  </COLUMNS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com bullets - versão com 2 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <BULLETS>
+    <DIV><H3>Ponto Chave</H3><P>${content}</P></DIV>
+    <DIV><H3>Considerações</H3><P>Aspectos importantes a serem considerados sobre ${topic}.</P></DIV>
+  </BULLETS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com bullets - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <BULLETS>
+    <DIV><H3>Ponto Chave</H3><P>${content}</P></DIV>
+    <DIV><H3>Considerações</H3><P>Aspectos importantes a serem considerados sobre ${topic}.</P></DIV>
+    <DIV><H3>Aplicações</H3><P>Como ${topic} pode ser aplicado em diferentes contextos.</P></DIV>
+  </BULLETS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com ícones - versão com 2 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <ICONS>
+    <DIV><ICON query="lightbulb" /><H3>Conceito</H3><P>${content}</P></DIV>
+    <DIV><ICON query="chart-line" /><H3>Tendências</H3><P>Direções futuras e desenvolvimentos em ${topic}.</P></DIV>
+  </ICONS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com ícones - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <ICONS>
+    <DIV><ICON query="lightbulb" /><H3>Conceito</H3><P>${content}</P></DIV>
+    <DIV><ICON query="chart-line" /><H3>Tendências</H3><P>Direções futuras e desenvolvimentos em ${topic}.</P></DIV>
+    <DIV><ICON query="users" /><H3>Impacto</H3><P>Como ${topic} afeta diferentes áreas e contextos.</P></DIV>
+  </ICONS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Escolher um layout complexo aleatório
+  const randomIndex = Math.floor(Math.random() * complexLayouts.length);
+  return complexLayouts[randomIndex];
+}
+
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -192,17 +468,27 @@ export async function POST(req: Request) {
         TONE: tone || "professional",
       });
       
-      // Validar se o resultado contém uma tag SECTION
-      if (!result.includes("<SECTION") || !result.includes("</SECTION>")) {
-        // Se não tiver, criar um XML básico válido
-        const fallbackXml = `
-<SECTION layout="right">
-  <H1>${topic}</H1>
-  <P>Conteúdo regenerado para o tópico: ${topic}</P>
-  <IMG query="abstract concept visualization related to ${topic}" />
-</SECTION>`;
-        
-        return new Response(fallbackXml);
+      console.log("XML gerado pelo modelo:", result);
+      
+      // Verificar se o resultado contém tags de layout complexo
+      const hasComplexLayout = 
+        result.includes("<COLUMNS") || 
+        result.includes("<BULLETS") || 
+        result.includes("<ICONS") || 
+        result.includes("<CYCLE") || 
+        result.includes("<ARROWS") || 
+        result.includes("<TIMELINE") || 
+        result.includes("<PYRAMID") || 
+        result.includes("<STAIRCASE") || 
+        result.includes("<CHART");
+      
+      console.log("O XML contém layout complexo?", hasComplexLayout);
+      
+      // Validação mais relaxada - apenas verificar se há alguma tag SECTION
+      if (!result.includes("<SECTION")) {
+        console.log("XML sem tag SECTION, usando fallback variado");
+        // Escolher um fallback aleatório com layout mais complexo
+        return new Response(getRandomFallbackXml(topic, slideIndex));
       }
       
       // Garantir que o XML tenha uma tag SECTION de fechamento
@@ -211,19 +497,19 @@ export async function POST(req: Request) {
         finalXml += "</SECTION>";
       }
       
+      // Se não tiver layout complexo, tentar adicionar um
+      if (!hasComplexLayout && Math.random() > 0.3) { // 70% de chance de adicionar layout complexo
+        console.log("XML sem layout complexo, adicionando layout complexo");
+        finalXml = addComplexLayoutToXml(finalXml, topic);
+      }
+      
       return new Response(finalXml);
     } catch (error) {
       console.error("Error generating slide content:", error);
       
-      // Em caso de erro, retornar um XML básico válido
-      const fallbackXml = `
-<SECTION layout="right">
-  <H1>${topic}</H1>
-  <P>Conteúdo regenerado para o tópico: ${topic}</P>
-  <IMG query="abstract concept visualization related to ${topic}" />
-</SECTION>`;
-      
-      return new Response(fallbackXml);
+      // Em caso de erro, retornar um XML com layout variado
+      console.log("Erro ao gerar slide, usando fallback variado");
+      return new Response(getRandomFallbackXml(topic, slideIndex));
     }
   } catch (error) {
     console.error("Error in slide regeneration:", error);
