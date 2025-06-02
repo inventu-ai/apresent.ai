@@ -104,20 +104,7 @@ export const PresentationSlidesView = ({
               </SlideContainer>
 
               {/* Create preview directly in the markup */}
-              <SlidePreviewRenderer slideIndex={index} slideId={slide.id}>
-                <PresentationEditor
-                  initialContent={slide}
-                  className="min-h-[300px] border"
-                  id={`preview-${slide.id}`}
-                  isPreview={true}
-                  readOnly={true}
-                  slideIndex={index}
-                  onChange={() => {
-                    // Test
-                  }}
-                  isGenerating={isGeneratingPresentation}
-                />
-              </SlidePreviewRenderer>
+              <SlidePreviewRenderer slideIndex={index} slideId={slide.id} />
             </div>
           ))}
         </DndProvider>

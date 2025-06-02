@@ -30,6 +30,9 @@ interface PresentationState {
   shouldStartPresentationGeneration: boolean;
   isGeneratingOutline: boolean;
   isGeneratingPresentation: boolean;
+  isRegeneratingSlide: boolean;
+  regeneratingSlideIndex: number | null;
+  shouldStartSlideRegeneration: boolean;
   outline: string[];
   slides: PlateSlide[]; // This now holds the new object structure
 
@@ -68,6 +71,12 @@ interface PresentationState {
   startOutlineGeneration: () => void;
   startPresentationGeneration: () => void;
   resetGeneration: () => void;
+  
+  // Slide regeneration actions
+  setIsRegeneratingSlide: (isRegenerating: boolean) => void;
+  setRegeneratingSlideIndex: (index: number | null) => void;
+  setShouldStartSlideRegeneration: (shouldStart: boolean) => void;
+  startSlideRegeneration: (slideIndex: number) => void;
 
   // Selection state
   isSelecting: boolean;
@@ -108,6 +117,9 @@ export const usePresentationState = create<PresentationState>((set) => ({
   shouldStartPresentationGeneration: false,
   isGeneratingOutline: false,
   isGeneratingPresentation: false,
+  isRegeneratingSlide: false,
+  regeneratingSlideIndex: null,
+  shouldStartSlideRegeneration: false,
 
   setSlides: (slides) => {
     set({ slides });
@@ -179,6 +191,23 @@ export const usePresentationState = create<PresentationState>((set) => ({
       shouldStartPresentationGeneration: false,
       isGeneratingOutline: false,
       isGeneratingPresentation: false,
+      isRegeneratingSlide: false,
+      regeneratingSlideIndex: null,
+      shouldStartSlideRegeneration: false,
+    }),
+    
+  // Slide regeneration actions
+  setIsRegeneratingSlide: (isRegenerating) => 
+    set({ isRegeneratingSlide: isRegenerating }),
+  setRegeneratingSlideIndex: (index) => 
+    set({ regeneratingSlideIndex: index }),
+  setShouldStartSlideRegeneration: (shouldStart) => 
+    set({ shouldStartSlideRegeneration: shouldStart }),
+  startSlideRegeneration: (slideIndex) => 
+    set({
+      shouldStartSlideRegeneration: true,
+      isRegeneratingSlide: true,
+      regeneratingSlideIndex: slideIndex,
     }),
 
   setIsThemeCreatorOpen: (update) => set({ isThemeCreatorOpen: update }),
