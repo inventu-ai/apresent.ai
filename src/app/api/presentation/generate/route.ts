@@ -5,6 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { canConsumeCredits, consumeCredits, canCreateCards, checkAndResetCreditsIfNeeded } from "@/lib/credit-system";
 
 interface SlidesRequest {
   title: string; // Presentation title
@@ -189,6 +190,50 @@ export async function POST(req: Request) {
       );
     }
 
+    const slideCount = outline.length;
+
+    // Verificar se precisa resetar créditos
+    await checkAndResetCreditsIfNeeded(session.user.id);
+
+    // Verificar se o usuário pode criar esta quantidade de cards
+    const cardCheck = await canCreateCards(session.user.id, slideCount);
+    if (!cardCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: cardCheck.message || "Limite de cards excedido",
+          maxCards: cardCheck.maxCards,
+          planName: cardCheck.planName
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verificar se o usuário tem créditos suficientes (custo fixo de 40 créditos)
+    const creditCheck = await canConsumeCredits(session.user.id, 'PRESENTATION_CREATION', 1);
+    
+    if (!creditCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: "Créditos insuficientes para criar a apresentação",
+          creditsNeeded: creditCheck.cost,
+          currentCredits: creditCheck.currentCredits
+        },
+        { status: 403 }
+      );
+    }
+
+    // Consumir créditos antes da geração (40 créditos fixos)
+    const creditResult = await consumeCredits(session.user.id, 'PRESENTATION_CREATION', 1);
+    
+    if (!creditResult.success) {
+      return NextResponse.json(
+        { error: "Erro ao consumir créditos" },
+        { status: 500 }
+      );
+    }
+
+    console.log(`Credits consumed: ${creditResult.creditsUsed}, remaining: ${creditResult.remainingCredits}`);
+
     const prompt = PromptTemplate.fromTemplate(slidesTemplate);
     const stringOutputParser = new StringOutputParser();
     const chain = RunnableSequence.from([prompt, model, stringOutputParser]);
@@ -198,7 +243,7 @@ export async function POST(req: Request) {
       LANGUAGE: language,
       TONE: tone,
       OUTLINE_FORMATTED: outline.join("\n\n"),
-      TOTAL_SLIDES: outline.length, // +2 for title and conclusion slides
+      TOTAL_SLIDES: outline.length,
     });
 
     return LangChainAdapter.toDataStreamResponse(stream);

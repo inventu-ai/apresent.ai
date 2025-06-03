@@ -7,6 +7,7 @@ import { auth } from "@/server/auth";
 import { utapi } from "@/app/api/uploadthing/core";
 import { UTFile } from "uploadthing/server";
 import { randomUUID } from "crypto";
+import { canConsumeCredits, consumeCredits, canUseImageQuality, checkAndResetCreditsIfNeeded, type CreditAction } from "@/lib/credit-system";
 
 const together = new Together({ apiKey: env.TOGETHER_AI_API_KEY });
 
@@ -19,7 +20,8 @@ export type ImageModelList =
 
 export async function generateImageAction(
   prompt: string,
-  model: ImageModelList = "black-forest-labs/FLUX.1-schnell-Free"
+  model: ImageModelList = "black-forest-labs/FLUX.1-schnell-Free",
+  quality: CreditAction = "BASIC_IMAGE"
 ) {
   // Get the current session
   const session = await auth();
@@ -29,8 +31,42 @@ export async function generateImageAction(
     throw new Error("You must be logged in to generate images");
   }
 
+  // Verificar se precisa resetar créditos
+  await checkAndResetCreditsIfNeeded(session.user.id);
+
+  // Verificar se o usuário pode usar esta qualidade de imagem
+  const qualityCheck = await canUseImageQuality(session.user.id, quality);
+  if (!qualityCheck.allowed) {
+    return {
+      success: false,
+      error: qualityCheck.message || "Qualidade de imagem não disponível no seu plano",
+    };
+  }
+
+  // Verificar se o usuário tem créditos suficientes
+  const creditCheck = await canConsumeCredits(session.user.id, quality, 1);
+  if (!creditCheck.allowed) {
+    return {
+      success: false,
+      error: creditCheck.message || "Créditos insuficientes",
+      creditsNeeded: creditCheck.cost,
+      currentCredits: creditCheck.currentCredits,
+    };
+  }
+
   try {
-    console.log(`Generating image with model: ${model}`);
+    console.log(`Generating image with model: ${model}, quality: ${quality}`);
+
+    // Consumir créditos antes da geração
+    const creditResult = await consumeCredits(session.user.id, quality, 1);
+    if (!creditResult.success) {
+      return {
+        success: false,
+        error: creditResult.message || "Erro ao consumir créditos",
+      };
+    }
+
+    console.log(`Credits consumed: ${creditResult.creditsUsed}, remaining: ${creditResult.remainingCredits}`);
 
     // Generate the image using Together AI
     const response = (await together.images.create({
@@ -106,6 +142,9 @@ export async function generateImageAction(
     return {
       success: true,
       image: generatedImage,
+      creditsUsed: creditResult.creditsUsed,
+      remainingCredits: creditResult.remainingCredits,
+      quality,
     };
   } catch (error) {
     console.error("Error generating image:", error);
