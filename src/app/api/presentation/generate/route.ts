@@ -168,7 +168,7 @@ Now create a complete XML presentation with {TOTAL_SLIDES} slides that significa
 `;
 
 const model = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
+  modelName: "gpt-4.1-mini-2025-04-14",
   temperature: 0.7,
   streaming: true,
 });

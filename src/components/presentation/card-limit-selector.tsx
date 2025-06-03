@@ -14,7 +14,7 @@ interface CardLimitSelectorProps {
   className?: string;
 }
 
-const CARD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 40, 50];
+const CARD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30];
 
 export function CardLimitSelector({ value, onValueChange, className = "" }: CardLimitSelectorProps) {
   const { maxCards, planName, loading } = useUserPlanLimits();
@@ -33,14 +33,14 @@ export function CardLimitSelector({ value, onValueChange, className = "" }: Card
     
     if (requiredPlan === 'PRO') {
       return (
-        <Badge variant="outline" className="ml-2 text-xs border-blue-500 text-blue-600">
+        <Badge className="ml-auto text-xs bg-blue-600 text-white hover:bg-blue-700">
           PRO
         </Badge>
       );
     }
     
     return (
-      <Badge variant="outline" className="ml-2 text-xs border-purple-500 text-purple-600">
+      <Badge className="ml-auto text-xs bg-purple-600 text-white hover:bg-purple-700">
         PREMIUM
       </Badge>
     );
@@ -87,15 +87,17 @@ export function CardLimitSelector({ value, onValueChange, className = "" }: Card
                 key={cardCount}
                 value={cardCount.toString()}
                 disabled={!isAllowed}
-                className={`flex items-center justify-between ${
-                  !isAllowed ? 'opacity-50 cursor-not-allowed' : ''
+                className={`flex items-center justify-between py-3 ${
+                  !isAllowed ? 'opacity-60 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-50'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
-                  <span className="flex items-center gap-2">
-                    {!isAllowed && <Lock className="h-3 w-3" />}
-                    {cardCount} {cardCount === 1 ? 'cartão' : 'cartões'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {!isAllowed && <Lock className="h-3 w-3 text-gray-400" />}
+                    <span className={!isAllowed ? 'text-gray-500' : 'text-gray-900'}>
+                      {cardCount} {cardCount === 1 ? 'cartão' : 'cartões'}
+                    </span>
+                  </div>
                   {getPlanBadge(cardCount)}
                 </div>
               </SelectItem>

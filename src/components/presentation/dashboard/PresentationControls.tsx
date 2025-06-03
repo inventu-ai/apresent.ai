@@ -6,7 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { usePresentationState } from "@/states/presentation-state";
+import { useUserPlanLimits } from "@/hooks/useUserCredits";
 
 export function PresentationControls({
   shouldShowLabel = true,
@@ -21,6 +23,40 @@ export function PresentationControls({
     pageStyle,
     setPageStyle,
   } = usePresentationState();
+  
+  const { maxCards, planName } = useUserPlanLimits();
+  
+  const SLIDE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30];
+  
+  const getPlanForSlides = (slideCount: number) => {
+    if (slideCount <= 10) return 'FREE';
+    if (slideCount <= 20) return 'PRO';
+    return 'PREMIUM';
+  };
+  
+  const getPlanBadge = (slideCount: number) => {
+    const requiredPlan = getPlanForSlides(slideCount);
+    
+    if (requiredPlan === 'FREE') return null;
+    
+    if (requiredPlan === 'PRO') {
+      return (
+        <Badge className="ml-auto text-xs bg-blue-600 text-white hover:bg-blue-700">
+          PRO
+        </Badge>
+      );
+    }
+    
+    return (
+      <Badge className="ml-auto text-xs bg-purple-600 text-white hover:bg-purple-700">
+        PREMIUM
+      </Badge>
+    );
+  };
+  
+  const isSlideCountAllowed = (slideCount: number) => {
+    return slideCount <= maxCards;
+  };
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -41,12 +77,30 @@ export function PresentationControls({
           <SelectTrigger>
             <SelectValue placeholder="Select number of slides" />
           </SelectTrigger>
-          <SelectContent>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15].map((num) => (
-              <SelectItem key={num} value={String(num)}>
-                {num} slides
-              </SelectItem>
-            ))}
+          <SelectContent className="max-h-80">
+            {SLIDE_OPTIONS.map((num) => {
+              const isAllowed = isSlideCountAllowed(num);
+              
+              return (
+                <SelectItem 
+                  key={num} 
+                  value={String(num)}
+                  disabled={!isAllowed}
+                  className={`flex items-center justify-between py-3 px-3 ${
+                    !isAllowed ? 'bg-gray-50/50 shadow-inner' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className={!isAllowed ? 'text-gray-300' : 'text-white'}>
+                      {num} {num === 1 ? 'slide' : 'slides'}
+                    </span>
+                    <div className="ml-8">
+                      {getPlanBadge(num)}
+                    </div>
+                  </div>
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
