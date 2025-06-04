@@ -51,7 +51,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     return false;
   }, [slides, slideIndex]);
   
-  // Extrair o texto do card
+  // Extrair o texto do card e limpar instruções de prompt
   const getCardText = useCallback(() => {
     const slide = slides[slideIndex];
     if (!slide) return "";
@@ -68,7 +68,16 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       }
     }
     
-    return text.trim();
+    // Limpar o texto removendo frases de instrução comuns
+    const cleanedText = text.trim()
+      .replace(/^(fale|me\s+fale|conte|me\s+conte|descreva|explique|falar|contar|descrever|explicar)\s+(mais\s+)?(sobre|a\s+respeito\s+de|acerca\s+de)?\s+/i, '')
+      .replace(/^(o\s+que\s+é|quem\s+é|como\s+funciona|por\s+que|quando|onde|qual|quais)\s+/i, '')
+      .replace(/^(gostaria\s+de\s+saber|quero\s+saber|preciso\s+saber|pode\s+me\s+dizer)\s+(mais\s+)?(sobre|a\s+respeito\s+de)?\s+/i, '');
+    
+    console.log("Texto original:", text);
+    console.log("Texto limpo:", cleanedText);
+    
+    return cleanedText;
   }, [slides, slideIndex]);
   
   // Função para atualizar a apresentação no banco de dados
@@ -123,7 +132,54 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         })
         .filter(text => text.length > 0);
       
-      // Chamar a API para gerar o slide
+      // ETAPA 1: Gerar um tópico detalhado com bullet points
+      console.log("Etapa 1: Gerando tópico detalhado para:", cardText);
+      
+      // Extrair títulos dos outros slides para contexto
+      const existingTopics = slides
+        .filter((_, idx) => idx !== slideIndex)
+        .map(slide => {
+          // Extrair apenas o título (h1) de cada slide
+          for (const node of slide.content) {
+            if (node.type === 'h1' && node.children) {
+              let title = "";
+              for (const child of node.children) {
+                if ('text' in child) {
+                  title += child.text + " ";
+                }
+              }
+              return title.trim();
+            }
+          }
+          return "";
+        })
+        .filter(title => title.length > 0);
+      
+      // Chamar a API para gerar o tópico detalhado
+      const topicResponse = await fetch('/api/presentation/generate-topic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          suggestion: cardText,
+          existingTopics: existingTopics,
+          language: language
+        }),
+      });
+      
+      if (!topicResponse.ok) {
+        throw new Error('Falha ao gerar o tópico detalhado');
+      }
+      
+      // Obter o tópico detalhado
+      const detailedTopic = await topicResponse.text();
+      console.log("Tópico detalhado gerado:", detailedTopic);
+      
+      // ETAPA 2: Usar o tópico detalhado para gerar o slide
+      console.log("Etapa 2: Gerando slide a partir do tópico detalhado");
+      
+      // Chamar a API para gerar o slide com o tópico detalhado
       const response = await fetch('/api/presentation/generate-slide', {
         method: 'POST',
         headers: {
@@ -131,7 +187,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         },
         body: JSON.stringify({
           title: presentationInput || currentPresentationTitle || "",
-          topic: cardText,
+          topic: detailedTopic, // Usar o tópico detalhado em vez do texto simples
           slideIndex,
           language,
           tone: presentationStyle,

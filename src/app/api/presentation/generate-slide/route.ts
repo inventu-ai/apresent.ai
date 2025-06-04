@@ -153,6 +153,16 @@ Para o tópico do slide:
 3. Inclua pelo menos uma consulta de imagem detalhada no slide
 4. Use hierarquia de títulos apropriada
 5. Varie o atributo de layout da SECTION (esquerda/direita/vertical)
+6. IMPORTANTE: Mantenha títulos (H1) CURTOS e CONCISOS - máximo 6-8 palavras
+7. Use subtítulos (H2, H3) e parágrafos (P) para o conteúdo detalhado, não no título principal
+8. NUNCA inclua frases como "Aspectos importantes sobre [tópico]" ou "Fale mais sobre [tópico]" no conteúdo
+9. NUNCA repita o tópico original com frases introdutórias como "Aspectos a considerar", "Considerações sobre", etc.
+10. Trate o tópico como o assunto principal, não como uma instrução a ser incluída no slide
+11. CRÍTICO: Quando usar layouts com múltiplos tópicos (COLUMNS, BULLETS, ICONS, etc.), garanta que TODOS os tópicos tenham conteúdo SUBSTANCIAL e EQUILIBRADO
+12. Cada tópico secundário deve ter pelo menos 2-3 frases completas, não apenas uma frase genérica
+13. Evite disparidade de conteúdo - não faça o primeiro tópico muito mais detalhado que os demais
+14. PRIORIZE layouts complexos e variados (COLUMNS, BULLETS, ICONS, CYCLE, ARROWS, TIMELINE, PYRAMID, STAIRCASE) em vez de apenas texto simples
+15. VARIE os layouts entre slides - não use o mesmo tipo de layout repetidamente
 
 Agora crie um slide XML completo que expanda significativamente o tópico fornecido.
 `;
@@ -327,15 +337,15 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
 
   // Extrair o título do slide, se existir
   const titleMatch = xml.match(/<H1>(.*?)<\/H1>/i);
-  const title = titleMatch && titleMatch[1] ? titleMatch[1] : topic;
+  const title: string = titleMatch && titleMatch[1] ? titleMatch[1] : topic;
 
   // Extrair o conteúdo de texto, se existir
   const contentMatch = xml.match(/<P>(.*?)<\/P>/i);
-  const content = contentMatch && contentMatch[1] ? contentMatch[1] : `Conteúdo sobre ${topic}`;
+  const content: string = contentMatch && contentMatch[1] ? contentMatch[1] : `Conteúdo sobre ${topic}`;
 
   // Extrair a consulta de imagem, se existir
   const imgMatch = xml.match(/query="([^"]*)"/i);
-  const imgQuery = imgMatch && imgMatch[1] ? imgMatch[1] : `detailed visualization of ${topic}`;
+  const imgQuery: string = imgMatch && imgMatch[1] ? imgMatch[1] : `detailed visualization of ${topic}`;
 
   // Extrair o atributo de layout, se existir
   const layoutMatch = xml.match(/layout="([^"]*)"/i);
@@ -388,7 +398,7 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
   <H1>${title}</H1>
   <BULLETS>
     <DIV><H3>Ponto Chave</H3><P>${content}</P></DIV>
-    <DIV><H3>Considerações</H3><P>Aspectos importantes a serem considerados sobre ${topic}.</P></DIV>
+    <DIV><H3>Considerações</H3><P>Fatores relevantes e implicações de ${topic} no cenário atual.</P></DIV>
   </BULLETS>
   <IMG query="${imgQuery}" />
 </SECTION>`);
@@ -398,8 +408,8 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
   <H1>${title}</H1>
   <BULLETS>
     <DIV><H3>Ponto Chave</H3><P>${content}</P></DIV>
-    <DIV><H3>Considerações</H3><P>Aspectos importantes a serem considerados sobre ${topic}.</P></DIV>
-    <DIV><H3>Aplicações</H3><P>Como ${topic} pode ser aplicado em diferentes contextos.</P></DIV>
+    <DIV><H3>Considerações</H3><P>Fatores relevantes e implicações no cenário atual.</P></DIV>
+    <DIV><H3>Aplicações</H3><P>Implementações práticas e casos de uso relevantes.</P></DIV>
   </BULLETS>
   <IMG query="${imgQuery}" />
 </SECTION>`);
@@ -425,9 +435,108 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
   <IMG query="${imgQuery}" />
 </SECTION>`);
 
-  // Escolher um layout complexo aleatório
-  const randomIndex = Math.floor(Math.random() * complexLayouts.length);
-  return complexLayouts[randomIndex];
+  // Layout com ciclo - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <CYCLE>
+    <DIV><H3>Fase 1</H3><P>${content}</P></DIV>
+    <DIV><H3>Fase 2</H3><P>Desenvolvimento e evolução dos conceitos principais relacionados a ${topic}.</P></DIV>
+    <DIV><H3>Fase 3</H3><P>Implementação e avaliação de resultados no contexto de ${topic}.</P></DIV>
+  </CYCLE>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com timeline - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <TIMELINE>
+    <DIV><H3>Passado</H3><P>Origens e desenvolvimento histórico de ${topic} com marcos importantes.</P></DIV>
+    <DIV><H3>Presente</H3><P>${content}</P></DIV>
+    <DIV><H3>Futuro</H3><P>Tendências emergentes e potencial de evolução nos próximos anos.</P></DIV>
+  </TIMELINE>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com pyramid - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <PYRAMID>
+    <DIV><H3>Visão</H3><P>${content}</P></DIV>
+    <DIV><H3>Estratégia</H3><P>Abordagens-chave para alcançar resultados em ${topic}.</P></DIV>
+    <DIV><H3>Táticas</H3><P>Etapas específicas de implementação e aplicação prática.</P></DIV>
+  </PYRAMID>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Layout com arrows - versão com 3 itens
+  complexLayouts.push(`<SECTION layout="${layout}">
+  <H1>${title}</H1>
+  <ARROWS>
+    <DIV><H3>Desafio</H3><P>Problemas e obstáculos relacionados a ${topic}.</P></DIV>
+    <DIV><H3>Solução</H3><P>${content}</P></DIV>
+    <DIV><H3>Resultado</H3><P>Benefícios e impactos positivos alcançados.</P></DIV>
+  </ARROWS>
+  <IMG query="${imgQuery}" />
+</SECTION>`);
+
+  // Usar o índice do slide para influenciar a escolha do layout
+  // Isso garante que slides consecutivos tenham layouts diferentes
+  let layoutIndex = 0;
+  
+  // Se temos um índice de slide, usamos ele para influenciar a escolha
+  if (typeof slideIndex === 'number') {
+    // Usar o módulo para garantir que o índice esteja dentro do intervalo
+    layoutIndex = slideIndex % complexLayouts.length;
+    
+    // Adicionar um pouco de aleatoriedade para não ser totalmente previsível
+    if (Math.random() > 0.7) {
+      // 30% de chance de escolher um layout aleatório diferente
+      let randomOffset = 1 + Math.floor(Math.random() * (complexLayouts.length - 1));
+      layoutIndex = (layoutIndex + randomOffset) % complexLayouts.length;
+    }
+  } else {
+    // Se não temos um índice, escolher aleatoriamente
+    layoutIndex = Math.floor(Math.random() * complexLayouts.length);
+  }
+  
+  return complexLayouts[layoutIndex];
+}
+
+/**
+ * Função para limitar o tamanho dos títulos em um XML
+ * Processa o XML e trunca títulos muito longos, movendo o excesso para um parágrafo
+ */
+function limitTitleLength(xml: string): string {
+  // Procurar por tags H1 com conteúdo muito longo
+  const h1Regex = /<H1>(.*?)<\/H1>/gi;
+  
+  return xml.replace(h1Regex, (match, titleContent) => {
+    // Contar palavras no título
+    const words = titleContent.trim().split(/\s+/);
+    
+    // Se o título tiver mais de 8 palavras, truncá-lo
+    if (words.length > 8) {
+      // Manter as primeiras 8 palavras no título
+      const shortTitle = words.slice(0, 8).join(' ');
+      
+      // Mover o resto para um parágrafo, se não existir um parágrafo logo após o título
+      const restOfContent = words.slice(8).join(' ');
+      
+      // Verificar se já existe um parágrafo após o título
+      const afterTitle = xml.substring(xml.indexOf(match) + match.length).trim();
+      
+      if (afterTitle.startsWith('<P>')) {
+        // Se já existe um parágrafo, apenas truncar o título
+        return `<H1>${shortTitle}</H1>`;
+      } else {
+        // Se não existe um parágrafo, criar um com o conteúdo excedente
+        return `<H1>${shortTitle}</H1><P>${restOfContent}</P>`;
+      }
+    }
+    
+    // Se o título não for muito longo, retorná-lo sem alterações
+    return match;
+  });
 }
 
 export async function POST(req: Request) {
@@ -458,6 +567,9 @@ export async function POST(req: Request) {
         ? context.map((text, idx) => `Slide ${idx + 1}: ${text}`).join('\n')
         : "Nenhum contexto disponível";
 
+      // Variável para controlar logs de debug
+      const DEBUG_LOGS = process.env.NODE_ENV === 'development' && false; // Definir como true para ativar logs
+      
       const result = await chain.invoke({
         TITLE: title,
         TOPIC: topic,
@@ -466,8 +578,6 @@ export async function POST(req: Request) {
         TONE: tone || "professional",
         CONTEXT: formattedContext,
       });
-      
-      console.log("XML gerado pelo modelo:", result);
       
       // Verificar se o resultado contém tags de layout complexo
       const hasComplexLayout = 
@@ -481,11 +591,14 @@ export async function POST(req: Request) {
         result.includes("<STAIRCASE") || 
         result.includes("<CHART");
       
-      console.log("O XML contém layout complexo?", hasComplexLayout);
+      // Verificar se o XML tem conteúdo substancial
+      const hasSubstantialContent = 
+        (result.match(/<P>/g) || []).length >= 3 || // Pelo menos 3 parágrafos
+        result.length > 500; // Ou mais de 500 caracteres
       
       // Validação mais relaxada - apenas verificar se há alguma tag SECTION
       if (!result.includes("<SECTION")) {
-        console.log("XML sem tag SECTION, usando fallback variado");
+        if (DEBUG_LOGS) console.log("XML sem tag SECTION, usando fallback variado");
         // Escolher um fallback aleatório com layout mais complexo
         return new Response(getRandomFallbackXml(topic, slideIndex));
       }
@@ -496,10 +609,18 @@ export async function POST(req: Request) {
         finalXml += "</SECTION>";
       }
       
-      // Se não tiver layout complexo, tentar adicionar um
-      if (!hasComplexLayout && Math.random() > 0.3) { // 70% de chance de adicionar layout complexo
-        console.log("XML sem layout complexo, adicionando layout complexo");
-        finalXml = addComplexLayoutToXml(finalXml, topic);
+      // Limitar o tamanho dos títulos
+      finalXml = limitTitleLength(finalXml);
+      
+      // Se não tiver layout complexo, adicionar um na maioria dos casos
+      if (!hasComplexLayout) {
+        // 70% de chance de adicionar layout complexo, mesmo com conteúdo substancial
+        if (Math.random() > 0.3) {
+          if (DEBUG_LOGS) console.log("XML sem layout complexo, adicionando layout complexo");
+          finalXml = addComplexLayoutToXml(finalXml, topic);
+        } else if (DEBUG_LOGS) {
+          console.log("Mantendo layout simples para este slide (30% de chance)");
+        }
       }
       
       return new Response(finalXml);
