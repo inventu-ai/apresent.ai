@@ -7,6 +7,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { SlideParser } from "../utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { extractSlideCount } from "@/lib/utils/prompt-parser";
+import { type PlateSlide } from "../utils/parser";
 
 export function PresentationGenerationManager() {
   const {

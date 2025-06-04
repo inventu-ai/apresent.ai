@@ -1,18 +1,20 @@
 "use client";
 
 import debounce from "lodash.debounce";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { usePresentationState } from "@/states/presentation-state";
+import PresentationEditor from "../editor/presentation-editor";
 
 interface SlidePreviewRendererProps {
   slideIndex: number;
   slideId: string;
-  children: React.ReactNode;
+  children?: React.ReactNode; // Make children optional
 }
 
 export function SlidePreviewRenderer({
   slideIndex,
-  children,
+  slideId,
 }: SlidePreviewRendererProps) {
   const [mounted, setMounted] = useState(false);
   const [scale, setScale] = useState(1);
@@ -23,6 +25,13 @@ export function SlidePreviewRenderer({
     previewWidth: 0,
     previewHeight: 0,
   });
+  
+  // Get the slide data from the global state
+  const { slides, isGeneratingPresentation } = usePresentationState();
+  const slide = useMemo(() => slides[slideIndex], [slides, slideIndex]);
+  
+  // Generate a stable, unique preview ID
+  const previewId = useMemo(() => `preview-${slideId}-${slideIndex}`, [slideId, slideIndex]);
 
   // Only render on client-side
   useEffect(() => {
@@ -86,12 +95,26 @@ export function SlidePreviewRenderer({
   const aspectRatio = dimensions.editorHeight / dimensions.editorWidth;
   const expectedHeight = dimensions.previewWidth * aspectRatio;
 
+  // Create a simplified preview editor
+  const previewEditor = (
+    <PresentationEditor
+      initialContent={slide}
+      className="min-h-[300px] border"
+      id={previewId}
+      isPreview={true}
+      readOnly={true}
+      slideIndex={slideIndex}
+      onChange={() => {/* No-op for preview */}}
+      isGenerating={isGeneratingPresentation}
+    />
+  );
+
   return (
     <div
       ref={childrenRef}
       style={{ position: "absolute", visibility: "hidden" }}
     >
-      {children}
+      {previewEditor}
       {createPortal(
         <div
           className="max-h-96"
@@ -110,7 +133,7 @@ export function SlidePreviewRenderer({
               pointerEvents: "none",
             }}
           >
-            {children}
+            {previewEditor}
           </div>
         </div>,
         previewElement

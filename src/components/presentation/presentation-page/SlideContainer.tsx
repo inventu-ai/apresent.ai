@@ -7,6 +7,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { type PlateSlide } from "../utils/parser";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { RegenerateSlideButton } from "./buttons/RegenerateSlideButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -121,6 +122,8 @@ export function SlideContainer({
             </Button>
 
             <SlideEditPopover index={index} />
+            
+            <RegenerateSlideButton slideIndex={index} />
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
