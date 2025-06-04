@@ -12,6 +12,7 @@ interface SlideRegenerationRequest {
   slideIndex: number; // Índice do slide a ser regenerado
   language: string;   // Idioma a ser usado
   tone: string;       // Estilo para consultas de imagem (opcional)
+  context?: string[]; // Contexto dos outros slides (opcional)
 }
 
 const singleSlideTemplate = `
@@ -29,6 +30,7 @@ Você é um especialista em design de apresentações. Sua tarefa é criar um ú
 - Idioma: {LANGUAGE}
 - Tom: {TONE}
 - Número do Slide: {SLIDE_INDEX}
+- Contexto dos Outros Slides: {CONTEXT}
 
 ## ESTRUTURA DO SLIDE
 \`\`\`xml
@@ -161,15 +163,6 @@ const model = new ChatOpenAI({
   streaming: true,
 });
 
-/**
- * Função auxiliar para garantir que um valor seja uma string
- */
-function ensureString(value: string | undefined | null, defaultValue: string): string {
-  if (value === undefined || value === null) {
-    return defaultValue;
-  }
-  return value;
-}
 
 /**
  * Gera um XML de fallback com layout variado
@@ -334,19 +327,19 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
 
   // Extrair o título do slide, se existir
   const titleMatch = xml.match(/<H1>(.*?)<\/H1>/i);
-  const title = ensureString(titleMatch?.[1], topic);
+  const title = titleMatch && titleMatch[1] ? titleMatch[1] : topic;
 
   // Extrair o conteúdo de texto, se existir
   const contentMatch = xml.match(/<P>(.*?)<\/P>/i);
-  const content = ensureString(contentMatch?.[1], `Conteúdo sobre ${topic}`);
+  const content = contentMatch && contentMatch[1] ? contentMatch[1] : `Conteúdo sobre ${topic}`;
 
   // Extrair a consulta de imagem, se existir
   const imgMatch = xml.match(/query="([^"]*)"/i);
-  const imgQuery = ensureString(imgMatch?.[1], `detailed visualization of ${topic}`);
+  const imgQuery = imgMatch && imgMatch[1] ? imgMatch[1] : `detailed visualization of ${topic}`;
 
   // Extrair o atributo de layout, se existir
   const layoutMatch = xml.match(/layout="([^"]*)"/i);
-  const layout = ensureString(layoutMatch?.[1], "right");
+  const layout = layoutMatch && layoutMatch[1] ? layoutMatch[1] : "right";
 
   // Função para decidir aleatoriamente entre 2 ou 3 itens
   const useThreeItems = Math.random() > 0.5;
@@ -444,7 +437,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, topic, slideIndex, language, tone } =
+    const { title, topic, slideIndex, language, tone, context } =
       (await req.json()) as SlideRegenerationRequest;
 
     if (!title || !topic || slideIndex === undefined || !language) {
@@ -460,12 +453,18 @@ export async function POST(req: Request) {
 
     // Usar invoke em vez de stream para poder validar o resultado antes de retornar
     try {
+      // Formatar o contexto para o prompt
+      const formattedContext = context && context.length > 0 
+        ? context.map((text, idx) => `Slide ${idx + 1}: ${text}`).join('\n')
+        : "Nenhum contexto disponível";
+
       const result = await chain.invoke({
         TITLE: title,
         TOPIC: topic,
         SLIDE_INDEX: slideIndex + 1, // Converter para número baseado em 1 para o prompt
         LANGUAGE: language,
         TONE: tone || "professional",
+        CONTEXT: formattedContext,
       });
       
       console.log("XML gerado pelo modelo:", result);

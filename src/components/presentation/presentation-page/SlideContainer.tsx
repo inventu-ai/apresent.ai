@@ -8,6 +8,7 @@ import { type PlateSlide } from "../utils/parser";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { RegenerateSlideButton } from "./buttons/RegenerateSlideButton";
+import { GenerateSlideFromTextButton } from "./buttons/GenerateSlideFromTextButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,6 +111,13 @@ export function SlideContainer({
           className
         )}
       >
+        {!isPresenting && (
+          <>
+            {/* Botão de geração de slide com IA */}
+            <GenerateSlideFromTextButton slideIndex={index} />
+            {console.log("Renderizando botão para slide", index, "conteúdo:", currentSlide?.content)}
+          </>
+        )}
         {!isPresenting && (
           <div className="absolute left-4 top-2 z-[100] flex opacity-0 transition-opacity duration-200 group-hover/card-container:opacity-100">
             <Button
