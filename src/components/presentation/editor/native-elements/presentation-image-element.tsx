@@ -19,6 +19,7 @@ import { PresentationImageEditor } from "./presentation-image-editor";
 import { useDebouncedSave } from "@/hooks/presentation/useDebouncedSave";
 import { useDraggable } from "../dnd/hooks/useDraggable";
 import { generateImageAction } from "@/app/_actions/image/generate";
+import { ImageContextMenu } from "./ImageContextMenu";
 
 export interface PresentationImageElementProps {
   className?: string;
@@ -142,35 +143,37 @@ export const PresentationImageElement = withHOC(
                       </div>
                     </div>
                   ) : (
-                    <div
-                      className="presentation-image-container"
-                      onDoubleClick={() => {
-                        if (!readOnly) {
-                          setIsSheetOpen(true);
-                        }
-                      }}
-                    >
-                      <Image
-                        ref={handleRef}
-                        className={cn(
-                          "presentation-image",
-                          "cursor-pointer",
-                          focused &&
-                            selected &&
-                            "ring-2 ring-ring ring-offset-2",
-                          isDragging && "opacity-50"
-                        )}
-                        alt={props.element.query ?? ""}
-                        src={imageUrl}
-                        onError={(e) => {
-                          console.error(
-                            "Presentation image failed to load:",
-                            e,
-                            imageUrl
-                          );
+                    <div className="presentation-image-container">
+                      <ImageContextMenu 
+                        imageUrl={imageUrl}
+                        onEdit={() => {
+                          if (!readOnly) {
+                            setIsSheetOpen(true);
+                          }
                         }}
-                        {...nodeProps}
-                      />
+                      >
+                        <Image
+                          ref={handleRef}
+                          className={cn(
+                            "presentation-image",
+                            "cursor-pointer",
+                            focused &&
+                              selected &&
+                              "ring-2 ring-ring ring-offset-2",
+                            isDragging && "opacity-50"
+                          )}
+                          alt={props.element.query ?? ""}
+                          src={imageUrl}
+                          onError={(e) => {
+                            console.error(
+                              "Presentation image failed to load:",
+                              e,
+                              imageUrl
+                            );
+                          }}
+                          {...nodeProps}
+                        />
+                      </ImageContextMenu>
                     </div>
                   )}
                   <ResizeHandle
@@ -200,6 +203,22 @@ export const PresentationImageElement = withHOC(
             }}
             onGenerateWithNewPrompt={(newPrompt) => {
               void generateImage(newPrompt);
+            }}
+            onRemove={() => {
+              // Remove a imagem definindo a URL como vazia
+              if (editor && props.element) {
+                setNode(editor, props.element, {
+                  url: "",
+                });
+                
+                // Fechar o modal após remover a imagem
+                setIsSheetOpen(false);
+                
+                // Salvar as alterações
+                setTimeout(() => {
+                  void saveImmediately();
+                }, 500);
+              }
             }}
           />
         </>

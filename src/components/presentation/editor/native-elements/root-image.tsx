@@ -8,18 +8,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { DndPlugin, type DragItemNode } from "@udecode/plate-dnd";
 import { type DragSourceMonitor } from "react-dnd";
 import { PresentationImageEditor } from "./presentation-image-editor";
-import { Trash2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import { useDebouncedSave } from "@/hooks/presentation/useDebouncedSave";
 import { useEditorRef } from "@udecode/plate-core/react";
 import { generateImageAction } from "@/app/_actions/image/generate";
 import { type PlateSlide } from "../../utils/parser";
 import { useDraggable } from "../dnd/hooks/useDraggable";
+import { ImageContextMenu } from "./ImageContextMenu";
 
 export default function RootImage({
   image,
@@ -168,9 +162,8 @@ export default function RootImage({
     setShowDeletePopover(false);
   };
 
-  // Double-click handler for the image
-  const handleImageDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Handler for editing the image
+  const handleEditImage = () => {
     setIsSheetOpen(true);
   };
 
@@ -200,55 +193,28 @@ export default function RootImage({
                 </p>
               </div>
             ) : (
-              <Popover
-                open={showDeletePopover}
-                onOpenChange={setShowDeletePopover}
+              <ImageContextMenu
+                imageUrl={imageUrl ?? image.url}
+                onEdit={handleEditImage}
+                onRemove={removeRootImageFromSlide}
               >
-                <PopoverTrigger asChild>
-                  <div
-                    className="relative h-full"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowDeletePopover(true);
+                <div className="relative h-full" tabIndex={0}>
+                  {/*  eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageUrl ?? image.url}
+                    alt={image.query}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      console.error(
+                        "Image failed to load:",
+                        e,
+                        imageUrl ?? image.url
+                      );
+                      // Optionally set a fallback image or show an error state
                     }}
-                    onDoubleClick={handleImageDoubleClick}
-                  >
-                    {/*  eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imageUrl ?? image.url}
-                      alt={image.query}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        console.error(
-                          "Image failed to load:",
-                          e,
-                          imageUrl ?? image.url
-                        );
-                        // Optionally set a fallback image or show an error state
-                      }}
-                    />
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0"
-                  side="top"
-                  align="center"
-                >
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="h-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeRootImageFromSlide();
-                    }}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
-                </PopoverContent>
-              </Popover>
+                  />
+                </div>
+              </ImageContextMenu>
             )}
           </div>
         </div>
@@ -269,6 +235,13 @@ export default function RootImage({
         }}
         onGenerateWithNewPrompt={(newPrompt) => {
           void generateImage(newPrompt);
+        }}
+        onRemove={() => {
+          // Remove a imagem do slide
+          removeRootImageFromSlide();
+          
+          // Fechar o modal após remover a imagem
+          setIsSheetOpen(false);
         }}
       />
     </>
