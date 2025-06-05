@@ -14,6 +14,13 @@ import { generateImageAction } from "@/app/_actions/image/generate";
 import { type PlateSlide } from "../../utils/parser";
 import { useDraggable } from "../dnd/hooks/useDraggable";
 import { ImageContextMenu } from "./ImageContextMenu";
+import { ImageDirectEditor } from "./ImageDirectEditor";
+
+interface ImagePosition {
+  x: number;
+  y: number;
+  scale: number;
+}
 
 export default function RootImage({
   image,
@@ -21,7 +28,7 @@ export default function RootImage({
   layoutType,
   shouldGenerate = true,
 }: {
-  image: { query: string; url?: string };
+  image: { query: string; url?: string; position?: ImagePosition };
   slideIndex: number;
   layoutType?: string;
   shouldGenerate?: boolean;
@@ -35,10 +42,18 @@ export default function RootImage({
   const hasHandledGenerationRef = useRef(false);
   // State for image editor sheet
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  // State for image adjustment mode
+  const [isAdjusting, setIsAdjusting] = useState(false);
   // State for error handling
   const [error, setError] = useState<string | undefined>();
   // State for showing delete popover
   const [showDeletePopover, setShowDeletePopover] = useState(false);
+  // State for image position
+  const [imagePosition, setImagePosition] = useState<ImagePosition>({
+    x: image.position?.x ?? 50,
+    y: image.position?.y ?? 50,
+    scale: image.position?.scale ?? 1,
+  });
   const editor = useEditorRef();
   // Create a fake element for dragging - with a unique ID
   const element = {
@@ -172,13 +187,54 @@ export default function RootImage({
       <div
         className={cn(
           "flex-1 basis-[45%]",
-          layoutType === "vertical" && "max-h-96 overflow-hidden"
+          layoutType === "vertical" && "h-[300px] max-h-80 overflow-hidden relative"
         )}
       >
+        {/* Quando estiver ajustando e for layout vertical, renderizar o editor em posição absoluta */}
+        {isAdjusting && layoutType === "vertical" && (
+            <div 
+              className="absolute inset-0 z-[200]"
+              style={{ height: '300px' }}
+            >
+            <ImageDirectEditor
+              imageUrl={imageUrl ?? image.url}
+              initialPosition={imagePosition}
+              layoutType={layoutType}
+              onPositionChange={(newPosition) => {
+                // Atualizar o estado local
+                setImagePosition(newPosition);
+                
+                // Atualizar o estado global
+                const { slides } = usePresentationState.getState();
+                const updatedSlides = slides.map((slide: any, index: number) => {
+                  if (index === slideIndex && slide.rootImage) {
+                    return {
+                      ...slide,
+                      rootImage: {
+                        ...slide.rootImage,
+                        position: newPosition,
+                      },
+                    };
+                  }
+                  return slide;
+                });
+                
+                // Atualizar slides e salvar
+                setTimeout(() => {
+                  setSlides(updatedSlides);
+                  void saveImmediately();
+                }, 100);
+              }}
+              onEditComplete={() => setIsAdjusting(false)}
+            />
+          </div>
+        )}
+        
         <div
           className={cn(
             "h-full overflow-hidden border bg-background/80 shadow-md backdrop-blur-sm",
-            isDragging && "opacity-50"
+            isDragging && "opacity-50",
+            isAdjusting && layoutType === "vertical" && "invisible" // Ocultar quando estiver ajustando em layout vertical
           )}
         >
           <div
@@ -197,22 +253,78 @@ export default function RootImage({
                 imageUrl={imageUrl ?? image.url}
                 onEdit={handleEditImage}
                 onRemove={removeRootImageFromSlide}
+                onAdjustImage={() => setIsAdjusting(true)}
               >
                 <div className="relative h-full" tabIndex={0}>
-                  {/*  eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl ?? image.url}
-                    alt={image.query}
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      console.error(
-                        "Image failed to load:",
-                        e,
-                        imageUrl ?? image.url
-                      );
-                      // Optionally set a fallback image or show an error state
-                    }}
-                  />
+                  {/* Renderizar o editor de ajuste apenas para layouts não verticais */}
+                  {isAdjusting && layoutType !== "vertical" && (
+                    <div style={{ 
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      zIndex: 100
+                    }}>
+                      <ImageDirectEditor
+                        imageUrl={imageUrl ?? image.url}
+                        initialPosition={imagePosition}
+                        className="absolute inset-0"
+                        layoutType={layoutType}
+                        onPositionChange={(newPosition) => {
+                          // Atualizar o estado local
+                          setImagePosition(newPosition);
+                          
+                          // Atualizar o estado global
+                          const { slides } = usePresentationState.getState();
+                          const updatedSlides = slides.map((slide: any, index: number) => {
+                            if (index === slideIndex && slide.rootImage) {
+                              return {
+                                ...slide,
+                                rootImage: {
+                                  ...slide.rootImage,
+                                  position: newPosition,
+                                },
+                              };
+                            }
+                            return slide;
+                          });
+                          
+                          // Atualizar slides e salvar
+                          setTimeout(() => {
+                            setSlides(updatedSlides);
+                            void saveImmediately();
+                          }, 100);
+                        }}
+                        onEditComplete={() => setIsAdjusting(false)}
+                      />
+                    </div>
+                  )}
+                  
+                  <div style={{ 
+                    display: (isAdjusting && layoutType !== "vertical") ? 'none' : 'block',
+                    position: 'relative',
+                    height: layoutType === "vertical" ? '300px' : '100%'
+                  }}>
+                    {/*  eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl ?? image.url}
+                      alt={image.query}
+                      className="h-full w-full object-cover"
+                      style={{
+                        objectPosition: `${imagePosition.x}% ${imagePosition.y}%`,
+                        transform: `scale(${imagePosition.scale})`,
+                      }}
+                      onError={(e) => {
+                        console.error(
+                          "Image failed to load:",
+                          e,
+                          imageUrl ?? image.url
+                        );
+                        // Optionally set a fallback image or show an error state
+                      }}
+                    />
+                  </div>
                 </div>
               </ImageContextMenu>
             )}
@@ -269,6 +381,7 @@ export default function RootImage({
           }, 100);
         }}
       />
+      
     </>
   );
 }

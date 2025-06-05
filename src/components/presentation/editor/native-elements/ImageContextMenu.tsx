@@ -28,6 +28,7 @@ interface ImageContextMenuProps {
   imageUrl?: string;
   onEdit?: () => void;
   onRemove?: () => void;
+  onAdjustImage?: () => void;
 }
 
 export function ImageContextMenu({
@@ -35,6 +36,7 @@ export function ImageContextMenu({
   imageUrl,
   onEdit,
   onRemove,
+  onAdjustImage,
 }: ImageContextMenuProps) {
   const { saveImmediately } = useDebouncedSave();
 
@@ -143,9 +145,9 @@ export function ImageContextMenu({
           Remover o fundo
           <span className="ml-auto text-xs text-muted-foreground">5 ⚡</span>
         </ContextMenuItem>
-        <ContextMenuItem disabled>
+        <ContextMenuItem onSelect={onAdjustImage} disabled={!onAdjustImage}>
           <Maximize className="mr-2 h-4 w-4" />
-          Preencher imagem
+          Ajustar imagem
         </ContextMenuItem>
         <ContextMenuItem disabled>
           <Focus className="mr-2 h-4 w-4" />

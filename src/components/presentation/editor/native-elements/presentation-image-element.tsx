@@ -20,6 +20,13 @@ import { useDebouncedSave } from "@/hooks/presentation/useDebouncedSave";
 import { useDraggable } from "../dnd/hooks/useDraggable";
 import { generateImageAction } from "@/app/_actions/image/generate";
 import { ImageContextMenu } from "./ImageContextMenu";
+import { ImageDirectEditor } from "./ImageDirectEditor";
+
+interface ImagePosition {
+  x: number;
+  y: number;
+  scale: number;
+}
 
 export interface PresentationImageElementProps {
   className?: string;
@@ -27,6 +34,7 @@ export interface PresentationImageElementProps {
   nodeProps?: Record<string, unknown>;
   element: TImageElement & {
     query?: string;
+    position?: ImagePosition;
   };
 }
 
@@ -42,11 +50,17 @@ export const PresentationImageElement = withHOC(
       const editor = useEditorRef();
       const { saveImmediately } = useDebouncedSave();
       const [isSheetOpen, setIsSheetOpen] = useState(false);
+      const [isAdjusting, setIsAdjusting] = useState(false);
       const [isGenerating, setIsGenerating] = useState(false);
       const [error, setError] = useState<string | undefined>(undefined);
       const [imageUrl, setImageUrl] = useState<string | undefined>(
         props.element.url
       );
+      const [imagePosition, setImagePosition] = useState<ImagePosition>({
+        x: props.element.position ? props.element.position.x : 50,
+        y: props.element.position ? props.element.position.y : 50,
+        scale: props.element.position ? props.element.position.scale : 1,
+      });
       const { imageModel } = usePresentationState();
       const hasHandledGenerationRef = useRef(false);
 
@@ -151,28 +165,80 @@ export const PresentationImageElement = withHOC(
                             setIsSheetOpen(true);
                           }
                         }}
+                        onAdjustImage={() => {
+                          if (!readOnly) {
+                            setIsAdjusting(true);
+                          }
+                        }}
                       >
-                        <Image
-                          ref={handleRef}
-                          className={cn(
-                            "presentation-image",
-                            "cursor-pointer",
-                            focused &&
-                              selected &&
-                              "ring-2 ring-ring ring-offset-2",
-                            isDragging && "opacity-50"
-                          )}
-                          alt={props.element.query ?? ""}
-                          src={imageUrl}
-                          onError={(e) => {
-                            console.error(
-                              "Presentation image failed to load:",
-                              e,
-                              imageUrl
-                            );
-                          }}
-                          {...nodeProps}
-                        />
+                        <div className="relative overflow-hidden" style={{ position: 'relative' }}>
+                          <div style={{ 
+                            position: isAdjusting ? 'absolute' : 'relative',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            zIndex: isAdjusting ? 100 : 'auto',
+                            display: isAdjusting ? 'block' : 'none'
+                          }}>
+                            {isAdjusting && (
+                              <ImageDirectEditor
+                                imageUrl={imageUrl}
+                                initialPosition={imagePosition}
+                                className="absolute inset-0"
+                                onPositionChange={(newPosition) => {
+                                  // Atualizar o estado local
+                                  setImagePosition(newPosition);
+                                  
+                                  // Atualizar a posição da imagem no editor
+                                  if (editor && props.element) {
+                                    setNode(editor, props.element, {
+                                      position: newPosition,
+                                    });
+                                    
+                                    // Salvar as alterações
+                                    setTimeout(() => {
+                                      void saveImmediately();
+                                    }, 500);
+                                  }
+                                }}
+                                onEditComplete={() => setIsAdjusting(false)}
+                              />
+                            )}
+                          </div>
+                          
+                          <div style={{ 
+                            display: isAdjusting ? 'none' : 'block',
+                            position: 'relative'
+                          }}>
+                            <Image
+                              ref={handleRef}
+                              className={cn(
+                                "presentation-image",
+                                "cursor-pointer",
+                                focused &&
+                                  selected &&
+                                  "ring-2 ring-ring ring-offset-2",
+                                isDragging && "opacity-50"
+                              )}
+                              style={{
+                                objectFit: "cover",
+                                objectPosition: `${imagePosition.x}% ${imagePosition.y}%`,
+                                transform: `scale(${imagePosition.scale})`,
+                              }}
+                              alt={props.element.query ?? ""}
+                              src={imageUrl}
+                              onError={(e) => {
+                                console.error(
+                                  "Presentation image failed to load:",
+                                  e,
+                                  imageUrl
+                                );
+                              }}
+                              {...nodeProps}
+                            />
+                          </div>
+                        </div>
                       </ImageContextMenu>
                     </div>
                   )}
@@ -237,6 +303,7 @@ export const PresentationImageElement = withHOC(
               }
             }}
           />
+
         </>
       );
     }
