@@ -9,10 +9,14 @@ import { usePresentationState } from "@/states/presentation-state"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createEmptyPresentation } from "@/app/_actions/presentation/presentationActions"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { useSession } from "next-auth/react"
+import LoginModal from "@/components/auth/LoginModal"
 
 function ApresentAI() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const {
     presentationInput,
     setPresentationInput,
@@ -66,7 +70,13 @@ function ApresentAI() {
 
   const handleGenerate = async () => {
     if (!presentationInput.trim()) {
-      toast.error("Please enter a topic for your presentation");
+      toast.error("Por favor, digite um tópico para sua apresentação");
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!session) {
+      setShowLoginModal(true);
       return;
     }
 
@@ -97,6 +107,11 @@ function ApresentAI() {
       console.error("Error creating presentation:", error);
       toast.error("Failed to create presentation");
     }
+  };
+
+  const handleLoginSuccess = () => {
+    // After successful login, continue with the generation
+    handleGenerate();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -276,6 +291,15 @@ function ApresentAI() {
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleLoginSuccess}
+        title="Continue criando sua apresentação"
+        description="Para gerar sua apresentação com IA, você precisa fazer login ou criar uma conta gratuita."
+      />
     </div>
   );
 }

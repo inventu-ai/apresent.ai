@@ -9,7 +9,8 @@ export async function middleware(request: NextRequest) {
                       request.nextUrl.pathname.startsWith("/privacy") ||
                       request.nextUrl.pathname.startsWith("/auth/forgot-password") ||
                       request.nextUrl.pathname.startsWith("/auth/verify-code") ||
-                      request.nextUrl.pathname.startsWith("/auth/reset-password");
+                      request.nextUrl.pathname.startsWith("/auth/reset-password") ||
+                      request.nextUrl.pathname === "/apresentai"; // Allow access to main page without login
 
   // Always redirect from root to /apresentai
   if (request.nextUrl.pathname === "/") {

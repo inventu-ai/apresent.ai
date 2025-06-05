@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { FileX, Plus } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
@@ -34,6 +35,7 @@ interface PresentationResponse {
 }
 
 export function PresentationsSidebar() {
+  const { data: session } = useSession();
   const { ref: loadMoreRef, inView } = useInView();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -100,6 +102,7 @@ export function PresentationsSidebar() {
       }
       return undefined;
     },
+    enabled: !!session, // Only run query if user is authenticated
   });
 
   useEffect(() => {
@@ -170,6 +173,11 @@ export function PresentationsSidebar() {
       </>
     );
   };
+
+  // Don't render sidebar for non-authenticated users
+  if (!session) {
+    return null;
+  }
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

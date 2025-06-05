@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, History } from "lucide-react";
+import { ChevronRight, History, LogIn } from "lucide-react";
 import { usePresentationState } from "@/states/presentation-state";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 // Import our new components
 import { ThemeSelector } from "../theme/ThemeSelector";
@@ -20,6 +21,7 @@ interface PresentationHeaderProps {
 
 export default function PresentationHeader({ title }: PresentationHeaderProps) {
   const { currentPresentationTitle, isPresenting, setIsSheetOpen } = usePresentationState();
+  const { data: session } = useSession();
   const [presentationTitle, setPresentationTitle] =
     useState<string>("ApresentAI");
   const pathname = usePathname();
@@ -54,11 +56,11 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
 
       {/* Right section with actions */}
       <div className="flex items-center gap-2">
-        {/* Save status indicator */}
-        <SaveStatus />
+        {/* Save status indicator - only for authenticated users */}
+        {session && <SaveStatus />}
 
-        {/* View Presentations button */}
-        {!isPresenting && (
+        {/* View Presentations button - only for authenticated users */}
+        {session && !isPresenting && (
           <Button
             variant="ghost"
             size="icon"
@@ -79,8 +81,19 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
         {/* Present button - Only in presentation page, not outline */}
         {isPresentationPage && <PresentButton />}
 
-        {/* User profile dropdown - Keep this on all pages */}
-        {!isPresenting && <SideBarDropdown />}
+        {/* User profile dropdown or Login button */}
+        {!isPresenting && (
+          session ? (
+            <SideBarDropdown />
+          ) : (
+            <Link href="/auth/signin">
+              <Button variant="outline" size="sm">
+                <LogIn className="mr-2 h-4 w-4" />
+                Entrar
+              </Button>
+            </Link>
+          )
+        )}
       </div>
     </header>
   );
