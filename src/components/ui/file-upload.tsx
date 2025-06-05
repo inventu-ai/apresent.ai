@@ -60,6 +60,7 @@ export default function FileUpload({
   acceptedTypes = ["pdf", "docx", "txt"],
   info,
   showUploadButton = true,
+  compact = false, // Nova prop para modo compacto
 }: {
   files: File[];
   setFiles: (files: File[] | ((prevFiles: File[]) => File[])) => void;
@@ -71,6 +72,7 @@ export default function FileUpload({
   acceptedTypes?: string[];
   info?: string;
   showUploadButton?: boolean;
+  compact?: boolean; // Nova prop para modo compacto
 }) {
   const { toast } = useToast();
   const getFileIconAndColor = (file: File) => {
@@ -119,14 +121,24 @@ export default function FileUpload({
 
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejected: FileRejection[]) => {
-      setFiles((prevUploadProgress) => {
-        return [
-          ...prevUploadProgress,
-          ...acceptedFiles.map((file) => {
-            return file;
-          }),
-        ];
-      });
+      // Se multiple é false, substituir completamente os arquivos existentes
+      // Se multiple é true, concatenar com os arquivos existentes
+      if (acceptedFiles.length > 0) {
+        setFiles((prevUploadProgress) => {
+          if (!multiple) {
+            // Substituir completamente, pegando apenas o último arquivo
+            const lastFile = acceptedFiles[acceptedFiles.length - 1];
+            return lastFile ? [lastFile] : [];
+          } else {
+            // Comportamento original para multiple=true
+            return [
+              ...prevUploadProgress,
+              ...acceptedFiles,
+            ];
+          }
+        });
+      }
+      
       if (fileRejected.length > 0) {
         toast({
           title: "File type not allowed",
@@ -134,7 +146,7 @@ export default function FileUpload({
         });
       }
     },
-    []
+    [multiple]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -175,7 +187,7 @@ export default function FileUpload({
 
   return (
     <div className="min-h-full w-full">
-      <div className="grid min-h-[350px]">
+      <div className={`grid ${compact ? "min-h-[180px]" : "min-h-[350px]"}`}>
         <label
           {...getRootProps()}
           className="relative flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary bg-background py-6 hover:bg-muted"
@@ -185,9 +197,9 @@ export default function FileUpload({
               <UploadCloud className="text-primary" size={20} />
             </div>
 
-            <p className="mt-2 text-sm text-gray-600">
+            <p className={`${compact ? "mt-1" : "mt-2"} text-sm text-gray-600`}>
               <span className="font-semibold">
-                Click to upload or drag and drop
+                {compact ? "Upload or drag & drop" : "Click to upload or drag and drop"}
               </span>
             </p>
             <p className="text-xs text-gray-500">

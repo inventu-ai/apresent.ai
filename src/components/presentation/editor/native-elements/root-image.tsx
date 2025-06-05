@@ -243,6 +243,31 @@ export default function RootImage({
           // Fechar o modal após remover a imagem
           setIsSheetOpen(false);
         }}
+        onImageUpload={(newImageUrl) => {
+          // Atualizar a URL da imagem
+          setImageUrl(newImageUrl);
+          
+          // Atualizar o estado global
+          const { slides } = usePresentationState.getState();
+          const updatedSlides = slides.map((slide: PlateSlide, index: number) => {
+            if (index === slideIndex) {
+              return {
+                ...slide,
+                rootImage: {
+                  query: image.query,
+                  url: newImageUrl,
+                },
+              };
+            }
+            return slide;
+          });
+          
+          // Atualizar slides e salvar
+          setTimeout(() => {
+            setSlides(updatedSlides);
+            void saveImmediately();
+          }, 100);
+        }}
       />
     </>
   );

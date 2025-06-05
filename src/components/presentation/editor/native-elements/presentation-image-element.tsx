@@ -220,6 +220,22 @@ export const PresentationImageElement = withHOC(
                 }, 500);
               }
             }}
+            onImageUpload={(newImageUrl) => {
+              // Atualizar a URL da imagem no editor
+              if (editor && props.element) {
+                setNode(editor, props.element, {
+                  url: newImageUrl,
+                });
+                
+                // Atualizar o estado local
+                setImageUrl(newImageUrl);
+                
+                // Salvar as alterações
+                setTimeout(() => {
+                  void saveImmediately();
+                }, 500);
+              }
+            }}
           />
         </>
       );

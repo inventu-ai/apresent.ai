@@ -27,6 +27,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { usePresentationState } from "@/states/presentation-state";
 import { IMAGE_MODELS } from "../../theme/ThemeSettings";
 import { type ImageModelList } from "@/app/_actions/image/generate";
+import { ImageUploadDrawer } from "./ImageUploadDrawer";
 
 export interface PresentationImageEditorProps {
   open: boolean;
@@ -38,6 +39,7 @@ export interface PresentationImageEditorProps {
   onRegenerateWithSamePrompt: () => void;
   onGenerateWithNewPrompt: (prompt: string) => void;
   onRemove?: () => void; // Nova prop para remoção da imagem
+  onImageUpload?: (imageUrl: string) => void; // Nova prop para upload de imagem
 }
 
 export const PresentationImageEditor = ({
@@ -50,6 +52,7 @@ export const PresentationImageEditor = ({
   onRegenerateWithSamePrompt,
   onGenerateWithNewPrompt,
   onRemove,
+  onImageUpload,
 }: PresentationImageEditorProps) => {
   const { imageModel, setImageModel } = usePresentationState();
   const [newPrompt, setNewPrompt] = useState(prompt ?? "");
@@ -143,6 +146,7 @@ export const PresentationImageEditor = ({
                   className="h-auto max-h-[300px] w-full object-contain"
                 />
                 <div className="absolute bottom-2 right-2 flex gap-1">
+                  {onImageUpload && <ImageUploadDrawer onImageUpload={onImageUpload} />}
                   <Button
                     variant="secondary"
                     size="icon"
