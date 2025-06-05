@@ -140,8 +140,8 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
 
       if (logoFile) {
         const uploadResult = await startUpload([logoFile]);
-        if (uploadResult?.[0]?.url) {
-          logoUrl = uploadResult[0].url ?? "";
+        if (uploadResult?.[0]?.ufsUrl) {
+          logoUrl = uploadResult[0].ufsUrl ?? "";
         }
       }
 

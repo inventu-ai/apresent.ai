@@ -16,6 +16,8 @@ import { ThemeToggle } from "@/provider/theme-provider";
 import { Skeleton } from "../ui/skeleton";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import { Badge } from "../ui/badge";
+import { PlanBadge } from "../ui/plan-badge";
+import { usePlanBadge } from "@/hooks/usePlanBadge";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export function getInitials(name: string): string {
@@ -42,6 +44,7 @@ export function UserAvatar() {
 export function UserDetail() {
   const session = useSession();
   const { remaining, isUnlimited, loading: creditsLoading, daysUntilReset } = useUserCredits();
+  const { planName, isLoading: planLoading } = usePlanBadge();
 
   return (
     <div className="max-w-max overflow-hidden">
@@ -53,6 +56,13 @@ export function UserDetail() {
           <p className="mt-1 text-ellipsis text-xs leading-none text-muted-foreground">
             {session?.data?.user?.email}
           </p>
+          
+          {/* Badge do Plano */}
+          <div className="mt-2">
+            {!planLoading && (
+              <PlanBadge plan={planName} size="xs" />
+            )}
+          </div>
           
           {/* Informações de Créditos */}
           <div className="mt-2 flex items-center gap-2">
@@ -135,7 +145,7 @@ export default function SideBarDropdown({
           <DropdownMenuItem asChild>
             <Button variant="outline" className="w-full">
               <Link
-                href={userId ? `/user/${userId}` : ""}
+                href="/profile"
                 className="flex h-full w-full items-center justify-center p-2"
               >
                 <User className="mr-2 h-4 w-4" />

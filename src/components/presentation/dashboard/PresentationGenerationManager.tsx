@@ -7,6 +7,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { SlideParser } from "../utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { extractSlideCount } from "@/lib/utils/prompt-parser";
+import { useUserPlanLimits } from "@/hooks/useUserCredits";
 
 export function PresentationGenerationManager() {
   const {
@@ -25,6 +26,9 @@ export function PresentationGenerationManager() {
     setNumSlides,
     isNumSlidesManuallySet,
   } = usePresentationState();
+
+  // Get user plan limits
+  const { maxCards } = useUserPlanLimits();
 
   // Create a ref for the streaming parser to persist between renders
   const streamingParserRef = useRef<SlideParser>(new SlideParser());
@@ -151,32 +155,24 @@ export function PresentationGenerationManager() {
           console.log('=== SLIDE COUNT DEBUG ===');
           console.log('isNumSlidesManuallySet:', isNumSlidesManuallySet);
           console.log('current numSlides:', numSlides);
+          console.log('maxCards (plan limit):', maxCards);
           console.log('presentationInput:', presentationInput);
           
           let finalSlideCount = numSlides;
 
-          // Only extract from prompt if user hasn't manually set the slide count
-          if (!isNumSlidesManuallySet) {
-            const extractedSlideCount = extractSlideCount(presentationInput ?? "");
+          // PRIORITY 1: If user manually set the slide count, ALWAYS use it
+          if (isNumSlidesManuallySet) {
+            finalSlideCount = numSlides;
+            console.log(`✅ Using manually set slide count: ${numSlides} (user selection has priority)`);
+          } else {
+            // PRIORITY 2: Only extract from prompt if user hasn't manually set the slide count
+            const extractedSlideCount = extractSlideCount(presentationInput ?? "", maxCards);
             
             // Update the numSlides state with the extracted count (but don't mark as manual)
             setNumSlides(extractedSlideCount, false);
             finalSlideCount = extractedSlideCount;
             
-            if (extractedSlideCount === 10 && presentationInput?.match(/\d+/)) {
-              // Check if original request was over limit
-              const originalMatch = presentationInput?.match(/(\d+)/);
-              const originalCount = originalMatch?.[1] ? parseInt(originalMatch[1], 10) : 0;
-              if (originalCount > 15) {
-                console.log(`✅ Extracted ${extractedSlideCount} slides (limited from ${originalCount}) from prompt: "${presentationInput ?? ''}"`);
-              } else {
-                console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput ?? ''}"`);
-              }
-            } else {
-              console.log(`✅ Extracted ${extractedSlideCount} slides from prompt: "${presentationInput ?? ''}"`);
-            }
-          } else {
-            console.log(`✅ Using manually set slide count: ${numSlides}`);
+            console.log(`✅ Extracted ${extractedSlideCount} slides from prompt (max allowed: ${maxCards}): "${presentationInput ?? ''}"`);
           }
           
           console.log('finalSlideCount:', finalSlideCount);

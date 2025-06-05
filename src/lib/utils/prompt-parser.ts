@@ -1,9 +1,10 @@
 /**
  * Extracts the number of slides from a user prompt
  * @param prompt - The user's input prompt
+ * @param maxAllowed - Maximum number of slides allowed based on user's plan (default: 10)
  * @returns The number of slides requested, or 10 as default
  */
-export function extractSlideCount(prompt: string): number {
+export function extractSlideCount(prompt: string, maxAllowed: number = 10): number {
   if (!prompt || typeof prompt !== 'string') {
     return 10; // Default fallback
   }
@@ -47,13 +48,13 @@ export function extractSlideCount(prompt: string): number {
     if (match && match[1]) {
       const count = parseInt(match[1], 10);
       
-      // Validate the number is reasonable (between 1 and 15)
-      // If user requests more than 15, fallback to default (10)
-      if (count >= 1 && count <= 15) {
+      // Validate the number is reasonable (between 1 and maxAllowed)
+      // If user requests more than maxAllowed, limit to maxAllowed
+      if (count >= 1 && count <= maxAllowed) {
         return count;
-      } else if (count > 15) {
-        console.log(`🚫 User requested ${count} slides, limiting to 10 (max allowed: 15)`);
-        return 10; // Fallback to default when over limit
+      } else if (count > maxAllowed) {
+        console.log(`🚫 User requested ${count} slides, limiting to ${maxAllowed} (max allowed for plan)`);
+        return maxAllowed; // Limit to plan maximum
       }
     }
   }
