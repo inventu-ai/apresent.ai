@@ -224,30 +224,12 @@ h6.presentation-heading {
 
 /* Presentation slide styling */
 .presentation-slide {
-  background-color: var(--presentation-background) !important;
   border: 1px solid var(--presentation-accent);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   color: var(--presentation-text) !important;
 }
 
-/* Additional theme-specific slide styling */
-[data-theme="light"] [data-slide-content="true"],
-[data-theme="light"] .presentation-slide,
-.presentation-slide[style] {
-  background-color: var(--presentation-background) !important;
-}
-
-[data-theme="dark"] [data-slide-content="true"],
-[data-theme="dark"] .presentation-slide,
-[data-theme="dark"] .presentation-slide[style] {
-  background-color: var(--presentation-background) !important;
-}
-
+/* Estilos específicos para tema escuro */
 [data-theme="dark"] .presentation-slide {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* Override any inline bgColor from initialContent */
-.presentation-slide[style*="background"] {
-  background-color: var(--presentation-background) !important;
 }

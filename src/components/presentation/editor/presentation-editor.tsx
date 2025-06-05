@@ -205,6 +205,7 @@ const PresentationEditor = React.memo(
           )}
           style={{
             borderRadius: "var(--presentation-border-radius, 0.5rem)",
+            backgroundColor: initialContent?.bgColor || undefined,
           }}
           data-is-presenting={readOnly ? "true" : "false"}
           data-slide-content="true"
@@ -220,9 +221,7 @@ const PresentationEditor = React.memo(
             }}
             readOnly={isGenerating || readOnly}
           >
-            {!readOnly && (
-              <LayoutImageDrop slideIndex={slideIndex}></LayoutImageDrop>
-            )}
+            {/* LayoutImageDrop foi removido junto com a funcionalidade de Accent image */}
             <Editor
               className={cn(
                 className,

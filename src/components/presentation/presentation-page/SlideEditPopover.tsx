@@ -1,7 +1,5 @@
 import {
   Edit,
-  Image,
-  Trash2,
   LayoutGrid,
   ArrowUpFromLine,
   FoldVertical,
@@ -55,23 +53,6 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
   const currentBgColor = currentSlide?.bgColor ?? "#4D4D4D";
   const currentWidth = currentSlide?.width ?? "M";
   const currentAlignment = currentSlide?.alignment ?? "start";
-  const hasRootImage = !!currentSlide?.rootImage;
-
-  const handleImageEdit = () => {
-    // For demo purposes, just set a placeholder image
-    // In production, this would open an image selector
-    updateSlide({
-      rootImage: {
-        query: "placeholder image",
-        url: "https://placehold.co/600x400",
-      },
-    });
-    alert("This would open the image selector in production");
-  };
-
-  const handleImageDelete = () => {
-    updateSlide({ rootImage: undefined });
-  };
 
   return (
     <Popover>
@@ -95,32 +76,6 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
               value={currentBgColor}
               onChange={(color) => updateSlide({ bgColor: color })}
             />
-          </div>
-          {/* Accent Image */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line jsx-a11y/alt-text */}
-              <Image className="h-4 w-4" />
-              <span className="text-sm text-zinc-200">Accent image</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="link"
-                className="h-auto p-0 text-sm text-blue-500"
-                onClick={handleImageEdit}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-red-500"
-                onClick={handleImageDelete}
-                disabled={!hasRootImage}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
           {/* Content Alignment */}
           <div className="flex items-center justify-between">

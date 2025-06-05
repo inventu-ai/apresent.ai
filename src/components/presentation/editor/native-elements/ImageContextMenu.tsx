@@ -140,26 +140,13 @@ export function ImageContextMenu({
           <Sparkles className="mr-2 h-4 w-4" />
           Peça à IA para...
         </ContextMenuItem>
-        <ContextMenuItem disabled>
-          <Eraser className="mr-2 h-4 w-4" />
-          Remover o fundo
-          <span className="ml-auto text-xs text-muted-foreground">5 ⚡</span>
-        </ContextMenuItem>
         <ContextMenuItem onSelect={onAdjustImage} disabled={!onAdjustImage}>
           <Maximize className="mr-2 h-4 w-4" />
           Ajustar imagem
         </ContextMenuItem>
-        <ContextMenuItem disabled>
-          <Focus className="mr-2 h-4 w-4" />
-          Alterar ponto de foco
-        </ContextMenuItem>
         
         <ContextMenuSeparator />
         
-        <ContextMenuItem disabled>
-          <LayoutGrid className="mr-2 h-4 w-4" />
-          Alterar layout
-        </ContextMenuItem>
         <ContextMenuItem onSelect={onRemove} className="text-destructive">
           <X className="mr-2 h-4 w-4" />
           Remover imagem de destaque
