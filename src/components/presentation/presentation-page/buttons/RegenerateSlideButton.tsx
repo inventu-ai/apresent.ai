@@ -340,13 +340,13 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
     <Button
       variant="ghost"
       size="icon"
-      className="!size-8 rounded-full"
+      className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40"
       onClick={regenerateSlide}
       disabled={isRegenerating}
       title="Regenerar slide"
     >
       <RefreshCw 
-        className={`h-4 w-4 ${isRegenerating ? "animate-spin" : ""}`} 
+        className={`h-4 w-4 text-white ${isRegenerating ? "animate-spin" : ""}`} 
       />
     </Button>
   );

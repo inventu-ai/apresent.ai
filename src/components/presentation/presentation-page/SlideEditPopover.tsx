@@ -8,6 +8,8 @@ import {
   PanelTop,
   AlignCenter,
   MoveHorizontal,
+  Type,
+  Heading,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +21,8 @@ import { usePresentationState } from "@/states/presentation-state";
 import { cn } from "@/lib/utils";
 import { type LayoutType } from "../utils/parser";
 import ColorPicker from "@/components/ui/color-picker";
+import CardColorPicker from "@/components/ui/card-color-picker";
+import { FontPicker } from "@/components/ui/font-picker";
 
 interface SlideEditPopoverProps {
   index: number;
@@ -38,6 +42,10 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
         query: string;
         url?: string;
       };
+      headingColor?: string;
+      textColor?: string;
+      headingFont?: string;
+      textFont?: string;
     }>
   ) => {
     const updatedSlides = [...slides];
@@ -53,12 +61,16 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
   const currentBgColor = currentSlide?.bgColor ?? "#4D4D4D";
   const currentWidth = currentSlide?.width ?? "M";
   const currentAlignment = currentSlide?.alignment ?? "start";
+  const currentHeadingColor = currentSlide?.headingColor ?? "#FFFFFF";
+  const currentTextColor = currentSlide?.textColor ?? "#FFFFFF";
+  const currentHeadingFont = currentSlide?.headingFont ?? "Inter";
+  const currentTextFont = currentSlide?.textFont ?? "Inter";
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="!size-8 rounded-full">
-          <Edit className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40">
+          <Edit className="h-4 w-4 text-white" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -72,9 +84,20 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
               <div className="h-4 w-4 rounded-full bg-current" />
               <span className="text-sm text-zinc-200">Card color</span>
             </div>
-            <ColorPicker
+            <CardColorPicker
               value={currentBgColor}
-              onChange={(color) => updateSlide({ bgColor: color })}
+              onChange={(color, suggestedTextColor) => {
+                // Atualizar a cor do card
+                // E sugerir cores de texto, mas apenas se o usuário não tiver personalizado manualmente
+                updateSlide({ 
+                  bgColor: color,
+                  // Só atualizar as cores de texto se forem as cores padrão
+                  ...(currentHeadingColor === "#FFFFFF" || currentHeadingColor === "#000000" 
+                    ? { headingColor: suggestedTextColor } : {}),
+                  ...(currentTextColor === "#FFFFFF" || currentTextColor === "#000000" 
+                    ? { textColor: suggestedTextColor } : {})
+                });
+              }}
             />
           </div>
           {/* Content Alignment */}
@@ -192,6 +215,42 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
               >
                 L
               </Button>
+            </div>
+          </div>
+
+          {/* Heading Style */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Heading className="h-4 w-4" />
+              <span className="text-sm text-zinc-200">Título</span>
+            </div>
+            <div className="flex gap-2">
+              <ColorPicker
+                value={currentHeadingColor}
+                onChange={(color) => updateSlide({ headingColor: color })}
+              />
+              <FontPicker
+                value={currentHeadingFont}
+                onChange={(font) => updateSlide({ headingFont: font })}
+              />
+            </div>
+          </div>
+
+          {/* Text Style */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Type className="h-4 w-4" />
+              <span className="text-sm text-zinc-200">Texto</span>
+            </div>
+            <div className="flex gap-2">
+              <ColorPicker
+                value={currentTextColor}
+                onChange={(color) => updateSlide({ textColor: color })}
+              />
+              <FontPicker
+                value={currentTextFont}
+                onChange={(font) => updateSlide({ textFont: font })}
+              />
             </div>
           </div>
         </div>

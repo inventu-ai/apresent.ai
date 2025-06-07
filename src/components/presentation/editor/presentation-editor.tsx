@@ -206,7 +206,11 @@ const PresentationEditor = React.memo(
           style={{
             borderRadius: "var(--presentation-border-radius, 0.5rem)",
             backgroundColor: initialContent?.bgColor || undefined,
-          }}
+            "--slide-heading-color": initialContent?.headingColor,
+            "--slide-text-color": initialContent?.textColor,
+            "--slide-heading-font": initialContent?.headingFont,
+            "--slide-text-font": initialContent?.textFont,
+          } as React.CSSProperties}
           data-is-presenting={readOnly ? "true" : "false"}
           data-slide-content="true"
         >

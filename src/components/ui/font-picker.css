@@ -3,8 +3,10 @@
 /* Base container - just change colors to match theme */
 .fontpicker {
   border-color: hsl(var(--border));
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Dark mode: invert SVG previews to make them visible */
@@ -47,8 +49,11 @@
 
 /* Search input */
 .fontpicker__search {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: hsl(var(--input));
+  color: hsl(var(--input-foreground));
+  border-color: hsl(var(--border));
+  border-radius: 0.25rem;
+  padding: 0.5rem;
 }
 
 /* Dropdown/popout */
@@ -56,17 +61,54 @@
   height: 21rem;
   max-height: 21rem !important;
   border-color: hsl(var(--border));
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--card));
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Selected option */
 .fontpicker__option.selected {
-  background-color: #b4b4b4;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Hover option */
+.fontpicker__option:hover:not(.selected) {
+  background-color: hsl(var(--accent));
   color: hsl(var(--accent-foreground));
 }
 
 /* No matches message */
 .fontpicker__nomatches {
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--card));
   color: hsl(var(--muted-foreground));
+  padding: 0.75rem;
+  text-align: center;
+  border-radius: 0.25rem;
+}
+
+/* Improve text readability in dark mode */
+[data-theme="dark"] .fontpicker__option {
+  color: hsl(var(--card-foreground));
+}
+
+/* Adjust font size for better readability and add cursor pointer */
+.fontpicker__option {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+/* Improve scrollbar appearance */
+.fontpicker__popout::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fontpicker__popout::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+}
+
+.fontpicker__popout::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 3px;
 }
