@@ -1,0 +1,432 @@
+import { supabaseAdmin } from "./supabase";
+import { getUserCurrentPlan, getPlanLimit, incrementUserUsage, checkUserLimit } from "./plan-checker";
+
+// Custos por ação em créditos
+export const CREDIT_COSTS = {
+  PRESENTATION_CREATION: 40,  // Custo fixo por apresentação completa
+  BASIC_IMAGE: 5,
+  ADVANCED_IMAGE: 10,
+  PREMIUM_IMAGE: 15,
+  // Mantidos para implementação futura:
+  TEXT_GENERATION: 3,
+  SLIDE_CREATION: 2,
+} as const;
+
+export type CreditAction = keyof typeof CREDIT_COSTS;
+
+// Qualidades de imagem disponíveis por plano
+export const IMAGE_QUALITY_BY_PLAN = {
+  FREE: ['BASIC_IMAGE'] as CreditAction[],
+  PRO: ['BASIC_IMAGE', 'ADVANCED_IMAGE'] as CreditAction[],
+  PREMIUM: ['BASIC_IMAGE', 'ADVANCED_IMAGE', 'PREMIUM_IMAGE'] as CreditAction[],
+};
+
+// Máximo de cards por plano
+export const MAX_CARDS_BY_PLAN = {
+  FREE: 10,
+  PRO: 20,
+  PREMIUM: 30,
+} as const;
+
+/**
+ * Verifica se o usuário pode consumir créditos para uma ação
+ */
+export async function canConsumeCredits(
+  userId: string, 
+  action: CreditAction, 
+  amount: number = 1
+): Promise<{
+  allowed: boolean;
+  cost: number;
+  currentCredits: number;
+  creditLimit: number;
+  isUnlimited: boolean;
+  message?: string;
+}> {
+  const cost = CREDIT_COSTS[action] * amount;
+  
+  // Verificar limite de créditos
+  const creditCheck = await checkUserLimit(userId, 'ai_credits', cost);
+  
+  return {
+    allowed: creditCheck.allowed,
+    cost,
+    currentCredits: creditCheck.current || 0,
+    creditLimit: creditCheck.limit || 0,
+    isUnlimited: creditCheck.isUnlimited || false,
+    message: creditCheck.allowed ? undefined : 'Créditos insuficientes'
+  };
+}
+
+/**
+ * Consome créditos do usuário para uma ação
+ */
+export async function consumeCredits(
+  userId: string, 
+  action: CreditAction, 
+  amount: number = 1
+): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  const cost = CREDIT_COSTS[action] * amount;
+  
+  // Verificar se pode consumir
+  const canConsume = await canConsumeCredits(userId, action, amount);
+  
+  if (!canConsume.allowed) {
+    return {
+      success: false,
+      creditsUsed: 0,
+      remainingCredits: canConsume.currentCredits,
+      message: canConsume.message
+    };
+  }
+  
+  // Consumir créditos
+  await incrementUserUsage(userId, 'ai_credits', cost);
+  
+  const remainingCredits = canConsume.isUnlimited 
+    ? Infinity 
+    : canConsume.creditLimit - (canConsume.currentCredits + cost);
+  
+  return {
+    success: true,
+    creditsUsed: cost,
+    remainingCredits: Math.max(0, remainingCredits),
+    message: `${cost} créditos consumidos`
+  };
+}
+
+/**
+ * Obtém informações de créditos do usuário com verificação automática de reset
+ */
+export async function getUserCredits(userId: string): Promise<{
+  current: number;
+  limit: number;
+  isUnlimited: boolean;
+  remaining: number;
+  percentage: number;
+  nextReset: Date | null;
+  daysUntilReset: number;
+  wasReset?: boolean;
+}> {
+  // Verificar se precisa resetar créditos
+  const resetCheck = await checkAndResetCreditsIfNeeded(userId);
+  
+  const { limit, isUnlimited } = await getPlanLimit(userId, 'ai_credits');
+  const { current } = await checkUserLimit(userId, 'ai_credits', 0);
+  
+  // Buscar próxima data de reset
+  const { data: user } = await supabaseAdmin
+    .from('users')
+    .select('nextCreditReset')
+    .eq('id', userId)
+    .single();
+  
+  const nextReset = user?.nextCreditReset ? new Date(user.nextCreditReset) : null;
+  const daysUntilReset = nextReset ? Math.ceil((nextReset.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+  
+  const remaining = isUnlimited ? Infinity : Math.max(0, limit - current);
+  const percentage = isUnlimited ? 0 : (current / limit) * 100;
+  
+  return {
+    current,
+    limit,
+    isUnlimited,
+    remaining,
+    percentage,
+    nextReset,
+    daysUntilReset,
+    wasReset: resetCheck.wasReset
+  };
+}
+
+/**
+ * Verifica se o usuário pode criar uma apresentação com X cards
+ */
+export async function canCreateCards(userId: string, cardCount: number): Promise<{
+  allowed: boolean;
+  maxCards: number;
+  planName: string;
+  message?: string;
+}> {
+  const plan = await getUserCurrentPlan(userId);
+  const planName = plan?.name || 'FREE';
+  const maxCards = MAX_CARDS_BY_PLAN[planName as keyof typeof MAX_CARDS_BY_PLAN] || 10;
+  
+  const allowed = cardCount <= maxCards;
+  
+  return {
+    allowed,
+    maxCards,
+    planName,
+    message: allowed ? undefined : `Seu plano ${planName} permite até ${maxCards} cards`
+  };
+}
+
+/**
+ * Verifica se o usuário pode usar uma qualidade de imagem
+ */
+export async function canUseImageQuality(userId: string, quality: CreditAction): Promise<{
+  allowed: boolean;
+  planName: string;
+  availableQualities: CreditAction[];
+  message?: string;
+}> {
+  const plan = await getUserCurrentPlan(userId);
+  const planName = plan?.name || 'FREE';
+  const availableQualities = IMAGE_QUALITY_BY_PLAN[planName as keyof typeof IMAGE_QUALITY_BY_PLAN] || ['BASIC_IMAGE'] as CreditAction[];
+  
+  const allowed = availableQualities.includes(quality);
+  
+  return {
+    allowed,
+    planName,
+    availableQualities,
+    message: allowed ? undefined : `Qualidade ${quality} não disponível no plano ${planName}`
+  };
+}
+
+/**
+ * Verifica se o usuário precisa de reset de créditos e executa se necessário
+ */
+export async function checkAndResetCreditsIfNeeded(userId: string): Promise<{
+  wasReset: boolean;
+  newCredits?: number;
+  nextReset?: Date;
+  message?: string;
+}> {
+  try {
+    // Buscar dados do usuário
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id, currentPlanId, lastCreditReset, nextCreditReset')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      return { wasReset: false, message: 'Usuário não encontrado' };
+    }
+
+    const now = new Date();
+    const nextReset = user.nextCreditReset ? new Date(user.nextCreditReset) : null;
+
+    // Se não tem data de próximo reset ou já passou da data
+    if (!nextReset || now >= nextReset) {
+      const resetResult = await performCreditReset(userId);
+      
+      if (resetResult.success) {
+        return {
+          wasReset: true,
+          newCredits: resetResult.newCredits,
+          nextReset: resetResult.nextReset,
+          message: 'Créditos resetados com sucesso'
+        };
+      }
+    }
+
+    return { wasReset: false };
+  } catch (error) {
+    console.error('Erro ao verificar reset de créditos:', error);
+    return { wasReset: false, message: 'Erro na verificação' };
+  }
+}
+
+/**
+ * Executa o reset de créditos para um usuário
+ */
+export async function performCreditReset(userId: string): Promise<{
+  success: boolean;
+  previousCredits: number;
+  newCredits: number;
+  nextReset: Date;
+  message?: string;
+}> {
+  try {
+    // Buscar uso atual de créditos
+    const { data: currentUsage } = await supabaseAdmin
+      .from('UserUsage')
+      .select('usageValue')
+      .eq('userId', userId)
+      .eq('usageType', 'ai_credits')
+      .single();
+
+    const previousCredits = currentUsage?.usageValue || 0;
+
+    // Buscar plano atual para determinar novos créditos
+    const plan = await getUserCurrentPlan(userId);
+    const { limit: newCreditLimit } = await getPlanLimit(userId, 'ai_credits');
+
+    const now = new Date();
+    const nextReset = calculateNextResetDate(now);
+
+    // Resetar créditos (zerar uso)
+    const { error: resetError } = await supabaseAdmin
+      .from('UserUsage')
+      .upsert({
+        userId,
+        usageType: 'ai_credits',
+        usageValue: 0,
+        lastReset: now.toISOString(),
+        resetPeriod: 'monthly'
+      }, {
+        onConflict: 'userId,usageType'
+      });
+
+    if (resetError) throw resetError;
+
+    // Atualizar datas de reset no usuário
+    const { error: userUpdateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        lastCreditReset: now.toISOString(),
+        nextCreditReset: nextReset.toISOString()
+      })
+      .eq('id', userId);
+
+    if (userUpdateError) throw userUpdateError;
+
+    // Criar log do reset
+    await logCreditReset(userId, previousCredits, newCreditLimit, plan?.name || 'FREE');
+
+    console.log(`Credits reset for user ${userId}: ${previousCredits} -> ${newCreditLimit}`);
+
+    return {
+      success: true,
+      previousCredits,
+      newCredits: newCreditLimit,
+      nextReset,
+      message: 'Reset realizado com sucesso'
+    };
+  } catch (error) {
+    console.error('Erro no reset de créditos:', error);
+    return {
+      success: false,
+      previousCredits: 0,
+      newCredits: 0,
+      nextReset: new Date(),
+      message: 'Erro no reset'
+    };
+  }
+}
+
+/**
+ * Calcula a próxima data de reset (30 dias após a data atual)
+ */
+export function calculateNextResetDate(lastReset: Date): Date {
+  const nextReset = new Date(lastReset);
+  nextReset.setDate(nextReset.getDate() + 30);
+  return nextReset;
+}
+
+/**
+ * Cria log do reset de créditos
+ */
+export async function logCreditReset(
+  userId: string,
+  previousCredits: number,
+  newCredits: number,
+  planName: string
+): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('CreditResetLog')
+      .insert({
+        userId,
+        resetDate: new Date().toISOString(),
+        previousCredits,
+        newCredits,
+        planName,
+        resetReason: 'monthly_cycle'
+      });
+
+    if (error) {
+      console.error('Erro ao criar log de reset:', error);
+    }
+  } catch (error) {
+    console.error('Erro ao criar log de reset:', error);
+  }
+}
+
+/**
+ * Busca histórico de resets do usuário
+ */
+export async function getCreditResetHistory(userId: string, limit = 10): Promise<{
+  success: boolean;
+  history: any[];
+  message?: string;
+}> {
+  try {
+    const { data: history, error } = await supabaseAdmin
+      .from('CreditResetLog')
+      .select('*')
+      .eq('userId', userId)
+      .order('resetDate', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      history: history || []
+    };
+  } catch (error) {
+    console.error('Erro ao buscar histórico:', error);
+    return {
+      success: false,
+      history: [],
+      message: 'Erro ao buscar histórico'
+    };
+  }
+}
+
+/**
+ * Upgrade de plano com reset de créditos
+ */
+export async function upgradePlan(userId: string, newPlanId: string): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    // Atualizar plano do usuário
+    const { error: userError } = await supabaseAdmin
+      .from('users')
+      .update({
+        currentPlanId: newPlanId,
+        planStartDate: new Date().toISOString(),
+        planEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // +30 dias
+      })
+      .eq('id', userId);
+      
+    if (userError) throw userError;
+    
+    // Resetar créditos para o novo plano
+    const { error: resetError } = await supabaseAdmin
+      .from('UserUsage')
+      .upsert({
+        userId,
+        usageType: 'ai_credits',
+        usageValue: 0,
+        lastReset: new Date().toISOString(),
+        resetPeriod: 'monthly'
+      }, {
+        onConflict: 'userId,usageType'
+      });
+      
+    if (resetError) throw resetError;
+    
+    return {
+      success: true,
+      message: 'Plano atualizado com sucesso'
+    };
+  } catch (error) {
+    console.error('Erro no upgrade:', error);
+    return {
+      success: false,
+      message: 'Erro ao atualizar plano'
+    };
+  }
+}

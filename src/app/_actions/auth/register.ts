@@ -75,7 +75,7 @@ export async function registerUser(data: RegisterFormData) {
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0]?.message || "Dados inválidos",
+        error: error.errors[0]?.message ?? "Dados inválidos",
         fieldErrors: error.flatten().fieldErrors,
       };
     }

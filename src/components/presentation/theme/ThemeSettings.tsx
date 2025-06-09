@@ -15,14 +15,17 @@ import { ThemeModal } from "./ThemeModal";
 import { Button } from "@/components/ui/button";
 
 export const IMAGE_MODELS: { value: ImageModelList; label: string }[] = [
-  { value: "black-forest-labs/FLUX1.1-pro", label: "FLUX 1.1 [pro]" },
-  { value: "black-forest-labs/FLUX.1-schnell", label: "FLUX.1 [schnell]" },
-  {
-    value: "black-forest-labs/FLUX.1-schnell-Free",
-    label: "FLUX.1 [schnell] Free",
-  },
-  { value: "black-forest-labs/FLUX.1-pro", label: "FLUX.1 [pro]" },
-  { value: "black-forest-labs/FLUX.1-dev", label: "FLUX.1 [dev]" },
+  { value: "midjourney-imagine", label: "Midjourney Imagine" },
+  { value: "flux-pro", label: "Flux Pro" },
+  { value: "flux-dev", label: "Flux Dev" },
+  { value: "flux-pro-1.1", label: "Flux Pro 1.1" },
+  { value: "flux-pro-1.1-ultra", label: "Flux Pro 1.1 Ultra" },
+  { value: "ideogram-v2", label: "Ideogram V2" },
+  { value: "ideogram-v2-turbo", label: "Ideogram V2 Turbo" },
+  { value: "ideogram-v3", label: "Ideogram V3" },
+  { value: "dall-e-3", label: "DALL-E 3" },
+  { value: "gpt-image-1", label: "GPT Image 1" },
+  { value: "google-imagen-3", label: "Google Imagen 3" },
 ];
 
 const PRESENTATION_STYLES = [
@@ -127,7 +130,7 @@ export function ThemeSettings() {
       <div className="space-y-4">
         <Label className="text-sm font-medium">Image Generation Model</Label>
         <Select
-          value={imageModel || "black-forest-labs/FLUX.1-schnell-Free"}
+          value={imageModel || "flux-dev"}
           onValueChange={(value) => setImageModel(value as ImageModelList)}
         >
           <SelectTrigger>

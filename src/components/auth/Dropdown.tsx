@@ -8,12 +8,16 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { signOut, useSession } from "next-auth/react";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Zap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { ThemeToggle } from "@/provider/theme-provider";
 import { Skeleton } from "../ui/skeleton";
+import { useUserCredits } from "@/hooks/useUserCredits";
+import { Badge } from "../ui/badge";
+import { PlanBadge } from "../ui/plan-badge";
+import { usePlanBadge } from "@/hooks/usePlanBadge";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export function getInitials(name: string): string {
@@ -39,6 +43,8 @@ export function UserAvatar() {
 
 export function UserDetail() {
   const session = useSession();
+  const { remaining, isUnlimited, loading: creditsLoading, daysUntilReset } = useUserCredits();
+  const { planName, isLoading: planLoading } = usePlanBadge();
 
   return (
     <div className="max-w-max overflow-hidden">
@@ -50,6 +56,39 @@ export function UserDetail() {
           <p className="mt-1 text-ellipsis text-xs leading-none text-muted-foreground">
             {session?.data?.user?.email}
           </p>
+          
+          {/* Badge do Plano */}
+          <div className="mt-2">
+            {!planLoading && (
+              <PlanBadge plan={planName} size="xs" />
+            )}
+          </div>
+          
+          {/* Informações de Créditos */}
+          <div className="mt-2 flex items-center gap-2">
+            {creditsLoading ? (
+              <Skeleton className="h-5 w-20" />
+            ) : isUnlimited ? (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                <Zap className="h-3 w-3 mr-1" />
+                Ilimitados
+              </Badge>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Zap className="h-3 w-3 text-blue-600" />
+                <span className="text-xs font-medium text-blue-600">
+                  {remaining} créditos
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {/* Reset info */}
+          {!isUnlimited && !creditsLoading && daysUntilReset > 0 && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Reset em {daysUntilReset} {daysUntilReset === 1 ? 'dia' : 'dias'}
+            </p>
+          )}
         </div>
       )}
       {(session.status === "loading" ||
@@ -57,6 +96,7 @@ export function UserDetail() {
         <div className="grid gap-0.5 px-2 py-1.5">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-2 w-full" />
+          <Skeleton className="h-3 w-16 mt-2" />
         </div>
       )}
     </div>
@@ -105,7 +145,7 @@ export default function SideBarDropdown({
           <DropdownMenuItem asChild>
             <Button variant="outline" className="w-full">
               <Link
-                href={userId ? `/user/${userId}` : ""}
+                href="/profile"
                 className="flex h-full w-full items-center justify-center p-2"
               >
                 <User className="mr-2 h-4 w-4" />

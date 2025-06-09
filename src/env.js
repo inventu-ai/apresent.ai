@@ -10,6 +10,9 @@ export const env = createEnv({
 
     OPENAI_API_KEY: z.string(),
     TOGETHER_AI_API_KEY: z.string(),
+    APIFRAME_API_KEY: z.string(),
+    IDEOGRAM_API_KEY: z.string(),
+    GOOGLE_CLOUD_PROJECT_ID: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
     NEXTAUTH_URL: z.preprocess(
@@ -20,6 +23,14 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
+    
+    // Supabase
+    SUPABASE_SERVICE_ROLE_KEY: z.string(),
+  },
+
+  client: {
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
   },
 
   runtimeEnv: {
@@ -29,8 +40,16 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     TOGETHER_AI_API_KEY: process.env.TOGETHER_AI_API_KEY,
+    APIFRAME_API_KEY: process.env.APIFRAME_API_KEY,
+    IDEOGRAM_API_KEY: process.env.IDEOGRAM_API_KEY,
+    GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    
+    // Supabase
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
 
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

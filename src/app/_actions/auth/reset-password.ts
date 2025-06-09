@@ -39,7 +39,7 @@ export async function resetPassword(
       .gt('expires_at', new Date().toISOString())
       .single();
 
-    if (tokenError || !token) {
+    if (tokenError ?? !token) {
       return {
         success: false,
         message: 'Token inválido ou expirado'
@@ -50,10 +50,10 @@ export async function resetPassword(
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
       .select('id, email')
-      .eq('id', token.user_id)
+      .eq('id', (token as any).user_id)
       .single();
 
-    if (userError || !user) {
+    if (userError ?? !user) {
       return {
         success: false,
         message: 'Usuário não encontrado'

@@ -27,22 +27,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 const MODEL_OPTIONS = [
-  {
-    label: "Flux.1 [schnell] (free)",
-    value: "black-forest-labs/FLUX.1-schnell-Free",
-  },
-  {
-    label: "Flux.1 [schnell] (Turbo)",
-    value: "black-forest-labs/FLUX.1-schnell",
-  },
-  {
-    label: "Flux1.1 [pro]",
-    value: "black-forest-labs/FLUX.1.1-pro",
-  },
-  {
-    label: "Flux.1 [pro]",
-    value: "black-forest-labs/FLUX.1-pro",
-  },
+  { label: "Midjourney Imagine", value: "midjourney-imagine" },
+  { label: "Flux Pro", value: "flux-pro" },
+  { label: "Flux Dev", value: "flux-dev" },
+  { label: "Flux Pro 1.1", value: "flux-pro-1.1" },
+  { label: "Flux Pro 1.1 Ultra", value: "flux-pro-1.1-ultra" },
+  { label: "Ideogram V2", value: "ideogram-v2" },
+  { label: "Ideogram V2 Turbo", value: "ideogram-v2-turbo" },
+  { label: "Ideogram V3", value: "ideogram-v3" },
+  { label: "DALL-E 3", value: "dall-e-3" },
+  { label: "GPT Image 1", value: "gpt-image-1" },
+  { label: "Google Imagen 3", value: "google-imagen-3" },
 ];
 
 export function GenerateImageDialogContent({
@@ -57,7 +52,7 @@ export function GenerateImageDialogContent({
   const editor = useEditorRef();
   const [prompt, setPrompt] = useState("");
   const [selectedModel, setSelectedModel] = useState<ImageModelList>(
-    "black-forest-labs/FLUX.1-schnell-Free"
+    "flux-dev"
   );
 
   const generateImage = async () => {
