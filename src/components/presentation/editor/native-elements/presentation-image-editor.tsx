@@ -27,6 +27,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { usePresentationState } from "@/states/presentation-state";
 import { IMAGE_MODELS } from "../../theme/ThemeSettings";
 import { type ImageModelList } from "@/app/_actions/image/generate";
+import { ImageUploadDrawer } from "./ImageUploadDrawer";
 
 export interface PresentationImageEditorProps {
   open: boolean;
@@ -37,6 +38,8 @@ export interface PresentationImageEditorProps {
   error?: string;
   onRegenerateWithSamePrompt: () => void;
   onGenerateWithNewPrompt: (prompt: string) => void;
+  onRemove?: () => void; // Nova prop para remoção da imagem
+  onImageUpload?: (imageUrl: string) => void; // Nova prop para upload de imagem
 }
 
 export const PresentationImageEditor = ({
@@ -48,12 +51,44 @@ export const PresentationImageEditor = ({
   error,
   onRegenerateWithSamePrompt,
   onGenerateWithNewPrompt,
+  onRemove,
+  onImageUpload,
 }: PresentationImageEditorProps) => {
   const { imageModel, setImageModel } = usePresentationState();
   const [newPrompt, setNewPrompt] = useState(prompt ?? "");
 
   // Local error state for UI validation
   const [localError, setLocalError] = useState<string | null>(null);
+  
+  // Função para baixar a imagem
+  const handleDownload = async () => {
+    try {
+      if (!imageUrl) return;
+      
+      // Fetch da imagem para obter como blob
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Criar URL de objeto a partir do blob
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Criar um link temporário para download
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `imagem-${Date.now()}.jpg`;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpar
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl); // Liberar a memória
+      
+      console.log("Download da imagem iniciado");
+    } catch (error) {
+      console.error("Erro ao baixar imagem:", error);
+    }
+  };
 
   const handleGenerateClick = () => {
     if (!newPrompt.trim()) {
@@ -111,10 +146,12 @@ export const PresentationImageEditor = ({
                   className="h-auto max-h-[300px] w-full object-contain"
                 />
                 <div className="absolute bottom-2 right-2 flex gap-1">
+                  {onImageUpload && <ImageUploadDrawer onImageUpload={onImageUpload} />}
                   <Button
                     variant="secondary"
                     size="icon"
                     className="h-8 w-8 rounded-full bg-background/80"
+                    onClick={handleDownload}
                   >
                     <Download className="h-4 w-4" />
                   </Button>
@@ -122,6 +159,8 @@ export const PresentationImageEditor = ({
                     variant="secondary"
                     size="icon"
                     className="h-8 w-8 rounded-full bg-background/80"
+                    onClick={onRemove}
+                    disabled={!onRemove}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

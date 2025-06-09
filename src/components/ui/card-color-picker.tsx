@@ -16,17 +16,39 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { DEFAULT_COLORS } from "../text-editor/plate-ui/color-constants";
 
-function ColorPicker({
+// Função para determinar se uma cor é clara ou escura
+function isLightColor(hexColor: string) {
+  // Caso especial para transparente
+  if (hexColor === "transparent") {
+    // Para transparente, assumimos que o fundo é escuro, então o texto deve ser branco
+    return false;
+  }
+  
+  // Converter hex para RGB
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  
+  // Calcular luminosidade (fórmula padrão)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Se luminância > 0.5, é uma cor clara
+  return luminance > 0.5;
+}
+
+interface CardColorPickerProps {
+  value: string;
+  onChange: (value: string, suggestedTextColor: string) => void;
+  disabled?: boolean;
+  children?: React.ReactNode;
+}
+
+function CardColorPicker({
   value,
   onChange,
   disabled,
   children,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  disabled?: boolean;
-  children?: React.ReactNode;
-}) {
+}: CardColorPickerProps) {
   const [customColor, setCustomColor] = React.useState(value);
   const [localColor, setLocalColor] = React.useState(value);
 
@@ -35,7 +57,9 @@ function ColorPicker({
     () =>
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       debounce((color: string) => {
-        onChange(color);
+        // Determinar a cor do texto com base na luminosidade
+        const suggestedTextColor = isLightColor(color) ? '#000000' : '#FFFFFF';
+        onChange(color, suggestedTextColor);
       }, 100), // 100ms delay
     [onChange]
   );
@@ -60,14 +84,19 @@ function ColorPicker({
   };
 
   return (
-    <div id="color-picker">
+    <div id="card-color-picker">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {children ?? (
             <Button
               variant="outline"
               className={cn("flex h-10 w-10 items-center justify-center p-0")}
-              style={{ backgroundColor: localColor }}
+              style={localColor === "transparent" ? {
+                backgroundImage: "linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)",
+                backgroundSize: "8px 8px",
+                backgroundPosition: "0 0, 4px 4px",
+                border: "1px solid #ccc"
+              } : { backgroundColor: localColor }}
               disabled={disabled}
             >
               <span className="sr-only">Pick a color</span>
@@ -75,13 +104,34 @@ function ColorPicker({
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          container={document.getElementById("color-picker") ?? undefined}
+          container={document.getElementById("card-color-picker") ?? undefined}
           align="start"
           side="bottom"
           className="h-72 overflow-y-auto p-3"
         >
           <div className="grid grid-cols-5 gap-2">
             <TooltipProvider>
+              {/* Botão de transparência */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={cn(
+                      "h-8 w-8 rounded-full transition-transform hover:scale-110 focus:ring-2 focus:ring-offset-2 border border-gray-400",
+                      "bg-[linear-gradient(45deg,#ccc_25%,transparent_25%,transparent_75%,#ccc_75%,#ccc),linear-gradient(45deg,#ccc_25%,transparent_25%,transparent_75%,#ccc_75%,#ccc)]",
+                      "bg-[length:8px_8px]",
+                      "bg-[position:0_0,4px_4px]",
+                      localColor === "transparent" && "ring-2 ring-offset-2"
+                    )}
+                    onClick={() => handleColorChange("transparent")}
+                  >
+                    <span className="sr-only">Transparent</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="font-medium">Transparent</div>
+                </TooltipContent>
+              </Tooltip>
+              
               {DEFAULT_COLORS.map((color) => (
                 <Tooltip key={color.value}>
                   <TooltipTrigger asChild>
@@ -137,4 +187,4 @@ function ColorPicker({
   );
 }
 
-export default ColorPicker;
+export default CardColorPicker;

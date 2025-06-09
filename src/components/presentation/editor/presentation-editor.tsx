@@ -112,7 +112,34 @@ interface PresentationEditorProps {
   readOnly?: boolean;
   isPreview?: boolean;
 }
-// Use React.memo with a custom comparison function to prevent unnecessary re-renders
+// Custom comparison function for React.memo to prevent unnecessary re-renders
+const arePropsEqual = (prevProps: PresentationEditorProps, nextProps: PresentationEditorProps) => {
+  // Always re-render if the slide content has changed
+  if (prevProps.initialContent !== nextProps.initialContent) {
+    return false;
+  }
+  
+  // For preview editors, only re-render if specific props change
+  if (prevProps.isPreview && nextProps.isPreview) {
+    return (
+      prevProps.slideIndex === nextProps.slideIndex &&
+      prevProps.isGenerating === nextProps.isGenerating &&
+      prevProps.id === nextProps.id
+    );
+  }
+  
+  // For main editors, be more selective about re-renders
+  return (
+    prevProps.slideIndex === nextProps.slideIndex &&
+    prevProps.isGenerating === nextProps.isGenerating &&
+    prevProps.readOnly === nextProps.readOnly &&
+    prevProps.autoFocus === nextProps.autoFocus &&
+    prevProps.id === nextProps.id &&
+    prevProps.className === nextProps.className
+  );
+};
+
+// Use React.memo with the custom comparison function to prevent unnecessary re-renders
 const PresentationEditor = React.memo(
   ({
     initialContent,
@@ -178,7 +205,12 @@ const PresentationEditor = React.memo(
           )}
           style={{
             borderRadius: "var(--presentation-border-radius, 0.5rem)",
-          }}
+            backgroundColor: initialContent?.bgColor || undefined,
+            "--slide-heading-color": initialContent?.headingColor,
+            "--slide-text-color": initialContent?.textColor,
+            "--slide-heading-font": initialContent?.headingFont,
+            "--slide-text-font": initialContent?.textFont,
+          } as React.CSSProperties}
           data-is-presenting={readOnly ? "true" : "false"}
           data-slide-content="true"
         >
@@ -193,9 +225,7 @@ const PresentationEditor = React.memo(
             }}
             readOnly={isGenerating || readOnly}
           >
-            {!readOnly && (
-              <LayoutImageDrop slideIndex={slideIndex}></LayoutImageDrop>
-            )}
+            {/* LayoutImageDrop foi removido junto com a funcionalidade de Accent image */}
             <Editor
               className={cn(
                 className,

@@ -66,10 +66,15 @@ const FontPickerComponent = React.forwardRef<HTMLDivElement, FontPickerProps>(
     const popoverRef = useRef<HTMLDivElement>(null);
     const dynamicComponentLoaded = useRef(false);
     const [componentReady, setComponentReady] = useState(false);
+    const [initialized, setInitialized] = useState(false);
+    const lastSelectedFont = useRef(value ?? defaultValue);
 
     // Use this to prevent auto-closing when component mounts
     useEffect(() => {
       isMounted.current = true;
+      
+      // Marcar como inicializado após a primeira renderização
+      setInitialized(true);
 
       return () => {
         isMounted.current = false;
@@ -84,11 +89,15 @@ const FontPickerComponent = React.forwardRef<HTMLDivElement, FontPickerProps>(
 
     // Reset component ready state when popover opens/closes
     useEffect(() => {
-      if (!open) {
+      if (open) {
+        // Quando o modal abre, atualizar a referência da última fonte selecionada
+        // para evitar que o modal feche automaticamente durante a inicialização
+        lastSelectedFont.current = selectedFont;
+      } else {
         // Reset for next open
         setComponentReady(false);
       }
-    }, [open]);
+    }, [open, selectedFont]);
 
     // This effect runs when the popover opens and the dynamic component is loaded
     useEffect(() => {
@@ -136,9 +145,23 @@ const FontPickerComponent = React.forwardRef<HTMLDivElement, FontPickerProps>(
     }, [open, componentReady]);
 
     const handleFontChange = (font: string) => {
+      // Verificar se é uma seleção real do usuário (não durante a inicialização)
+      const isUserSelection = initialized && open && font !== lastSelectedFont.current;
+      
+      // Atualizar a referência da última fonte selecionada
+      lastSelectedFont.current = font;
+      
       setSelectedFont(font);
       if (onChange) {
         onChange(font);
+      }
+      
+      // Só fechar o modal se for uma seleção real do usuário
+      if (isUserSelection) {
+        // Pequeno atraso para garantir que a seleção seja processada antes de fechar
+        setTimeout(() => {
+          setOpen(false);
+        }, 300); // Aumentado para 300ms para dar mais tempo para processar
       }
     };
 
@@ -185,6 +208,7 @@ const FontPickerComponent = React.forwardRef<HTMLDivElement, FontPickerProps>(
         <PopoverContent
           className="w-[200px] p-0"
           align="start"
+          side="right"
           onClick={handleContentClick}
           onMouseDown={(e) => e.stopPropagation()}
           ref={popoverRef}

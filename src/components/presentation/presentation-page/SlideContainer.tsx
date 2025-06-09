@@ -7,6 +7,8 @@ import { usePresentationState } from "@/states/presentation-state";
 import { type PlateSlide } from "../utils/parser";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { RegenerateSlideButton } from "./buttons/RegenerateSlideButton";
+import { GenerateSlideFromTextButton } from "./buttons/GenerateSlideFromTextButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,26 +112,35 @@ export function SlideContainer({
         )}
       >
         {!isPresenting && (
-          <div className="absolute left-4 top-2 z-[100] flex opacity-0 transition-opacity duration-200 group-hover/card-container:opacity-100">
+          <>
+            {/* Botão de geração de slide com IA */}
+            <GenerateSlideFromTextButton slideIndex={index} />
+            {console.log("Renderizando botão para slide", index, "conteúdo:", currentSlide?.content)}
+          </>
+        )}
+        {!isPresenting && (
+          <div className="absolute left-4 top-2 z-[100] flex items-center gap-1 rounded-full bg-black/30 px-2 py-1 backdrop-blur-sm opacity-0 transition-opacity duration-200 group-hover/card-container:opacity-100">
             <Button
               variant="ghost"
               size="icon"
-              className="!size-8 cursor-grab rounded-full"
+              className="!size-8 cursor-grab rounded-full bg-black/20 shadow-sm hover:bg-black/40"
               {...listeners}
             >
-              <GripVertical className="h-4 w-4" />
+              <GripVertical className="h-4 w-4 text-white" />
             </Button>
 
             <SlideEditPopover index={index} />
+            
+            <RegenerateSlideButton slideIndex={index} />
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="!size-8 rounded-full shadow-sm hover:text-destructive"
+                  className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40 hover:text-destructive"
                 >
-                  <Trash className="h-4 w-4" />
+                  <Trash className="h-4 w-4 text-white" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>

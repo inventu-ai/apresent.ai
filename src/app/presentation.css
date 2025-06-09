@@ -141,15 +141,46 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  font-family: var(--presentation-heading-font);
+  font-family: var(--slide-heading-font, var(--presentation-heading-font));
   font-weight: bold;
   caret-color: var(--presentation-primary);
 }
 
+/* Quando uma cor personalizada é definida, sobrescrever o gradiente */
+[style*="--slide-heading-color"] .presentation-heading {
+  background: none;
+  -webkit-text-fill-color: var(--slide-heading-color);
+  color: var(--slide-heading-color);
+}
+
 .presentation-text {
-  color: var(--presentation-text);
-  font-family: var(--presentation-body-font);
+  color: var(--slide-text-color, var(--presentation-text));
+  font-family: var(--slide-text-font, var(--presentation-body-font));
   caret-color: var(--presentation-primary);
+}
+
+/* Aplicar cor personalizada para todos os elementos de texto */
+[style*="--slide-text-color"] .presentation-text,
+[style*="--slide-text-color"] .presentation-paragraph,
+[style*="--slide-text-color"] .presentation-leaf.presentation-text,
+[style*="--slide-text-color"] p,
+[style*="--slide-text-color"] .ProseMirror p {
+  color: var(--slide-text-color) !important;
+}
+
+/* Aplicar fonte personalizada para todos os elementos de texto */
+[style*="--slide-text-font"] .presentation-text,
+[style*="--slide-text-font"] .presentation-paragraph,
+[style*="--slide-text-font"] .presentation-leaf.presentation-text,
+[style*="--slide-text-font"] p,
+[style*="--slide-text-font"] .ProseMirror p {
+  font-family: var(--slide-text-font) !important;
+}
+
+/* Estilo específico para os elementos leaf de texto */
+.presentation-leaf.presentation-text {
+  color: var(--slide-text-color, var(--presentation-text));
+  font-family: var(--slide-text-font, var(--presentation-body-font));
 }
 
 /* Image styles */
@@ -210,7 +241,8 @@ h6.presentation-heading {
 .presentation-paragraph {
   margin-bottom: 1rem;
   line-height: 1.6;
-  font-family: var(--presentation-body-font);
+  font-family: var(--slide-text-font, var(--presentation-body-font));
+  color: var(--slide-text-color, var(--presentation-text));
 }
 
 /* Styling for presentation slides to stand out from background */
@@ -222,32 +254,37 @@ h6.presentation-heading {
   backdrop-filter: brightness(1.1);
 }
 
+/* Aplicar estilos personalizados diretamente ao editor */
+[style*="--slide-text-color"] .ProseMirror [data-slate-node="element"],
+[style*="--slide-text-color"] .ProseMirror span,
+[style*="--slide-text-color"] .ProseMirror div {
+  color: var(--slide-text-color) !important;
+}
+
+[style*="--slide-text-font"] .ProseMirror [data-slate-node="element"],
+[style*="--slide-text-font"] .ProseMirror span,
+[style*="--slide-text-font"] .ProseMirror div {
+  font-family: var(--slide-text-font) !important;
+}
+
+/* Garantir que os textos dentro do editor recebam os estilos */
+[style*="--slide-text-color"] .ProseMirror,
+[style*="--slide-text-color"] .ProseMirror *:not(.presentation-heading) {
+  color: var(--slide-text-color) !important;
+}
+
+[style*="--slide-text-font"] .ProseMirror,
+[style*="--slide-text-font"] .ProseMirror *:not(.presentation-heading) {
+  font-family: var(--slide-text-font) !important;
+}
+
 /* Presentation slide styling */
 .presentation-slide {
-  background-color: var(--presentation-background) !important;
   border: 1px solid var(--presentation-accent);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  color: var(--presentation-text) !important;
 }
 
-/* Additional theme-specific slide styling */
-[data-theme="light"] [data-slide-content="true"],
-[data-theme="light"] .presentation-slide,
-.presentation-slide[style] {
-  background-color: var(--presentation-background) !important;
-}
-
-[data-theme="dark"] [data-slide-content="true"],
-[data-theme="dark"] .presentation-slide,
-[data-theme="dark"] .presentation-slide[style] {
-  background-color: var(--presentation-background) !important;
-}
-
+/* Estilos específicos para tema escuro */
 [data-theme="dark"] .presentation-slide {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* Override any inline bgColor from initialContent */
-.presentation-slide[style*="background"] {
-  background-color: var(--presentation-background) !important;
 }

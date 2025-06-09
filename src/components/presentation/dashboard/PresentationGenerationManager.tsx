@@ -1,13 +1,11 @@
 "use client";
-
 import { useEffect, useRef } from "react";
 import { useCompletion } from "ai/react";
 import { toast } from "sonner";
 import { usePresentationState } from "@/states/presentation-state";
-import { SlideParser } from "../utils/parser";
+import { SlideParser, type PlateSlide } from "../utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { extractSlideCount } from "@/lib/utils/prompt-parser";
-import { useUserPlanLimits } from "@/hooks/useUserCredits";
 
 export function PresentationGenerationManager() {
   const {
@@ -26,9 +24,6 @@ export function PresentationGenerationManager() {
     setNumSlides,
     isNumSlidesManuallySet,
   } = usePresentationState();
-
-  // Get user plan limits
-  const { maxCards } = useUserPlanLimits();
 
   // Create a ref for the streaming parser to persist between renders
   const streamingParserRef = useRef<SlideParser>(new SlideParser());
@@ -51,10 +46,8 @@ export function PresentationGenerationManager() {
       setSlides(slidesBufferRef.current);
       slidesBufferRef.current = null;
     }
-
     // Clear the current frame ID
     slidesRafIdRef.current = null;
-
     // We don't recursively schedule new frames
     // New frames will be scheduled only when new content arrives
   };
@@ -66,10 +59,8 @@ export function PresentationGenerationManager() {
       setOutline(outlineBufferRef.current);
       outlineBufferRef.current = null;
     }
-
     // Clear the current frame ID
     outlineRafIdRef.current = null;
-
     // We don't recursively schedule new frames
     // New frames will be scheduled only when new content arrives
   };
@@ -87,14 +78,12 @@ export function PresentationGenerationManager() {
         setIsGeneratingOutline(false);
         setShouldStartOutlineGeneration(false);
         setShouldStartPresentationGeneration(false);
-
         const {
           currentPresentationId,
           outline,
           currentPresentationTitle,
           theme,
         } = usePresentationState.getState();
-
         if (currentPresentationId) {
           void updatePresentation({
             id: currentPresentationId,
@@ -103,7 +92,6 @@ export function PresentationGenerationManager() {
             theme,
           });
         }
-
         // Cancel any pending outline animation frame
         if (outlineRafIdRef.current !== null) {
           cancelAnimationFrame(outlineRafIdRef.current);
@@ -113,7 +101,6 @@ export function PresentationGenerationManager() {
       onError: (error) => {
         toast.error("Failed to generate outline: " + error.message);
         resetGeneration();
-
         // Cancel any pending outline animation frame
         if (outlineRafIdRef.current !== null) {
           cancelAnimationFrame(outlineRafIdRef.current);
@@ -130,10 +117,8 @@ export function PresentationGenerationManager() {
         sections.length > 0
           ? sections.map((section) => `# ${section}`.trim())
           : [outlineCompletion];
-
       // Store the latest outline in the buffer
       outlineBufferRef.current = outlineItems;
-
       // Only schedule a new frame if one isn't already pending
       if (outlineRafIdRef.current === null) {
         outlineRafIdRef.current = requestAnimationFrame(updateOutlineWithRAF);
@@ -147,46 +132,37 @@ export function PresentationGenerationManager() {
       if (shouldStartOutlineGeneration) {
         try {
           setIsGeneratingOutline(true);
-
           // Get current state
           const { presentationInput } = usePresentationState.getState();
-          
           // Debug logs
           console.log('=== SLIDE COUNT DEBUG ===');
           console.log('isNumSlidesManuallySet:', isNumSlidesManuallySet);
           console.log('current numSlides:', numSlides);
-          console.log('maxCards (plan limit):', maxCards);
+          // console.log('maxCards (plan limit):', maxCards); // REMOVIDO pois não existe mais maxCards aqui
           console.log('presentationInput:', presentationInput);
-          
           let finalSlideCount = numSlides;
-
           // PRIORITY 1: If user manually set the slide count, ALWAYS use it
           if (isNumSlidesManuallySet) {
             finalSlideCount = numSlides;
             console.log(`✅ Using manually set slide count: ${numSlides} (user selection has priority)`);
           } else {
             // PRIORITY 2: Only extract from prompt if user hasn't manually set the slide count
-            const extractedSlideCount = extractSlideCount(presentationInput ?? "", maxCards);
-            
+            // Aqui você pode passar algum valor default para maxCards se quiser, ou remover esse argumento do extractSlideCount
+            const extractedSlideCount = extractSlideCount(presentationInput ?? "", undefined);
             // Update the numSlides state with the extracted count (but don't mark as manual)
             setNumSlides(extractedSlideCount, false);
             finalSlideCount = extractedSlideCount;
-            
-            console.log(`✅ Extracted ${extractedSlideCount} slides from prompt (max allowed: ${maxCards}): "${presentationInput ?? ''}"`);
+            console.log(`✅ Extracted ${extractedSlideCount} slides from prompt : "${presentationInput ?? ''}"`);
           }
-          
           console.log('finalSlideCount:', finalSlideCount);
           console.log('========================');
-
           // Get the updated state after setting numSlides
           const { language } = usePresentationState.getState();
-
           // Start the RAF cycle for outline updates
           if (outlineRafIdRef.current === null) {
             outlineRafIdRef.current =
               requestAnimationFrame(updateOutlineWithRAF);
           }
-
           await generateOutline(presentationInput ?? "", {
             body: {
               prompt: presentationInput ?? "",
@@ -203,7 +179,6 @@ export function PresentationGenerationManager() {
         }
       }
     };
-
     void startOutlineGeneration();
   }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet]);
 
@@ -220,9 +195,7 @@ export function PresentationGenerationManager() {
         parser.clearAllGeneratingMarks();
         const slides = parser.getAllSlides();
         slidesBufferRef.current = slides;
-
         requestAnimationFrame(updateSlidesWithRAF);
-
         if (currentPresentationId) {
           void updatePresentation({
             id: currentPresentationId,
@@ -231,7 +204,6 @@ export function PresentationGenerationManager() {
             theme,
           });
         }
-
         setIsGeneratingPresentation(false);
         setShouldStartPresentationGeneration(false);
         // Cancel any pending animation frame
@@ -244,7 +216,6 @@ export function PresentationGenerationManager() {
         toast.error("Failed to generate presentation: " + error.message);
         resetGeneration();
         streamingParserRef.current.reset();
-
         // Cancel any pending animation frame
         if (slidesRafIdRef.current !== null) {
           cancelAnimationFrame(slidesRafIdRef.current);
@@ -260,10 +231,8 @@ export function PresentationGenerationManager() {
         streamingParserRef.current.parseChunk(presentationCompletion);
         streamingParserRef.current.finalize();
         const allSlides = streamingParserRef.current.getAllSlides();
-
         // Store the latest slides in the buffer
         slidesBufferRef.current = allSlides;
-
         // Only schedule a new frame if one isn't already pending
         if (slidesRafIdRef.current === null) {
           slidesRafIdRef.current = requestAnimationFrame(updateSlidesWithRAF);
@@ -284,17 +253,13 @@ export function PresentationGenerationManager() {
         presentationStyle,
         currentPresentationTitle,
       } = usePresentationState.getState();
-
       // Reset the parser before starting a new generation
       streamingParserRef.current.reset();
-
       setIsGeneratingPresentation(true);
-
       // Start the RAF cycle for slide updates
       if (slidesRafIdRef.current === null) {
         slidesRafIdRef.current = requestAnimationFrame(updateSlidesWithRAF);
       }
-
       void generatePresentation(presentationInput ?? "", {
         body: {
           title: presentationInput ?? currentPresentationTitle ?? "",
@@ -313,7 +278,6 @@ export function PresentationGenerationManager() {
         cancelAnimationFrame(slidesRafIdRef.current);
         slidesRafIdRef.current = null;
       }
-
       if (outlineRafIdRef.current !== null) {
         cancelAnimationFrame(outlineRafIdRef.current);
         outlineRafIdRef.current = null;
