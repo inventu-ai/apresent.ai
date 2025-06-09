@@ -97,7 +97,7 @@ export const usePresentationState = create<PresentationState>((set) => ({
   outline: [],
   theme: "mystique",
   customThemeData: null,
-  imageModel: "black-forest-labs/FLUX.1-schnell-Free",
+  imageModel: "flux-dev",
   presentationStyle: "professional",
   slides: [], // Now holds the new slide object structure
   savingStatus: "idle",
