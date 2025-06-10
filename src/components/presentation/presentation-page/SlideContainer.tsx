@@ -94,7 +94,9 @@ export function SlideContainer({
         "group/card-container relative z-10 grid w-full place-items-center pb-6",
         isDragging && "z-50 opacity-50",
         isPresenting && "fixed inset-0 pb-0",
-        index === currentSlideIndex && isPresenting && "z-[999]"
+        index === currentSlideIndex && isPresenting && "z-[999]",
+        // Ocultar slides que não são o atual no modo apresentação
+        isPresenting && index !== currentSlideIndex && "hidden"
       )}
       {...attributes}
     >

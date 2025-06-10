@@ -10,6 +10,7 @@ import { GripVertical } from "lucide-react";
 import { usePresentationSlides } from "@/hooks/presentation/usePresentationSlides";
 import { type ThemeProperties } from "@/lib/presentation/themes";
 import { ThemeBackground } from "../theme/ThemeBackground";
+import { cn } from "@/lib/utils";
 
 interface PresentationLayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export function PresentationLayout({
   isLoading = false,
   themeData,
 }: PresentationLayoutProps) {
-  const { currentSlideIndex, setCurrentSlideIndex } = usePresentationState();
+  const { currentSlideIndex, setCurrentSlideIndex, isPresenting } = usePresentationState();
   const [sidebarWidth, setSidebarWidth] = useState(150);
 
   const { scrollToSlide } = usePresentationSlides();
@@ -50,32 +51,38 @@ export function PresentationLayout({
     <ThemeBackground className="h-full w-full">
       {themeData && <CustomThemeFontLoader themeData={themeData} />}
       <div className="flex h-full">
-        <div className="flex h-full items-center">
-          <Resizable
-            size={{ width: sidebarWidth }}
-            minWidth={100}
-            maxWidth={300}
-            enable={{ right: true }}
-            onResizeStop={handleResize}
-            handleComponent={{
-              right: (
-                <div className="group/resize relative flex h-full w-1 cursor-col-resize bg-border">
-                  <GripVertical className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-muted-foreground opacity-0 group-hover/resize:opacity-100" />
-                </div>
-              ),
-            }}
-          >
-            <div className="h-max max-h-[90vh] overflow-auto">
-              <SlidePreview
-                onSlideClick={handleSlideClick}
-                currentSlideIndex={currentSlideIndex}
-              />
-            </div>
-          </Resizable>
-        </div>
+        {/* Hide sidebar when presenting */}
+        {!isPresenting && (
+          <div className="flex h-full items-center">
+            <Resizable
+              size={{ width: sidebarWidth }}
+              minWidth={100}
+              maxWidth={300}
+              enable={{ right: true }}
+              onResizeStop={handleResize}
+              handleComponent={{
+                right: (
+                  <div className="group/resize relative flex h-full w-1 cursor-col-resize bg-border">
+                    <GripVertical className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-muted-foreground opacity-0 group-hover/resize:opacity-100" />
+                  </div>
+                ),
+              }}
+            >
+              <div className="h-max max-h-[90vh] overflow-auto">
+                <SlidePreview
+                  onSlideClick={handleSlideClick}
+                  currentSlideIndex={currentSlideIndex}
+                />
+              </div>
+            </Resizable>
+          </div>
+        )}
 
         {/* Main Presentation Content - Scrollable */}
-        <div className="presentation-slides max-h-full flex-1 overflow-auto pb-20">
+        <div className={cn(
+          "presentation-slides max-h-full flex-1 pb-20",
+          isPresenting ? "overflow-hidden" : "overflow-auto"
+        )}>
           {children}
         </div>
       </div>

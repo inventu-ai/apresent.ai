@@ -103,8 +103,8 @@ export const PresentationSlidesView = ({
                 </div>
               </SlideContainer>
 
-              {/* Create preview directly in the markup */}
-              <SlidePreviewRenderer slideIndex={index} slideId={slide.id} />
+              {/* Create preview directly in the markup - only when not presenting */}
+              {!isPresenting && <SlidePreviewRenderer slideIndex={index} slideId={slide.id} />}
             </div>
           ))}
         </DndProvider>
