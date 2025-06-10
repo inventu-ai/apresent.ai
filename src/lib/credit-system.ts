@@ -1,5 +1,7 @@
 import { supabaseAdmin } from "./supabase";
 import { getUserCurrentPlan, getPlanLimit, incrementUserUsage, checkUserLimit } from "./plan-checker";
+import { getModelsForPlan, isModelAvailableForPlan, getModelCreditCost, MODEL_CREDIT_MAPPING } from "./image-model-restrictions";
+import type { ImageModelList } from "@/app/_actions/image/generate";
 
 // Custos por ação em créditos
 export const CREDIT_COSTS = {
@@ -188,6 +190,69 @@ export async function canUseImageQuality(userId: string, quality: CreditAction):
     availableQualities,
     message: allowed ? undefined : `Qualidade ${quality} não disponível no plano ${planName}`
   };
+}
+
+/**
+ * Verifica se o usuário pode usar um modelo específico de imagem
+ */
+export async function canUseImageModel(userId: string, model: ImageModelList): Promise<{
+  allowed: boolean;
+  planName: string;
+  availableModels: ImageModelList[];
+  requiredPlan?: 'PRO' | 'PREMIUM';
+  message?: string;
+}> {
+  const plan = await getUserCurrentPlan(userId);
+  const planName = plan?.name || 'FREE';
+  const availableModels = getModelsForPlan(planName as 'FREE' | 'PRO' | 'PREMIUM');
+  
+  const allowed = isModelAvailableForPlan(model, planName as 'FREE' | 'PRO' | 'PREMIUM');
+  
+  let requiredPlan: 'PRO' | 'PREMIUM' | undefined;
+  if (!allowed) {
+    // Determinar qual plano é necessário
+    if (isModelAvailableForPlan(model, 'PRO')) {
+      requiredPlan = 'PRO';
+    } else if (isModelAvailableForPlan(model, 'PREMIUM')) {
+      requiredPlan = 'PREMIUM';
+    }
+  }
+  
+  return {
+    allowed,
+    planName,
+    availableModels,
+    requiredPlan,
+    message: allowed ? undefined : `Modelo ${model} requer plano ${requiredPlan || 'superior'}`
+  };
+}
+
+/**
+ * Consome créditos baseado no modelo de imagem usado
+ */
+export async function consumeImageModelCredits(userId: string, model: ImageModelList): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  // Verificar se o usuário pode usar este modelo
+  const modelCheck = await canUseImageModel(userId, model);
+  if (!modelCheck.allowed) {
+    return {
+      success: false,
+      creditsUsed: 0,
+      remainingCredits: 0,
+      message: modelCheck.message
+    };
+  }
+  
+  // Obter custo do modelo
+  const creditType = getModelCreditCost(model);
+  const creditsNeeded = CREDIT_COSTS[creditType];
+  
+  // Consumir créditos usando a função existente
+  return await consumeCredits(userId, creditType);
 }
 
 /**

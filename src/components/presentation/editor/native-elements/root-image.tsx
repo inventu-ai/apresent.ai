@@ -72,9 +72,12 @@ export default function RootImage({
     setIsGenerating(true);
     setError(undefined);
     try {
+      console.log(`Generating image with model: ${imageModel}, prompt: "${prompt}"`);
       const result = await generateImageAction(prompt, imageModel);
-      if (result.image?.url) {
+      
+      if (result.success && result.image?.url) {
         const newImageUrl = result.image.url;
+        console.log(`Image generated successfully: ${newImageUrl}`);
         setImageUrl(newImageUrl);
 
         // Get current slides state
@@ -105,10 +108,16 @@ export default function RootImage({
 
         // Ensure the generating state is properly reset
         setIsGenerating(false);
+      } else {
+        const errorMsg = result.error || "Unknown error occurred";
+        console.error("Image generation failed:", errorMsg);
+        setError(`Failed to generate image: ${errorMsg}`);
+        setIsGenerating(false);
       }
     } catch (error) {
       console.error("Error generating image:", error);
-      setError("Failed to generate image. Please try again.");
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      setError(`Failed to generate image: ${errorMsg}`);
       setIsGenerating(false);
     } finally {
       setIsGenerating(false);
@@ -245,7 +254,7 @@ export default function RootImage({
               <div className="flex h-full flex-col items-center justify-center bg-muted/30 p-4">
                 <Spinner className="mb-2 h-8 w-8" />
                 <p className="text-sm text-muted-foreground">
-                  Generating image for &quot;{image.query}&quot;...
+                  Gerando imagem...
                 </p>
               </div>
             ) : (

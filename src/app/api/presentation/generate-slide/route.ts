@@ -312,14 +312,22 @@ function getRandomFallbackXml(topic: string, slideIndex: number): string {
 </SECTION>`);
 
   // Escolher um layout aleatório
+  if (layouts.length === 0) {
+    return `<SECTION layout="right">
+  <H1>${topic}</H1>
+  <P>Conteúdo sobre ${topic}</P>
+  <IMG query="detailed visualization of ${topic}" />
+</SECTION>`;
+  }
+  
   const randomIndex = Math.floor(Math.random() * layouts.length);
-  return layouts[randomIndex];
+  return layouts[randomIndex]!;
 }
 
 /**
  * Adiciona um layout complexo a um XML existente
  */
-function addComplexLayoutToXml(xml: string, topic: string): string {
+function addComplexLayoutToXml(xml: string, topic: string, slideIndex?: number): string {
   // Verificar se o XML já tem um layout complexo
   if (
     xml.includes("<COLUMNS") ||
@@ -479,6 +487,15 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
   <IMG query="${imgQuery}" />
 </SECTION>`);
 
+  // Garantir que temos layouts disponíveis
+  if (complexLayouts.length === 0) {
+    return `<SECTION layout="right">
+  <H1>${topic}</H1>
+  <P>Conteúdo sobre ${topic}</P>
+  <IMG query="detailed visualization of ${topic}" />
+</SECTION>`;
+  }
+
   // Usar o índice do slide para influenciar a escolha do layout
   // Isso garante que slides consecutivos tenham layouts diferentes
   let layoutIndex = 0;
@@ -491,7 +508,7 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
     // Adicionar um pouco de aleatoriedade para não ser totalmente previsível
     if (Math.random() > 0.7) {
       // 30% de chance de escolher um layout aleatório diferente
-      let randomOffset = 1 + Math.floor(Math.random() * (complexLayouts.length - 1));
+      const randomOffset = 1 + Math.floor(Math.random() * (complexLayouts.length - 1));
       layoutIndex = (layoutIndex + randomOffset) % complexLayouts.length;
     }
   } else {
@@ -499,7 +516,7 @@ function addComplexLayoutToXml(xml: string, topic: string): string {
     layoutIndex = Math.floor(Math.random() * complexLayouts.length);
   }
   
-  return complexLayouts[layoutIndex];
+  return complexLayouts[layoutIndex]!;
 }
 
 /**
@@ -617,7 +634,7 @@ export async function POST(req: Request) {
         // 70% de chance de adicionar layout complexo, mesmo com conteúdo substancial
         if (Math.random() > 0.3) {
           if (DEBUG_LOGS) console.log("XML sem layout complexo, adicionando layout complexo");
-          finalXml = addComplexLayoutToXml(finalXml, topic);
+          finalXml = addComplexLayoutToXml(finalXml, topic, slideIndex);
         } else if (DEBUG_LOGS) {
           console.log("Mantendo layout simples para este slide (30% de chance)");
         }

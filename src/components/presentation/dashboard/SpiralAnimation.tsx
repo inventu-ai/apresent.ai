@@ -365,8 +365,8 @@ class Star {
             }
             
             // 将2D屏幕坐标转换为3D空间坐标
-            const vx = (this.z - controller['cameraZ']) * screenX / controller['viewZoom'];
-            const vy = (this.z - controller['cameraZ']) * screenY / controller['viewZoom'];
+            const vx = (this.z - (controller as any).cameraZ) * screenX / (controller as any).viewZoom;
+            const vy = (this.z - (controller as any).cameraZ) * screenY / (controller as any).viewZoom;
             
             const position = new Vector3D(vx, vy, this.z);
             

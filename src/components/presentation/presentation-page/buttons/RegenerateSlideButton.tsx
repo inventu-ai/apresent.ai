@@ -63,7 +63,7 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
     for (const node of slide.content) {
       if (node.children) {
         for (const child of node.children) {
-          if ('text' in child) {
+          if ('text' in child && typeof child.text === 'string') {
             text += child.text + " ";
           }
         }
@@ -135,7 +135,7 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           for (const node of slide.content) {
             if (node.children) {
               for (const child of node.children) {
-                if ('text' in child) {
+                if ('text' in child && typeof child.text === 'string') {
                   text += child.text + " ";
                 }
               }
@@ -158,13 +158,13 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           .map(slide => {
             // Extrair apenas o título (h1) de cada slide
             for (const node of slide.content) {
-              if (node.type === 'h1' && node.children) {
-                let title = "";
-                for (const child of node.children) {
-                  if ('text' in child) {
-                    title += child.text + " ";
-                  }
+                          if (node.type === 'h1' && node.children) {
+              let title = "";
+              for (const child of node.children) {
+                if ('text' in child && typeof child.text === 'string') {
+                  title += child.text + " ";
                 }
+              }
                 return title.trim();
               }
             }

@@ -61,7 +61,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     for (const node of slide.content) {
       if (node.type.startsWith('h') && node.children && node.children.length > 0) {
         for (const child of node.children) {
-          if ('text' in child) {
+          if ('text' in child && typeof child.text === 'string') {
             text += child.text + " ";
           }
         }
@@ -122,7 +122,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
           for (const node of slide.content) {
             if (node.children) {
               for (const child of node.children) {
-                if ('text' in child) {
+                if ('text' in child && typeof child.text === 'string') {
                   text += child.text + " ";
                 }
               }
@@ -144,7 +144,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
             if (node.type === 'h1' && node.children) {
               let title = "";
               for (const child of node.children) {
-                if ('text' in child) {
+                if ('text' in child && typeof child.text === 'string') {
                   title += child.text + " ";
                 }
               }

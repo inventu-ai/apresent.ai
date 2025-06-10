@@ -13,20 +13,45 @@ import { useTheme } from "next-themes";
 import { type ImageModelList } from "@/app/_actions/image/generate";
 import { ThemeModal } from "./ThemeModal";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Crown, Star, Zap } from "lucide-react";
+import { usePlanBadge } from "@/hooks/usePlanBadge";
+import { getModelsForPlan, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from "@/lib/image-model-restrictions";
+import { useEffect, useState } from "react";
 
-export const IMAGE_MODELS: { value: ImageModelList; label: string }[] = [
-  { value: "midjourney-imagine", label: "Midjourney Imagine" },
-  { value: "flux-pro", label: "Flux Pro" },
-  { value: "flux-dev", label: "Flux Dev" },
-  { value: "flux-pro-1.1", label: "Flux Pro 1.1" },
-  { value: "flux-pro-1.1-ultra", label: "Flux Pro 1.1 Ultra" },
-  { value: "ideogram-v2", label: "Ideogram V2" },
-  { value: "ideogram-v2-turbo", label: "Ideogram V2 Turbo" },
-  { value: "ideogram-v3", label: "Ideogram V3" },
-  { value: "dall-e-3", label: "DALL-E 3" },
-  { value: "gpt-image-1", label: "GPT Image 1" },
-  { value: "google-imagen-3", label: "Google Imagen 3" },
-];
+const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
+  "midjourney-imagine": { label: "Midjourney Imagine", provider: "Midjourney", category: 'PREMIUM' },
+  "flux-pro": { label: "Flux Pro", provider: "Black Forest", category: 'PRO' },
+  "flux-dev": { label: "Flux Dev", provider: "Black Forest", category: 'PRO' },
+  "flux-pro-1.1": { label: "Flux Pro 1.1", provider: "Black Forest", category: 'PRO' },
+  "flux-pro-1.1-ultra": { label: "Flux Pro 1.1 Ultra", provider: "Black Forest", category: 'PREMIUM' },
+  "flux-fast-1.1": { label: "Flux Fast 1.1", provider: "Black Forest", category: 'FREE' },
+  "ideogram-v2": { label: "Ideogram V2", provider: "Ideogram", category: 'FREE' },
+  "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'PRO' },
+  "ideogram-v3": { label: "Ideogram V3", provider: "Ideogram", category: 'PREMIUM' },
+  "dall-e-3": { label: "DALL-E 3", provider: "OpenAI", category: 'PREMIUM' },
+  "google-imagen-3": { label: "Google Imagen 3", provider: "Google", category: 'PRO' },
+  "google-imagen-3-fast": { label: "Google Imagen 3 Fast", provider: "Google", category: 'FREE' },
+  "gpt-image-1": { label: "GPT Image 1", provider: "OpenAI", category: 'PREMIUM' },
+};
+
+const PLAN_ICONS = {
+  FREE: Zap,
+  PRO: Star,
+  PREMIUM: Crown,
+};
+
+const PLAN_COLORS = {
+  FREE: "bg-gray-100 text-gray-700",
+  PRO: "bg-blue-100 text-blue-700", 
+  PREMIUM: "bg-yellow-100 text-yellow-700",
+};
+
+const PLAN_LABELS = {
+  FREE: "Gratuito",
+  PRO: "Pro", 
+  PREMIUM: "Premium",
+};
 
 const PRESENTATION_STYLES = [
   { value: "professional", label: "Professional" },
@@ -40,6 +65,27 @@ export function ThemeSettings() {
   const { theme, setTheme, imageModel, setImageModel } = usePresentationState();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
+  const { planName, isLoading: planLoading } = usePlanBadge();
+
+  useEffect(() => {
+    if (!planLoading) {
+      const userModels = getModelsForPlan(planName);
+      setAvailableModels(userModels);
+      
+      // Se o modelo selecionado não está disponível, selecionar o primeiro disponível
+      if (imageModel && !userModels.includes(imageModel)) {
+        setImageModel(userModels[0] || "flux-fast-1.1");
+      }
+    }
+  }, [planName, planLoading, imageModel, setImageModel]);
+
+  // Organizar modelos por plano para a interface
+  const modelsByPlan = {
+    FREE: IMAGE_MODELS_BY_PLAN.FREE,
+    PRO: IMAGE_MODELS_BY_PLAN.PRO, 
+    PREMIUM: IMAGE_MODELS_BY_PLAN.PREMIUM,
+  };
 
   return (
     <div className="space-y-6">
@@ -130,18 +176,65 @@ export function ThemeSettings() {
       <div className="space-y-4">
         <Label className="text-sm font-medium">Image Generation Model</Label>
         <Select
-          value={imageModel || "flux-dev"}
+          value={imageModel || "flux-fast-1.1"}
           onValueChange={(value) => setImageModel(value as ImageModelList)}
+          disabled={planLoading}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select image model" />
           </SelectTrigger>
-          <SelectContent>
-            {IMAGE_MODELS.map((model) => (
-              <SelectItem key={model.value} value={model.value}>
-                {model.label}
-              </SelectItem>
-            ))}
+          <SelectContent className="max-h-80">
+            {Object.entries(modelsByPlan).map(([planType, models]) => {
+              const PlanIcon = PLAN_ICONS[planType as keyof typeof PLAN_ICONS];
+              
+              return (
+                <div key={planType}>
+                  {/* Cabeçalho da seção do plano */}
+                  <div className="px-2 py-2 text-xs font-medium text-muted-foreground border-b border-border/50 bg-muted/30 flex items-center gap-2">
+                    <PlanIcon className="w-3 h-3" />
+                    {PLAN_LABELS[planType as keyof typeof PLAN_LABELS]}
+                    {planType !== 'FREE' && (
+                      <Badge variant="outline" className="text-xs px-1 py-0 h-4">
+                        PLUS
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {/* Modelos da seção */}
+                  {models.map((model) => {
+                    const info = MODEL_INFO[model];
+                    const isAvailable = isModelAvailableForPlan(model, planName);
+                    
+                    return (
+                      <SelectItem 
+                        key={model} 
+                        value={model}
+                        disabled={!isAvailable}
+                        className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col">
+                              <span className={!isAvailable ? "text-muted-foreground" : ""}>
+                                {info.label}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {info.provider}
+                              </span>
+                            </div>
+                          </div>
+                          {!isAvailable && (
+                            <Badge variant="secondary" className="text-xs opacity-60">
+                              🔒 Requer {planType === 'PRO' ? 'Pro' : 'Premium'}
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>

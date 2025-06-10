@@ -13,6 +13,7 @@ export const env = createEnv({
     APIFRAME_API_KEY: z.string(),
     IDEOGRAM_API_KEY: z.string(),
     GOOGLE_CLOUD_PROJECT_ID: z.string(),
+    GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
     NEXTAUTH_URL: z.preprocess(
@@ -43,6 +44,7 @@ export const env = createEnv({
     APIFRAME_API_KEY: process.env.APIFRAME_API_KEY,
     IDEOGRAM_API_KEY: process.env.IDEOGRAM_API_KEY,
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID,
+    GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     

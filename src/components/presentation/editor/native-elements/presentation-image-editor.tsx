@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -14,6 +14,9 @@ import {
   Wand2,
   ImageIcon,
   AlertCircle,
+  Crown,
+  Star,
+  Zap,
 } from "lucide-react";
 import {
   Select,
@@ -24,10 +27,40 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { usePresentationState } from "@/states/presentation-state";
-import { IMAGE_MODELS } from "../../theme/ThemeSettings";
 import { type ImageModelList } from "@/app/_actions/image/generate";
 import { ImageUploadDrawer } from "./ImageUploadDrawer";
+import { usePlanBadge } from "@/hooks/usePlanBadge";
+import { getModelsForPlan, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from "@/lib/image-model-restrictions";
+
+const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
+  "midjourney-imagine": { label: "Midjourney Imagine", provider: "Midjourney", category: 'PREMIUM' },
+  "flux-pro": { label: "Flux Pro", provider: "Black Forest", category: 'PRO' },
+  "flux-dev": { label: "Flux Dev", provider: "Black Forest", category: 'PRO' },
+  "flux-pro-1.1": { label: "Flux Pro 1.1", provider: "Black Forest", category: 'PRO' },
+  "flux-pro-1.1-ultra": { label: "Flux Pro 1.1 Ultra", provider: "Black Forest", category: 'PREMIUM' },
+  "flux-fast-1.1": { label: "Flux Fast 1.1", provider: "Black Forest", category: 'FREE' },
+  "ideogram-v2": { label: "Ideogram V2", provider: "Ideogram", category: 'FREE' },
+  "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'PRO' },
+  "ideogram-v3": { label: "Ideogram V3", provider: "Ideogram", category: 'PREMIUM' },
+  "dall-e-3": { label: "DALL-E 3", provider: "OpenAI", category: 'PREMIUM' },
+  "google-imagen-3": { label: "Google Imagen 3", provider: "Google", category: 'PRO' },
+  "google-imagen-3-fast": { label: "Google Imagen 3 Fast", provider: "Google", category: 'FREE' },
+  "gpt-image-1": { label: "GPT Image 1", provider: "OpenAI", category: 'PREMIUM' },
+};
+
+const PLAN_ICONS = {
+  FREE: Zap,
+  PRO: Star,
+  PREMIUM: Crown,
+};
+
+const PLAN_LABELS = {
+  FREE: "Gratuito",
+  PRO: "Pro", 
+  PREMIUM: "Premium",
+};
 
 export interface PresentationImageEditorProps {
   open: boolean;
@@ -56,9 +89,30 @@ export const PresentationImageEditor = ({
 }: PresentationImageEditorProps) => {
   const { imageModel, setImageModel } = usePresentationState();
   const [newPrompt, setNewPrompt] = useState(prompt ?? "");
+  const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
+  const { planName, isLoading: planLoading } = usePlanBadge();
 
   // Local error state for UI validation
   const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!planLoading) {
+      const userModels = getModelsForPlan(planName);
+      setAvailableModels(userModels);
+      
+      // Se o modelo selecionado não está disponível, selecionar o primeiro disponível
+      if (imageModel && !userModels.includes(imageModel)) {
+        setImageModel(userModels[0] || "flux-fast-1.1");
+      }
+    }
+  }, [planName, planLoading, imageModel, setImageModel]);
+
+  // Organizar modelos por plano para a interface
+  const modelsByPlan = {
+    FREE: IMAGE_MODELS_BY_PLAN.FREE,
+    PRO: IMAGE_MODELS_BY_PLAN.PRO, 
+    PREMIUM: IMAGE_MODELS_BY_PLAN.PREMIUM,
+  };
   
   // Função para baixar a imagem
   const handleDownload = async () => {
@@ -93,6 +147,14 @@ export const PresentationImageEditor = ({
   const handleGenerateClick = () => {
     if (!newPrompt.trim()) {
       setLocalError("Please enter a prompt first");
+      return;
+    }
+
+    // Verificar se o modelo está disponível no plano do usuário
+    if (imageModel && !isModelAvailableForPlan(imageModel, planName)) {
+      const modelInfo = MODEL_INFO[imageModel];
+      const requiredPlan = modelInfo.category === 'PRO' ? 'Pro' : 'Premium';
+      setLocalError(`Este modelo requer o plano ${requiredPlan}. Faça upgrade para continuar.`);
       return;
     }
 
@@ -132,7 +194,7 @@ export const PresentationImageEditor = ({
                 <div className="flex flex-col items-center gap-2">
                   <Spinner className="h-6 w-6" />
                   <span className="text-sm text-muted-foreground">
-                    Generating image...
+                    Gerando imagem...
                   </span>
                 </div>
               </div>
@@ -199,12 +261,58 @@ export const PresentationImageEditor = ({
               <SelectTrigger>
                 <SelectValue placeholder="Select image model" />
               </SelectTrigger>
-              <SelectContent>
-                {IMAGE_MODELS.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    {model.label}
-                  </SelectItem>
-                ))}
+              <SelectContent className="max-h-80">
+                {Object.entries(modelsByPlan).map(([planType, models]) => {
+                  const PlanIcon = PLAN_ICONS[planType as keyof typeof PLAN_ICONS];
+                  
+                  return (
+                    <div key={planType}>
+                      {/* Cabeçalho da seção do plano */}
+                      <div className="px-2 py-2 text-xs font-medium text-muted-foreground border-b border-border/50 bg-muted/30 flex items-center gap-2">
+                        <PlanIcon className="w-3 h-3" />
+                        {PLAN_LABELS[planType as keyof typeof PLAN_LABELS]}
+                        {planType !== 'FREE' && (
+                          <Badge variant="outline" className="text-xs px-1 py-0 h-4">
+                            PLUS
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Modelos da seção */}
+                      {models.map((model) => {
+                        const info = MODEL_INFO[model];
+                        const isAvailable = isModelAvailableForPlan(model, planName);
+                        
+                        return (
+                          <SelectItem 
+                            key={model} 
+                            value={model}
+                            disabled={!isAvailable}
+                            className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-3">
+                                <div className="flex flex-col">
+                                  <span className={!isAvailable ? "text-muted-foreground" : ""}>
+                                    {info.label}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {info.provider}
+                                  </span>
+                                </div>
+                              </div>
+                              {!isAvailable && (
+                                <Badge variant="secondary" className="text-xs opacity-60">
+                                  🔒 Requer {planType === 'PRO' ? 'Pro' : 'Premium'}
+                                </Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -219,7 +327,7 @@ export const PresentationImageEditor = ({
             >
               {isGenerating ? (
                 <>
-                  <Spinner className="mr-2 h-4 w-4" /> Generating...
+                  <Spinner className="mr-2 h-4 w-4" /> Gerando...
                 </>
               ) : (
                 <>
