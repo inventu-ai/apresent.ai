@@ -46,7 +46,7 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <Link href="/apresentai">
+            <Link href="/">
               <Button variant="ghost" size="sm" className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 {t.profile.backToSlides}

@@ -162,7 +162,7 @@ export default function ApresentAIGenerateWithIdPage() {
   };
 
   const handleBack = () => {
-    router.push('/apresentai');
+    router.push('/');
   };
 
   if (isLoadingPresentation) {
@@ -194,7 +194,7 @@ export default function ApresentAIGenerateWithIdPage() {
         <Button
         variant="ghost"
         className="absolute left-10 top-16 flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        onClick={() => router.push('/apresentai')}
+        onClick={() => router.push('/')}
       >
         <ArrowLeft className="h-4 w-4" />
         {t.presentation.back}
