@@ -8,6 +8,7 @@ import { Zap, Clock, TrendingUp } from "lucide-react";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import { PricingModal } from "./PricingModal";
 import { PlanBadge } from "@/components/ui/plan-badge";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface CreditSectionProps {
   userId: string;
@@ -16,6 +17,7 @@ interface CreditSectionProps {
 
 export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionProps) {
   const { remaining, limit, isUnlimited, percentage, daysUntilReset } = useUserCredits();
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
 
@@ -29,7 +31,7 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Seus Créditos
+            {t.profile.yourCredits}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -51,7 +53,7 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            Seus Créditos
+            {t.profile.yourCredits}
           </div>
           <PlanBadge plan={currentPlan} size="sm" />
         </CardTitle>
@@ -59,13 +61,13 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
       <CardContent>
         <div className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            Acompanhe seu uso de créditos e próximo reset
+            {t.profile.manageAccount}
           </p>
 
           {isUnlimited ? (
             <div className="text-center py-4">
               <div className="text-2xl font-bold text-green-600">∞</div>
-              <p className="text-sm text-muted-foreground">Créditos ilimitados</p>
+              <p className="text-sm text-muted-foreground">{t.profile.unlimitedCredits}</p>
             </div>
           ) : (
             <>
@@ -73,7 +75,7 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">{used}/{limit}</span>
-                  <span className="text-muted-foreground">{percentage.toFixed(1)}% usado</span>
+                  <span className="text-muted-foreground">{percentage.toFixed(1)}% {t.profile.used}</span>
                 </div>
                 <Progress value={percentage} className="h-2" />
               </div>
@@ -81,13 +83,13 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
               {/* Credits Info */}
               <div className="flex items-center gap-2 text-sm">
                 <Zap className="h-4 w-4 text-blue-500" />
-                <span className="font-medium">{remaining} créditos restantes</span>
+                <span className="font-medium">{remaining} {t.profile.creditsRemaining}</span>
               </div>
 
               {/* Reset Info */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                <span>Reset em {daysUntilReset} dias</span>
+                <span>{t.profile.resetIn} {daysUntilReset} dias</span>
               </div>
             </>
           )}
@@ -102,7 +104,7 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
                 size="sm"
               >
                 <TrendingUp className="mr-2 h-4 w-4" />
-                Aumente seus créditos
+                {t.profile.upgradeCredits}
               </Button>
             </div>
           )}
@@ -111,7 +113,7 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
           {currentPlan === 'PREMIUM' && (
             <div className="pt-2 border-t text-center">
               <p className="text-sm text-green-600 font-medium">
-                🎉 Você tem o plano máximo!
+                🎉 {t.profile.youHaveMaxPlan}
               </p>
             </div>
           )}

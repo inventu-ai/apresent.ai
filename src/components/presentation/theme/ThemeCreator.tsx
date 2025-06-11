@@ -14,6 +14,7 @@ import { useUploadThing } from "@/hooks/globals/useUploadthing";
 import { Loader2, Plus } from "lucide-react";
 import { themes } from "@/lib/presentation/themes";
 import { createCustomTheme } from "@/app/_actions/presentation/theme-actions";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 import { ThemePreview } from "./ThemePreview";
 import { type ColorKey, type ThemeFormValues } from "./types";
@@ -22,19 +23,21 @@ import { FontSelector } from "./FontSelector";
 import { ColorPicker } from "./ColorPicker";
 import { usePresentationState } from "@/states/presentation-state";
 
-// Define steps for the stepper
-const STEPS = [
-  { id: "base", label: "Base Theme", icon: "🎨" },
-  { id: "colors", label: "Colors", icon: "🎭" },
-  { id: "typography", label: "Typography", icon: "T" },
-  { id: "logo", label: "Logo", icon: "🖼️" },
-  { id: "preview", label: "Finish", icon: "👁️" },
-];
+// Esta constante será substituída por uma função que usa traduções
 
 export function ThemeCreator({ children }: { children?: ReactNode }) {
   const { isThemeCreatorOpen, setIsThemeCreatorOpen } = usePresentationState();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
+  
+  const STEPS = [
+    { id: "base", label: t.presentation.themeModal.baseTheme, icon: "🎨" },
+    { id: "colors", label: t.presentation.themeModal.colors, icon: "🎭" },
+    { id: "typography", label: t.presentation.themeModal.typography, icon: "T" },
+    { id: "logo", label: t.presentation.themeModal.logo, icon: "🖼️" },
+    { id: "preview", label: t.presentation.themeModal.finish, icon: "👁️" },
+  ];
   const [activeColorTab, setActiveColorTab] = useState<"light" | "dark">(
     "light",
   );
@@ -216,7 +219,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
               {currentStep === 0 && (
                 <div className="h-full space-y-4">
                   <h2 className="mb-4 text-xl font-semibold">
-                    Choose a Base Theme
+                    {t.presentation.themeModal.chooseBaseTheme}
                   </h2>
                   <Controller
                     name="themeBase"
@@ -245,10 +248,10 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                             <div className="flex flex-col items-center">
                               <Plus className="mb-2 h-8 w-8 text-muted-foreground" />
                               <h3 className="text-lg font-medium">
-                                Start from scratch
+                                {t.presentation.themeModal.startFromScratch}
                               </h3>
                               <p className="text-center text-sm text-muted-foreground">
-                                Create a blank theme with default settings
+                                {t.presentation.themeModal.createBlankTheme}
                               </p>
                             </div>
                           </Label>
@@ -350,7 +353,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                           <ColorPicker
                             color={field.value}
                             onChange={field.onChange}
-                            label={`${key.charAt(0).toUpperCase() + key.slice(1)} Color`}
+                            label={t.presentation[`${key}Color` as keyof typeof t.presentation] as string || `${key.charAt(0).toUpperCase() + key.slice(1)} Color`}
                           />
                         )}
                       />
@@ -368,7 +371,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                       <FontSelector
                         value={field.value}
                         onChange={field.onChange}
-                        label="Heading Font"
+                        label={t.presentation.headingFont}
                       />
                     )}
                   />
@@ -379,7 +382,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                       <FontSelector
                         value={field.value}
                         onChange={field.onChange}
-                        label="Body Font"
+                        label={t.presentation.bodyFont}
                       />
                     )}
                   />
@@ -388,9 +391,9 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
 
               {currentStep === 3 && (
                 <div className="h-full space-y-4">
-                  <h2 className="mb-4 text-xl font-semibold">Upload a Logo</h2>
+                  <h2 className="mb-4 text-xl font-semibold">{t.presentation.uploadLogo}</h2>
                   <p className="mb-4 text-muted-foreground">
-                    Add a logo to customize your theme. This is optional.
+                    {t.presentation.addLogoToCustomize}
                   </p>
                   <LogoUploader
                     logoPreview={logoPreview}
@@ -402,29 +405,29 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
 
               {currentStep === 4 && (
                 <div className="h-full space-y-6">
-                  <h2 className="text-xl font-semibold">Finish Your Theme</h2>
+                  <h2 className="text-xl font-semibold">{t.presentation.finishYourTheme}</h2>
 
                   <div className="space-y-4">
                     <div>
-                      <Label>Theme Name</Label>
+                      <Label>{t.presentation.themeName}</Label>
                       <Controller
                         name="name"
                         control={control}
                         render={({ field }) => (
-                          <Input {...field} placeholder="Enter theme name" />
+                          <Input {...field} placeholder={t.presentation.enterThemeName} />
                         )}
                       />
                     </div>
 
                     <div>
-                      <Label>Description</Label>
+                      <Label>{t.presentation.description}</Label>
                       <Controller
                         name="description"
                         control={control}
                         render={({ field }) => (
                           <Textarea
                             {...field}
-                            placeholder="Enter theme description"
+                            placeholder={t.presentation.enterThemeDescription}
                           />
                         )}
                       />
@@ -441,7 +444,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                           />
                         )}
                       />
-                      <Label>Make theme public</Label>
+                      <Label>{t.presentation.makeThemePublic}</Label>
                     </div>
                   </div>
                 </div>
@@ -500,7 +503,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                   onClick={nextStep}
                   className="bg-indigo-600 text-white hover:bg-indigo-700"
                 >
-                  Continue
+                  {t.presentation.themeModal.continue}
                 </Button>
               ) : (
                 <Button

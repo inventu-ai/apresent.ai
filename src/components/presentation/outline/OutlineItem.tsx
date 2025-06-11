@@ -100,8 +100,7 @@ export const OutlineItem = memo(function OutlineItem({
     }
   };
 
-  // Add console log to debug isNew prop
-  console.log(`OutlineItem ${id} (${title.substring(0, 20)}...): isNew=${isNew}`);
+
 
   return (
     <div

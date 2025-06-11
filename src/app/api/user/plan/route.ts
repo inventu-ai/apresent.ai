@@ -1,38 +1,46 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/server/auth";
-import { getUserCurrentPlan } from "@/lib/plan-checker";
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/server/auth';
+import { getUserCurrentPlan } from '@/lib/plan-checker';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-
+    
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Buscar plano atual do usuário
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    // Verify the userId matches the authenticated user
+    if (userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      );
+    }
+
+    // Get user plan from server-side function
     const plan = await getUserCurrentPlan(session.user.id);
-
-    if (!plan) {
-      // Fallback para FREE se não encontrar plano
-      return NextResponse.json({
-        planName: 'FREE',
-        planDisplayName: 'Gratuito',
-        planId: null
-      });
-    }
+    const planName = plan?.name || 'FREE';
 
     return NextResponse.json({
-      planName: plan.name,
-      planDisplayName: plan.displayName || plan.name,
-      planId: plan.id,
-      price: plan.price || 0
+      plan: planName,
+      success: true
     });
 
   } catch (error) {
-    console.error("Erro ao buscar plano do usuário:", error);
+    console.error('Error fetching user plan:', error);
+    
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      { 
+        error: 'Internal server error',
+        plan: 'FREE' // Default fallback
+      },
       { status: 500 }
     );
   }

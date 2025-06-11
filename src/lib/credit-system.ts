@@ -205,7 +205,8 @@ export async function canUseImageModel(userId: string, model: ImageModelList): P
   // Verificação especial para Google Imagen
   if (model.includes('google-imagen')) {
     const isConfigured = !!(process.env.GOOGLE_CLOUD_PROJECT_ID && 
-                           (process.env.GOOGLE_APPLICATION_CREDENTIALS || 
+                           (process.env.GOOGLE_SERVICE_ACCOUNT_KEY || 
+                            process.env.GOOGLE_APPLICATION_CREDENTIALS || 
                             process.env.NODE_ENV === 'production'));
     
     if (!isConfigured) {

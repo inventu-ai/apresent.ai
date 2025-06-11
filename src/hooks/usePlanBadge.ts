@@ -32,7 +32,7 @@ export function usePlanBadge(): PlanBadgeData {
       }
 
       try {
-        const response = await fetch('/api/user/plan');
+        const response = await fetch(`/api/user/plan?userId=${session.user.id}`);
         
         if (!response.ok) {
           throw new Error('Erro ao buscar plano do usuário');
@@ -41,8 +41,8 @@ export function usePlanBadge(): PlanBadgeData {
         const data = await response.json();
         
         setPlanData({
-          planName: data.planName || 'FREE',
-          planDisplayName: data.planDisplayName || 'Gratuito',
+          planName: data.plan || 'FREE',
+          planDisplayName: data.plan === 'PREMIUM' ? 'Premium' : data.plan === 'PRO' ? 'Pro' : 'Gratuito',
           isLoading: false,
           error: null
         });

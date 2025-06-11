@@ -18,6 +18,7 @@ import { OutlineItem } from "./OutlineItem";
 import { Plus } from "lucide-react";
 import { usePresentationState } from "@/states/presentation-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface OutlineItemType {
   id: string;
@@ -32,6 +33,7 @@ export function OutlineList() {
     numSlides,
     isGeneratingOutline,
   } = usePresentationState();
+  const { t } = useTranslation();
 
   const [items, setItems] = useState<OutlineItemType[]>(
     initialItems.map((title, index) => ({
@@ -41,7 +43,7 @@ export function OutlineList() {
   );
 
   useEffect(() => {
-    console.log("initialItems changed, current items:", items);
+
     // Preserve isNew property when updating from initialItems
     setItems(prevItems => {
       const newItems = initialItems.map((title, index) => {
@@ -54,7 +56,7 @@ export function OutlineList() {
           isNew: existingItem?.isNew || false
         };
       });
-      console.log("Updated items with preserved isNew:", newItems);
+
       return newItems;
     });
   }, [initialItems]);
@@ -86,7 +88,7 @@ export function OutlineList() {
       const newItems = items.map((item) =>
         item.id === id ? { ...item, title: newTitle } : item,
       );
-      console.log("Title changed for item", id, "new items state:", newItems);
+
       // Update the outline in the store
       setOutline(newItems.map((item) => item.title));
       return newItems;
@@ -99,8 +101,7 @@ export function OutlineList() {
         ? (Math.max(...items.map((item) => parseInt(item.id))) + 1).toString()
         : "1";
     const newItems = [...items, { id: newId, title: "New Card", isNew: true }];
-    console.log("Adding new card:", { id: newId, title: "New Card", isNew: true });
-    console.log("New items state:", newItems);
+    
     setItems(newItems);
     // Update the outline in the store
     setOutline(newItems.map((item) => item.title));
@@ -169,7 +170,7 @@ export function OutlineList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm text-foreground">Outline</h2>
+        <h2 className="text-sm text-foreground">{t.presentation.outline}</h2>
         {isGeneratingOutline && (
           <span className="animate-pulse text-xs text-muted-foreground">
             Generating outline...
@@ -185,11 +186,11 @@ export function OutlineList() {
         className="flex w-full items-center justify-center gap-2 rounded-md bg-muted/50 py-3 text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
       >
         <Plus size={20} />
-        Add card
+        {t.presentation.addCard}
       </button>
 
       <div className="flex justify-between text-sm text-muted-foreground">
-        <span>{items.length} cards total</span>
+        <span>{items.length} {t.presentation.cardsTotal}</span>
         <span>
           {items.reduce((acc, item) => acc + item.title.length, 0)}/20000
         </span>

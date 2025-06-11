@@ -10,7 +10,8 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "convert-google-credentials": "node scripts/convert-google-credentials.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.5",

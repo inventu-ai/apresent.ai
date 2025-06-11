@@ -18,6 +18,7 @@ import { Crown, Star, Zap } from "lucide-react";
 import { usePlanBadge } from "@/hooks/usePlanBadge";
 import { getModelsForPlan, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from "@/lib/image-model-restrictions";
 import { useEffect, useState } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
   "midjourney-imagine": { label: "Midjourney Imagine", provider: "Midjourney", category: 'PREMIUM' },
@@ -53,18 +54,21 @@ const PLAN_LABELS = {
   PREMIUM: "Premium",
 };
 
-const PRESENTATION_STYLES = [
-  { value: "professional", label: "Professional" },
-  { value: "creative", label: "Creative" },
-  { value: "minimal", label: "Minimal" },
-  { value: "bold", label: "Bold" },
-  { value: "elegant", label: "Elegant" },
-];
+// Esta constante será substituída por uma função que usa traduções
 
 export function ThemeSettings() {
   const { theme, setTheme, imageModel, setImageModel } = usePresentationState();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const { t } = useTranslation();
+  
+  const PRESENTATION_STYLES = [
+    { value: "professional", label: t.presentation.presentationStyles.professional },
+    { value: "creative", label: t.presentation.presentationStyles.creative },
+    { value: "minimal", label: t.presentation.presentationStyles.minimal },
+    { value: "bold", label: t.presentation.presentationStyles.bold },
+    { value: "elegant", label: t.presentation.presentationStyles.elegant },
+  ];
   const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
   const { planName, isLoading: planLoading } = usePlanBadge();
 
@@ -91,9 +95,9 @@ export function ThemeSettings() {
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Theme & Layout</Label>
+          <Label className="text-sm font-medium">{t.presentation.themeLayout}</Label>
           <ThemeModal>
-            <Button variant={"link"}>More Themes</Button>
+            <Button variant={"link"}>{t.presentation.moreThemes}</Button>
           </ThemeModal>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -174,7 +178,7 @@ export function ThemeSettings() {
       </div>
 
       <div className="space-y-4">
-        <Label className="text-sm font-medium">Image Generation Model</Label>
+        <Label className="text-sm font-medium">{t.presentation.imageGenerationModel}</Label>
         <Select
           value={imageModel || "flux-fast-1.1"}
           onValueChange={(value) => setImageModel(value as ImageModelList)}
@@ -250,7 +254,7 @@ export function ThemeSettings() {
       </div>
 
       <div className="space-y-4">
-        <Label className="text-sm font-medium">Presentation Style</Label>
+        <Label className="text-sm font-medium">{t.presentation.presentationStyle}</Label>
         <Select defaultValue="professional">
           <SelectTrigger>
             <SelectValue placeholder="Select style" />

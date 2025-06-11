@@ -68,7 +68,7 @@ export const PresentationImageElement = withHOC(
         const container = document.querySelector(".presentation-slides");
         const isEditorReadOnly = !container?.contains(imageRef?.current);
         // Prevent image generation in read-only mode
-        console.log(isEditorReadOnly, hasHandledGenerationRef.current);
+    
         if (isEditorReadOnly) {
           return;
         }
@@ -172,7 +172,7 @@ export const PresentationImageElement = withHOC(
                         }}
                         onImageEdited={(newImageUrl) => {
                           if (!readOnly) {
-                            console.log('Image edited, updating from:', imageUrl, 'to:', newImageUrl);
+                      
                             setImageUrl(newImageUrl);
                             setNode(editor, props.element, {
                               url: newImageUrl,

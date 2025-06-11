@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar, RefreshCw, X } from "lucide-react";
 import { getCreditResetHistoryAction } from "@/app/_actions/profile/creditActions";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface CreditHistoryModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ interface CreditResetLog {
 export function CreditHistoryModal({ open, onOpenChange, userId }: CreditHistoryModalProps) {
   const [history, setHistory] = useState<CreditResetLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { t, language } = useTranslation();
 
   useEffect(() => {
     if (open) {
@@ -48,7 +50,7 @@ export function CreditHistoryModal({ open, onOpenChange, userId }: CreditHistory
   };
 
   const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('pt-BR', {
+    return new Intl.DateTimeFormat(language, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

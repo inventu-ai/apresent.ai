@@ -135,16 +135,12 @@ export function PresentationGenerationManager() {
           // Get current state
           const { presentationInput } = usePresentationState.getState();
           // Debug logs
-          console.log('=== SLIDE COUNT DEBUG ===');
-          console.log('isNumSlidesManuallySet:', isNumSlidesManuallySet);
-          console.log('current numSlides:', numSlides);
-          // console.log('maxCards (plan limit):', maxCards); // REMOVIDO pois não existe mais maxCards aqui
-          console.log('presentationInput:', presentationInput);
+          
           let finalSlideCount = numSlides;
           // PRIORITY 1: If user manually set the slide count, ALWAYS use it
           if (isNumSlidesManuallySet) {
             finalSlideCount = numSlides;
-            console.log(`✅ Using manually set slide count: ${numSlides} (user selection has priority)`);
+      
           } else {
             // PRIORITY 2: Only extract from prompt if user hasn't manually set the slide count
             // Aqui você pode passar algum valor default para maxCards se quiser, ou remover esse argumento do extractSlideCount
@@ -152,10 +148,7 @@ export function PresentationGenerationManager() {
             // Update the numSlides state with the extracted count (but don't mark as manual)
             setNumSlides(extractedSlideCount, false);
             finalSlideCount = extractedSlideCount;
-            console.log(`✅ Extracted ${extractedSlideCount} slides from prompt : "${presentationInput ?? ''}"`);
           }
-          console.log('finalSlideCount:', finalSlideCount);
-          console.log('========================');
           // Get the updated state after setting numSlides
           const { language } = usePresentationState.getState();
           // Start the RAF cycle for outline updates

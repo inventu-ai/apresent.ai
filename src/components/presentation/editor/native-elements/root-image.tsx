@@ -72,12 +72,12 @@ export default function RootImage({
     setIsGenerating(true);
     setError(undefined);
     try {
-      console.log(`Generating image with model: ${imageModel}, prompt: "${prompt}"`);
+      
       const result = await generateImageAction(prompt, imageModel);
       
       if (result.success && result.image?.url) {
         const newImageUrl = result.image.url;
-        console.log(`Image generated successfully: ${newImageUrl}`);
+
         setImageUrl(newImageUrl);
 
         // Get current slides state
@@ -146,7 +146,7 @@ export default function RootImage({
 
   // Handle successful drops
   const onDragEnd = (item: DragItemNode, monitor: DragSourceMonitor) => {
-    console.log(item, monitor.didDrop());
+    
     const dropResult: { droppedInLayoutZone: boolean } =
       monitor.getDropResult()!;
     // Only remove if it was dropped (didDrop) but NOT in a layout zone
@@ -264,7 +264,7 @@ export default function RootImage({
                 onRemove={removeRootImageFromSlide}
                 onAdjustImage={() => setIsAdjusting(true)}
                 onImageEdited={(newImageUrl) => {
-                  console.log('Root image edited, updating from:', imageUrl, 'to:', newImageUrl);
+          
                   setImageUrl(newImageUrl);
                   // Atualizar o estado global
                   const { slides } = usePresentationState.getState();

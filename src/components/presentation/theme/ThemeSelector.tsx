@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeCreator } from "./ThemeCreator";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface CustomTheme {
   id: string;
@@ -63,6 +64,32 @@ export function ThemeSelector() {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("my-themes");
   const isDark = systemTheme === "dark";
+  const { t, language } = useTranslation();
+
+  // Helper function for language-dependent text
+  const getByText = (userName: string | null) => {
+    const by = language === 'pt-BR' ? 'Por' : language === 'es-ES' ? 'Por' : 'By';
+    const unknown = language === 'pt-BR' ? 'Desconhecido' : language === 'es-ES' ? 'Desconocido' : 'Unknown';
+    return `${by} ${userName ?? unknown}`;
+  };
+
+  const getNoThemesText = () => {
+    return language === 'pt-BR' ? 'Nenhum tema público disponível' :
+           language === 'es-ES' ? 'No hay temas públicos disponibles' :
+           'No public themes available';
+  };
+
+  const getHeadingText = () => {
+    return language === 'pt-BR' ? 'Título' :
+           language === 'es-ES' ? 'Título' :
+           'Heading';
+  };
+
+  const getBodyText = () => {
+    return language === 'pt-BR' ? 'Corpo' :
+           language === 'es-ES' ? 'Cuerpo' :
+           'Body';
+  };
 
   // Fetch user themes with React Query
   const { data: userThemes = [], isLoading: isLoadingUserThemes } = useQuery({
@@ -103,7 +130,7 @@ export function ThemeSelector() {
           className="text-muted-foreground hover:text-foreground"
         >
           <Palette className="mr-1 h-4 w-4" />
-          Theme
+          {t.presentation.presentationTheme}
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -120,13 +147,13 @@ export function ThemeSelector() {
         }
       >
         <SheetHeader className="mb-5">
-          <SheetTitle>Presentation Theme</SheetTitle>
+          <SheetTitle>{t.presentation.presentationTheme}</SheetTitle>
           <SheetDescription>
-            Choose a theme for your presentation
+            {t.presentation.chooseThemeForPresentation}
           </SheetDescription>
           <div>
             <ThemeCreator>
-              <Button>Create New Theme</Button>
+              <Button>{t.presentation.createNewTheme}</Button>
             </ThemeCreator>
           </div>
         </SheetHeader>
@@ -138,8 +165,8 @@ export function ThemeSelector() {
         >
           <div className="mb-4">
             <TabsList>
-              <TabsTrigger value="my-themes">My Themes</TabsTrigger>
-              <TabsTrigger value="public-themes">Public Themes</TabsTrigger>
+              <TabsTrigger value="my-themes">{t.presentation.myThemes}</TabsTrigger>
+              <TabsTrigger value="public-themes">{t.presentation.publicThemes}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -220,10 +247,10 @@ export function ThemeSelector() {
             ) : (
               <div className="flex h-64 flex-col items-center justify-center">
                 <p className="mb-4 text-muted-foreground">
-                  You haven&apos;t created any themes yet
+                  {t.presentation.themeModal.youHaventCreated}
                 </p>
                 <ThemeCreator>
-                  <Button>Create Your First Theme</Button>
+                                      <Button>{t.presentation.themeModal.createFirstTheme}</Button>
                 </ThemeCreator>
               </div>
             )}
@@ -287,7 +314,7 @@ export function ThemeSelector() {
                         {theme.description ?? "Custom theme"}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        By {theme.user?.name ?? "Unknown"}
+                        {getByText(theme.user?.name ?? null)}
                       </div>
                       <div className="flex gap-2">
                         {[
@@ -309,7 +336,7 @@ export function ThemeSelector() {
             ) : (
               <div className="flex h-64 items-center justify-center">
                 <p className="text-muted-foreground">
-                  No public themes available
+                  {getNoThemesText()}
                 </p>
               </div>
             )}
@@ -317,7 +344,7 @@ export function ThemeSelector() {
         </Tabs>
 
         <div className="mt-8">
-          <h3 className="mb-4 text-lg font-semibold">Built-in Themes</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t.presentation.builtInThemes}</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Object.entries(themes).map(([key, themeOption]) => {
               const modeColors = isDark
@@ -385,10 +412,10 @@ export function ThemeSelector() {
                     style={{ color: modeColors.muted }}
                   >
                     <span className="block">
-                      Heading: {themeOption.fonts.heading}
+                      {getHeadingText()}: {themeOption.fonts.heading}
                     </span>
                     <span className="block">
-                      Body: {themeOption.fonts.body}
+                      {getBodyText()}: {themeOption.fonts.body}
                     </span>
                   </div>
                 </button>

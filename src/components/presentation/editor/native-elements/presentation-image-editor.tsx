@@ -33,6 +33,7 @@ import { type ImageModelList } from "@/app/_actions/image/generate";
 import { ImageUploadDrawer } from "./ImageUploadDrawer";
 import { usePlanBadge } from "@/hooks/usePlanBadge";
 import { getModelsForPlan, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from "@/lib/image-model-restrictions";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
   "midjourney-imagine": { label: "Midjourney Imagine", provider: "Midjourney", category: 'PREMIUM' },
@@ -89,6 +90,7 @@ export const PresentationImageEditor = ({
 }: PresentationImageEditorProps) => {
   const { imageModel, setImageModel } = usePresentationState();
   const [newPrompt, setNewPrompt] = useState(prompt ?? "");
+  const { t } = useTranslation();
   const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
   const { planName, isLoading: planLoading } = usePlanBadge();
 
@@ -240,7 +242,7 @@ export const PresentationImageEditor = ({
 
           {/* Prompt Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Image Prompt</label>
+            <label className="text-sm font-medium">{t.presentation.imagePrompt}</label>
             <Textarea
               placeholder="Describe the image you want to generate..."
               className="min-h-[100px]"
@@ -252,7 +254,7 @@ export const PresentationImageEditor = ({
 
           {/* Image Model Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Image Model</label>
+            <label className="text-sm font-medium">{t.presentation.imageModel}</label>
             <Select
               value={imageModel}
               onValueChange={(value) => setImageModel(value as ImageModelList)}
@@ -341,7 +343,7 @@ export const PresentationImageEditor = ({
                 </>
               ) : (
                 <>
-                  <Wand2 className="mr-2 h-4 w-4" /> Generate New
+                  <Wand2 className="mr-2 h-4 w-4" /> {t.presentation.generateNew}
                 </>
               )}
             </Button>

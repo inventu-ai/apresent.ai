@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Calendar, History, Info } from "lucide-react";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import { CreditHistoryModal } from "./CreditHistoryModal";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface CreditResetInfoProps {
   userId: string;
@@ -14,6 +15,7 @@ interface CreditResetInfoProps {
 
 export function CreditResetInfo({ userId }: CreditResetInfoProps) {
   const { nextReset, daysUntilReset } = useUserCredits();
+  const { t, language } = useTranslation();
   const [showHistory, setShowHistory] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -27,7 +29,7 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5" />
-            Reset de Créditos
+            {t.profile.creditReset}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -41,8 +43,9 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
   }
 
   const formatDate = (date: Date | null) => {
-    if (!date) return "Data não disponível";
-    return new Intl.DateTimeFormat('pt-BR', {
+    if (!date) return t.profile.dataNotAvailable;
+    
+    return new Intl.DateTimeFormat(language, {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
@@ -54,13 +57,13 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <RefreshCw className="h-5 w-5" />
-          Reset de Créditos
+          {t.profile.creditReset}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <p className="text-muted-foreground text-sm">
-            Informações sobre o ciclo de renovação dos seus créditos
+            {t.profile.creditResetInfo}
           </p>
 
           {/* Next Reset Card */}
@@ -70,7 +73,7 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
                 <Calendar className="h-5 w-5 text-blue-600" />
                 <div>
                   <p className="font-medium text-blue-900 dark:text-blue-100">
-                    Próximo Reset
+                    {t.profile.nextReset}
                   </p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     {formatDate(nextReset)}
@@ -79,7 +82,7 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
               </div>
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 <Info className="h-3 w-3 mr-1" />
-                {daysUntilReset} dias
+                {daysUntilReset} {t.profile.days}
               </Badge>
             </div>
           </div>
@@ -88,19 +91,19 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                Ciclo de Reset
+                {t.profile.resetCycle}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                A cada 30 dias
+                {t.profile.every30Days}
               </p>
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
-                Tipo de Reset
+                {t.profile.resetType}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Automático
+                {t.profile.automatic}
               </p>
             </div>
           </div>
@@ -112,30 +115,30 @@ export function CreditResetInfo({ userId }: CreditResetInfoProps) {
             className="w-full"
           >
             <History className="h-4 w-4 mr-2" />
-            Ver Histórico
+            {t.profile.viewHistory}
           </Button>
 
           {/* How it works */}
           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-              Como funciona:
+              {t.profile.howItWorks}
             </h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                Os créditos são resetados automaticamente a cada 30 dias
+                {t.profile.creditsResetEvery30Days}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                O reset acontece quando você usa o sistema após a data limite
+                {t.profile.resetHappensAfterLimit}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                Créditos não utilizados não são acumulados
+                {t.profile.unusedCreditsNotAccumulated}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-1">•</span>
-                O histórico de todos os resets é mantido
+                {t.profile.resetHistoryMaintained}
               </li>
             </ul>
           </div>

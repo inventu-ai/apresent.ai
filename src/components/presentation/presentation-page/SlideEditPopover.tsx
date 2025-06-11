@@ -23,6 +23,7 @@ import { type LayoutType } from "../utils/parser";
 import ColorPicker from "@/components/ui/color-picker";
 import CardColorPicker from "@/components/ui/card-color-picker";
 import { FontPicker } from "@/components/ui/font-picker";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface SlideEditPopoverProps {
   index: number;
@@ -32,6 +33,7 @@ type ContentAlignment = "start" | "center" | "end";
 
 export function SlideEditPopover({ index }: SlideEditPopoverProps) {
   const { slides, setSlides } = usePresentationState();
+  const { t } = useTranslation();
   const updateSlide = (
     updates: Partial<{
       layoutType: LayoutType;
@@ -82,7 +84,7 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 rounded-full bg-current" />
-              <span className="text-sm text-zinc-200">Card color</span>
+              <span className="text-sm text-zinc-200">{t.presentation.cardColor}</span>
             </div>
             <CardColorPicker
               value={currentBgColor}
@@ -104,7 +106,7 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlignCenter className="h-4 w-4"></AlignCenter>
-              <span className="text-sm text-zinc-200">Content alignment</span>
+              <span className="text-sm text-zinc-200">{t.presentation.contentAlignment}</span>
             </div>
             <div className="flex gap-1">
               <Button
@@ -147,7 +149,7 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <LayoutGrid className="h-4 w-4" />
-              <span className="text-sm text-zinc-200">Card layout</span>
+              <span className="text-sm text-zinc-200">{t.presentation.cardLayout}</span>
             </div>
             <div className="flex gap-1">
               <Button
@@ -190,7 +192,7 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MoveHorizontal className="h-4 w-4"></MoveHorizontal>
-              <span className="text-sm text-zinc-200">Card width</span>
+              <span className="text-sm text-zinc-200">{t.presentation.cardWidth}</span>
             </div>
             <div className="flex gap-1">
               <Button
@@ -222,7 +224,7 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Heading className="h-4 w-4" />
-              <span className="text-sm text-zinc-200">Título</span>
+              <span className="text-sm text-zinc-200">{t.presentation.slideTitle}</span>
             </div>
             <div className="flex gap-2">
               <ColorPicker
@@ -240,7 +242,7 @@ export function SlideEditPopover({ index }: SlideEditPopoverProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Type className="h-4 w-4" />
-              <span className="text-sm text-zinc-200">Texto</span>
+              <span className="text-sm text-zinc-200">{t.presentation.slideText}</span>
             </div>
             <div className="flex gap-2">
               <ColorPicker

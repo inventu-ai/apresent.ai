@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Share } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/contexts/LanguageContext";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
 
 export function ShareButton() {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -22,7 +24,7 @@ export function ShareButton() {
         onClick={() => setIsShareDialogOpen(true)}
       >
         <Share className="mr-1 h-4 w-4" />
-        Share
+        {t.presentation.share}
       </Button>
 
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>

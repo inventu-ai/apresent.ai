@@ -2,6 +2,7 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export function RegenerateButton() {
   const {
@@ -9,6 +10,7 @@ export function RegenerateButton() {
     startOutlineGeneration,
     isGeneratingOutline,
   } = usePresentationState();
+  const { t } = useTranslation();
 
   const handleGenerateOutline = () => {
     if (!presentationInput.trim()) {
@@ -31,7 +33,7 @@ export function RegenerateButton() {
           size={16} 
           className={isGeneratingOutline ? "animate-spin" : ""} 
         />
-        {isGeneratingOutline ? "Regenerating..." : "Regenerate Outline"}
+        {isGeneratingOutline ? t.presentation.regenerating : t.presentation.regenerateOutline}
       </Button>
     </div>
   );

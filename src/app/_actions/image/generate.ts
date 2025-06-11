@@ -9,15 +9,28 @@ import { randomUUID } from "crypto";
 import { canConsumeCredits, consumeCredits, canUseImageQuality, checkAndResetCreditsIfNeeded, canUseImageModel, consumeImageModelCredits, type CreditAction } from "@/lib/credit-system";
 
 // Helper function to convert aspect ratio to Ideogram format
-function convertToIdeogramAspectRatio(aspectRatio: string): string {
-  const aspectMap: Record<string, string> = {
-    "4:3": "4x3",
-    "16:9": "16x9", 
-    "1:1": "1x1",
-    "3:4": "3x4",
-    "9:16": "9x16"
-  };
-  return aspectMap[aspectRatio] || "4x3";
+function convertToIdeogramAspectRatio(aspectRatio: string, isV3: boolean = false): string {
+  if (isV3) {
+    // V3 uses simple format like "4x3"
+    const v3AspectMap: Record<string, string> = {
+      "4:3": "4x3",
+      "16:9": "16x9", 
+      "1:1": "1x1",
+      "3:4": "3x4",
+      "9:16": "9x16"
+    };
+    return v3AspectMap[aspectRatio] || "4x3";
+  } else {
+    // V2 and V2 Turbo use ASPECT_ format
+    const v2AspectMap: Record<string, string> = {
+      "4:3": "ASPECT_4_3",
+      "16:9": "ASPECT_16_9", 
+      "1:1": "ASPECT_1_1",
+      "3:4": "ASPECT_3_4",
+      "9:16": "ASPECT_9_16"
+    };
+    return v2AspectMap[aspectRatio] || "ASPECT_4_3";
+  }
 }
 
 export type ImageModelList =
@@ -166,7 +179,8 @@ async function generateWithIdeogram(prompt: string, model: string, aspectRatio: 
   }
 
   // Convert aspect ratio to Ideogram format
-  const ideogramAspectRatio = convertToIdeogramAspectRatio(aspectRatio);
+  const isV3 = model === "ideogram-v3";
+  const ideogramAspectRatio = convertToIdeogramAspectRatio(aspectRatio, isV3);
   
   let requestBody;
   const headers: Record<string, string> = {
@@ -310,12 +324,7 @@ async function generateWithGoogleImagen(prompt: string, aspectRatio: string = "1
     throw new Error("Google Imagen indisponível: GOOGLE_CLOUD_PROJECT_ID não configurado");
   }
 
-  // Additional check for credentials availability
-  if (!env.GOOGLE_APPLICATION_CREDENTIALS && process.env.NODE_ENV === 'development') {
-    throw new Error("Google Imagen indisponível: Credenciais do Google Cloud não configuradas. Configure GOOGLE_APPLICATION_CREDENTIALS ou execute em ambiente com Application Default Credentials.");
-  }
-
-  const { GoogleAuth } = await import("google-auth-library");
+  const { getGoogleAccessToken } = await import("@/lib/google-auth");
 
   // Convert aspect ratio to Imagen format
   let imagenAspectRatio = "1:1";
@@ -337,26 +346,8 @@ async function generateWithGoogleImagen(prompt: string, aspectRatio: string = "1
   }
 
   try {
-    // Initialize authentication
-    let auth;
-    if (env.GOOGLE_APPLICATION_CREDENTIALS) {
-      auth = new GoogleAuth({
-        keyFile: env.GOOGLE_APPLICATION_CREDENTIALS,
-        scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-      });
-    } else {
-      // Try Application Default Credentials
-      auth = new GoogleAuth({
-        scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-      });
-    }
-
-    const authClient = await auth.getClient();
-    const accessToken = await authClient.getAccessToken();
-
-    if (!accessToken.token) {
-      throw new Error("Failed to obtain access token");
-    }
+    // Get access token using our utility function
+    const accessToken = await getGoogleAccessToken();
 
     // Prepare the request - try multiple regions if needed
     const location = "us-central1";
@@ -386,7 +377,7 @@ async function generateWithGoogleImagen(prompt: string, aspectRatio: string = "1
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${accessToken.token}`,
+        "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
@@ -500,7 +491,7 @@ export async function generateImageAction(
   }
 
   try {
-    console.log(`Generating image with model: ${model}, quality: ${quality}`);
+
 
     const creditResult = await consumeCredits(session.user.id, quality, 1);
     if (!creditResult.success) {
@@ -510,7 +501,7 @@ export async function generateImageAction(
       };
     }
 
-    console.log(`Credits consumed: ${creditResult.creditsUsed}, remaining: ${creditResult.remainingCredits}`);
+
 
     let imageUrl: string;
 
@@ -529,7 +520,7 @@ export async function generateImageAction(
       throw new Error(`Unsupported model: ${model}`);
     }
 
-    console.log(`Generated image URL: ${imageUrl}`);
+
 
     let imageBlob: Blob;
 
@@ -567,7 +558,7 @@ export async function generateImageAction(
     }
 
     const permanentUrl = uploadResult[0].data.ufsUrl;
-    console.log(`Uploaded to UploadThing URL: ${permanentUrl}`);
+
 
     const { data: generatedImage, error } = await supabaseAdmin
       .from('GeneratedImage')

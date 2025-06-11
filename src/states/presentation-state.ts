@@ -132,7 +132,6 @@ export const usePresentationState = create<PresentationState>((set) => ({
   setIsGridView: (isGrid) => set({ isGridView: isGrid }),
   setIsSheetOpen: (isOpen) => set({ isSheetOpen: isOpen }),
   setNumSlides: (num, isManual = false) => {
-    console.log('📊 setNumSlides called:', { num, isManual, from: new Error().stack?.split('\n')[2] });
     set({ 
       numSlides: num, 
       isNumSlidesManuallySet: isManual 

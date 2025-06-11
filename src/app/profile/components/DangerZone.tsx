@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { DeleteAccountModal } from "./DeleteAccountModal";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface DangerZoneProps {
   userId: string;
 }
 
 export function DangerZone({ userId }: DangerZoneProps) {
+  const { t } = useTranslation();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   return (
@@ -18,31 +20,30 @@ export function DangerZone({ userId }: DangerZoneProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
           <AlertTriangle className="h-5 w-5" />
-          Zona de Perigo
+          {t.profile.dangerZone}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            Ações irreversíveis relacionadas à sua conta
+            {t.profile.irreversibleActions}
           </p>
 
           <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h4 className="font-medium text-red-900 dark:text-red-100 mb-1">
-                  Excluir conta
+                  {t.profile.deleteAccountAction}
                 </h4>
                 <p className="text-sm text-red-700 dark:text-red-300 mb-3">
-                  Esta ação não pode ser desfeita. Todos os seus dados, apresentações, 
-                  imagens e configurações serão permanentemente removidos.
+                  {t.profile.cannotBeUndone}
                 </p>
                 <ul className="text-xs text-red-600 dark:text-red-400 space-y-1">
-                  <li>• Todas as apresentações serão excluídas</li>
-                  <li>• Imagens geradas serão removidas</li>
-                  <li>• Histórico de créditos será perdido</li>
-                  <li>• Temas customizados serão deletados</li>
-                  <li>• Esta ação é irreversível</li>
+                  <li>• {t.profile.allPresentationsDeleted}</li>
+                  <li>• {t.profile.generatedImagesRemoved}</li>
+                  <li>• {t.profile.creditHistoryLost}</li>
+                  <li>• {t.profile.customThemesDeleted}</li>
+                  <li>• {t.profile.actionIsIrreversible}</li>
                 </ul>
               </div>
             </div>
@@ -54,7 +55,7 @@ export function DangerZone({ userId }: DangerZoneProps) {
                 className="bg-red-600 hover:bg-red-700"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Excluir minha conta
+                {t.profile.deleteMyAccount}
               </Button>
             </div>
           </div>
@@ -64,7 +65,7 @@ export function DangerZone({ userId }: DangerZoneProps) {
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-yellow-600" />
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                <strong>Atenção:</strong> Considere fazer backup de suas apresentações importantes antes de excluir sua conta.
+                <strong>{t.profile.attention}</strong> {t.profile.considerBackup}
               </p>
             </div>
           </div>

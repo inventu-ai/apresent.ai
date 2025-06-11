@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
@@ -15,6 +16,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
@@ -26,7 +28,7 @@ export function ThemeToggle() {
       className="flex w-full items-center justify-between gap-2 text-primary"
       onClick={toggleTheme}
     >
-      <span>Change Theme</span>
+      <span>{t.userMenu.changeTheme}</span>
       <div className="flex items-center">
         <Sun className="h-4 w-4 rotate-0 transition-all dark:hidden" />
         <Moon className="hidden h-4 w-4 rotate-0 transition-all dark:block" />

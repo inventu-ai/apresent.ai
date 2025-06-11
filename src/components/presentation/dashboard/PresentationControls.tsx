@@ -70,7 +70,7 @@ export function PresentationControls({
         <Select
           value={String(numSlides)}
           onValueChange={(v) => {
-            console.log('🔧 User manually changed slides to:', Number(v));
+    
             setNumSlides(Number(v), true); // Mark as manual change
           }}
         >

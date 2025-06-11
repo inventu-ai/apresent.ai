@@ -13,6 +13,8 @@ import { updateUserProfile, getUserProfile } from "@/app/_actions/profile/update
 import { toast } from "sonner";
 import { type Session } from "next-auth";
 import { useSession } from "next-auth/react";
+import { useLanguage, useTranslation } from "@/contexts/LanguageContext";
+import { Language } from "@/lib/i18n/translations";
 
 interface AccountSettingsProps {
   user: Session["user"];
@@ -20,13 +22,15 @@ interface AccountSettingsProps {
 
 export function AccountSettings({ user }: AccountSettingsProps) {
   const { update } = useSession();
+  const { language: currentLanguage, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    language: "pt-BR",
+    language: currentLanguage,
   });
 
   // Initialize form data when user changes
@@ -40,14 +44,14 @@ export function AccountSettings({ user }: AccountSettingsProps) {
           
           setFormData({
             name: user.name || "",
-            language: userLanguage,
+            language: userLanguage as Language,
           });
         } catch (error) {
           // If there's an error, use default values
           console.error("Error loading user profile:", error);
           setFormData({
             name: user.name || "",
-            language: "pt-BR", // Default to Portuguese
+            language: currentLanguage, // Use current language context
           });
         }
       }
@@ -69,11 +73,14 @@ export function AccountSettings({ user }: AccountSettingsProps) {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Update profile with just the name field
+      // Update profile with name and language
       await updateUserProfile(user.id, {
         name: formData.name.trim(),
         language: formData.language,
       });
+
+      // Update the language context immediately
+      setLanguage(formData.language as Language);
 
       // Update the NextAuth session with new data
       await update({
@@ -83,7 +90,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
         }
       });
 
-      toast.success("Configurações salvas com sucesso!");
+      toast.success(t.profile.settingsSaved);
       
       // Force page reload to ensure all components reflect the changes
       setTimeout(() => {
@@ -91,7 +98,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
       }, 1000);
     } catch (error) {
       console.error("Error saving profile:", error);
-      toast.error("Erro ao salvar configurações");
+      toast.error(t.profile.settingsError);
     } finally {
       setIsLoading(false);
     }
@@ -102,13 +109,13 @@ export function AccountSettings({ user }: AccountSettingsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-[#1e3a8a]">
           <Settings className="h-5 w-5" />
-          Configurações da Conta
+          {t.profile.accountSettings}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <p className="text-muted-foreground">
-            Gerencie suas informações pessoais, preferências e configurações de notificação.
+            {t.profile.manageAccount}
           </p>
 
           {/* Profile Section */}
@@ -131,7 +138,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             </div>
             
             <div>
-              <h3 className="font-semibold text-lg">{user.name || "Usuário"}</h3>
+              <h3 className="font-semibold text-lg">{user.name || t.profile.name}</h3>
               <p className="text-muted-foreground text-sm">{user.email}</p>
             </div>
           </div>
@@ -139,12 +146,12 @@ export function AccountSettings({ user }: AccountSettingsProps) {
           {/* Name Fields */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name">{t.profile.name}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Seu nome completo"
+                placeholder={t.profile.fullName}
               />
             </div>
 
@@ -152,9 +159,9 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             <div>
               <Label className="flex items-center gap-2">
                 <Globe className="h-4 w-4" />
-                Idioma
+                {t.profile.language}
               </Label>
-              <Select value={formData.language} onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}>
+              <Select value={formData.language} onValueChange={(value) => setFormData(prev => ({ ...prev, language: value as Language }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -175,7 +182,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
               disabled={isLoading}
               className="bg-[#1e3a8a] hover:bg-[#1e40af]"
             >
-              {isLoading ? "Salvando..." : "Salvar Alterações"}
+              {isLoading ? t.common.loading : t.common.save}
             </Button>
           </div>
         </div>

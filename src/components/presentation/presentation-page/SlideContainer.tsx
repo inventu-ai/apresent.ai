@@ -117,7 +117,7 @@ export function SlideContainer({
           <>
             {/* Botão de geração de slide com IA */}
             <GenerateSlideFromTextButton slideIndex={index} />
-            {console.log("Renderizando botão para slide", index, "conteúdo:", currentSlide?.content)}
+    
           </>
         )}
         {!isPresenting && (

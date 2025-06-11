@@ -23,11 +23,13 @@ import { RegenerateButton } from "@/components/presentation/outline/RegenerateBu
 import { OutlineList } from "@/components/presentation/outline/OutlineList";
 import PresentationHeader from "@/components/presentation/presentation-page/PresentationHeader";
 import { PresentationsSidebar } from "@/components/presentation/dashboard/PresentationsSidebar";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function ApresentAIGenerateWithIdPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { t } = useTranslation();
   const {
     setCurrentPresentation,
     setPresentationInput,
@@ -174,8 +176,8 @@ export default function ApresentAIGenerateWithIdPage() {
               <Spinner className="h-10 w-10 text-primary" />
             </div>
             <div className="space-y-2 text-center">
-              <h2 className="text-2xl font-bold">Loading Presentation Outline</h2>
-              <p className="text-muted-foreground">Please wait a moment...</p>
+              <h2 className="text-2xl font-bold">{t.presentation.loadingPresentationOutline}</h2>
+              <p className="text-muted-foreground">{t.presentation.pleaseWaitMoment}</p>
             </div>
           </div>
         </ThemeBackground>
@@ -195,7 +197,7 @@ export default function ApresentAIGenerateWithIdPage() {
         onClick={() => router.push('/apresentai')}
       >
         <ArrowLeft className="h-4 w-4" />
-        Back
+        {t.presentation.back}
       </Button>
         <div className="mx-auto max-w-4xl space-y-8 p-8 pt-6">
           {/* Back button positioned correctly below navbar */}
@@ -207,7 +209,7 @@ export default function ApresentAIGenerateWithIdPage() {
             <OutlineList />
 
             <div className="!mb-32 space-y-4 rounded-lg border bg-muted/30 p-6">
-              <h2 className="text-lg font-semibold">Customize Theme</h2>
+              <h2 className="text-lg font-semibold">{t.presentation.customizeTheme}</h2>
               <ThemeSettings />
             </div>
           </div>
@@ -221,7 +223,7 @@ export default function ApresentAIGenerateWithIdPage() {
             disabled={isGeneratingPresentation}
           >
             <Wand2 className="h-5 w-5" />
-            {isGeneratingPresentation ? "Generating..." : "Generate Presentation"}
+            {isGeneratingPresentation ? t.presentation.generating : t.presentation.generatePresentation}
           </Button>
         </div>
       </ThemeBackground>

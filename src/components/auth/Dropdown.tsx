@@ -18,6 +18,7 @@ import { useUserCredits } from "@/hooks/useUserCredits";
 import { Badge } from "../ui/badge";
 import { PlanBadge } from "../ui/plan-badge";
 import { usePlanBadge } from "@/hooks/usePlanBadge";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export function getInitials(name: string): string {
@@ -45,6 +46,7 @@ export function UserDetail() {
   const session = useSession();
   const { remaining, isUnlimited, loading: creditsLoading, daysUntilReset } = useUserCredits();
   const { planName, isLoading: planLoading } = usePlanBadge();
+  const { t } = useTranslation();
 
   return (
     <div className="max-w-max overflow-hidden">
@@ -71,13 +73,13 @@ export function UserDetail() {
             ) : isUnlimited ? (
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
                 <Zap className="h-3 w-3 mr-1" />
-                Ilimitados
+                {t.userMenu.unlimited}
               </Badge>
             ) : (
               <div className="flex items-center gap-1">
                 <Zap className="h-3 w-3 text-blue-600" />
                 <span className="text-xs font-medium text-blue-600">
-                  {remaining} créditos
+                  {remaining} {t.userMenu.credits}
                 </span>
               </div>
             )}
@@ -86,7 +88,7 @@ export function UserDetail() {
           {/* Reset info */}
           {!isUnlimited && !creditsLoading && daysUntilReset > 0 && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Reset em {daysUntilReset} {daysUntilReset === 1 ? 'dia' : 'dias'}
+              {t.userMenu.resetIn} {daysUntilReset} {daysUntilReset === 1 ? t.userMenu.day : t.userMenu.days}
             </p>
           )}
         </div>
@@ -115,6 +117,7 @@ export default function SideBarDropdown({
   const session = useSession();
   const userId = session.data?.user.id;
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <DropdownMenu>
@@ -149,7 +152,7 @@ export default function SideBarDropdown({
                 className="flex h-full w-full items-center justify-center p-2"
               >
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>{t.userMenu.profile}</span>
               </Link>
             </Button>
           </DropdownMenuItem>
@@ -171,7 +174,7 @@ export default function SideBarDropdown({
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t.userMenu.logOut}</span>
             </Button>
           </DropdownMenuItem>
         </DropdownMenuGroup>

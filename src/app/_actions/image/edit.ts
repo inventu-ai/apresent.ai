@@ -38,11 +38,11 @@ async function getImageModelFromDatabase(imageUrl: string): Promise<ImageModelLi
       .single();
 
     if (error || !generatedImage) {
-      console.log('Image not found in database:', imageUrl);
+  
       return null;
     }
 
-    console.log('Found model in database:', generatedImage.model);
+
     return generatedImage.model as ImageModelList;
   } catch (error) {
     console.error('Error querying database for image model:', error);
@@ -54,12 +54,12 @@ async function getImageModelFromDatabase(imageUrl: string): Promise<ImageModelLi
  * Detectar o modelo original da imagem baseado em metadados ou URL
  */
 async function detectOriginalModel(imageUrl: string): Promise<ImageModelList> {
-  console.log('detectOriginalModel: analyzing URL:', imageUrl);
+
   
   // Primeiro, tentar buscar no banco de dados
   const dbModel = await getImageModelFromDatabase(imageUrl);
   if (dbModel) {
-    console.log('detectOriginalModel: found model in database:', dbModel);
+
     return dbModel;
   }
   
@@ -72,7 +72,7 @@ async function detectOriginalModel(imageUrl: string): Promise<ImageModelList> {
     imageUrl.includes('oai-dalle') ||
     imageUrl.includes('dall-e')
   ) {
-    console.log('detectOriginalModel: detected OpenAI/DALL-E');
+
     return 'gpt-image-1';
   }
   

@@ -3,6 +3,7 @@ import { Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export function PresentButton() {
   const {
@@ -11,6 +12,7 @@ export function PresentButton() {
     isGeneratingPresentation,
     isGeneratingOutline,
   } = usePresentationState();
+  const { t } = useTranslation();
 
   // Check if generation is in progress
   const isGenerating = isGeneratingPresentation || isGeneratingOutline;
@@ -30,12 +32,12 @@ export function PresentButton() {
       {isPresenting ? (
         <>
           <X className="mr-1 h-4 w-4" />
-          Exit
+          {t.userMenu.logOut}
         </>
       ) : (
         <>
           <Play className="mr-1 h-4 w-4" />
-          Present
+          {t.presentation.present}
         </>
       )}
     </Button>

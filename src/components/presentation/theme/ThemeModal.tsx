@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type ThemeProperties } from "@/lib/presentation/themes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, X } from "lucide-react";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 // Define interfaces for the theme data
 interface CustomTheme {
@@ -55,6 +56,7 @@ export function ThemeModal({ children }: { children?: ReactNode }) {
   const { setTheme } = usePresentationState();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const { t } = useTranslation();
 
   // Fetch user themes with React Query
   const { data: userThemes = [], isLoading: isLoadingUserThemes } = useQuery({
@@ -100,15 +102,15 @@ export function ThemeModal({ children }: { children?: ReactNode }) {
           >
             <div className="mb-4 flex items-center justify-between">
               <TabsList>
-                <TabsTrigger value="my-themes">My Themes</TabsTrigger>
-                <TabsTrigger value="public-themes">Public Themes</TabsTrigger>
+                <TabsTrigger value="my-themes">{t.presentation.myThemes}</TabsTrigger>
+                <TabsTrigger value="public-themes">{t.presentation.publicThemes}</TabsTrigger>
               </TabsList>
 
               <div className="flex gap-2">
                 <ThemeCreator>
                   <Button>
                     <Plus className="mr-1 size-4"></Plus>
-                    Create New Theme
+                    {t.presentation.createNewTheme}
                   </Button>
                 </ThemeCreator>
 
@@ -190,10 +192,10 @@ export function ThemeModal({ children }: { children?: ReactNode }) {
               ) : (
                 <div className="flex h-64 flex-col items-center justify-center">
                   <p className="mb-4 text-muted-foreground">
-                    You haven&apos;t created any themes yet
+                    {t.presentation.themeModal.youHaventCreated}
                   </p>
                   <ThemeCreator>
-                    <Button>Create Your First Theme</Button>
+                    <Button>{t.presentation.themeModal.createFirstTheme}</Button>
                   </ThemeCreator>
                 </div>
               )}
