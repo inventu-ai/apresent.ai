@@ -11,14 +11,11 @@ export async function middleware(request: NextRequest) {
                       request.nextUrl.pathname.startsWith("/auth/verify-code") ||
                       request.nextUrl.pathname.startsWith("/auth/reset-password");
 
-  // Always redirect from root to /apresentai
-  if (request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/apresentai", request.url));
-  }
+
 
   // If user is on auth page but already signed in, redirect to home page
   if (isAuthPage && session) {
-    return NextResponse.redirect(new URL("/apresentai", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // If user is not authenticated and trying to access a protected route, redirect to sign-in
