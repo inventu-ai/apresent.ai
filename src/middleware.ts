@@ -44,11 +44,12 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Only run middleware on routes that need authentication checks
+// Only run middleware on specific routes that need authentication checks
+// This approach ensures .well-known, api, static files, etc. are never intercepted
 export const config = {
   matcher: [
     "/profile/:path*",
-    "/apresentai/:path*",
+    "/apresentai/:path*", 
     "/auth/:path*",
   ],
 };
