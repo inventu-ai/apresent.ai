@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+import { ApresentAI } from "@/components/ApresentAI"
 
 export default function Home() {
-  redirect('/apresentai')
+  return <ApresentAI />
 }
