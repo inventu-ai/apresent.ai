@@ -157,6 +157,9 @@ export interface Translations {
     imagePrompt: string;
     imageModel: string;
     generateNew: string;
+    regenerate: string;
+    loadingPresentation: string;
+    gettingSlidesReady: string;
     presentationTheme: string;
     chooseThemeForPresentation: string;
     createNewTheme: string;
@@ -315,6 +318,25 @@ export interface Translations {
     editingWithAI: string;
     aiWillEdit: string;
     costPerEdit: string;
+  };
+  presentationsDashboard: {
+    yourPresentations: string;
+    createNewPresentation: string;
+    select: string;
+    cancel: string;
+    selectAll: string;
+    deselectAll: string;
+    delete: string;
+    failedToLoad: string;
+    noPresentationsFound: string;
+    deleteConfirmTitle: string;
+    deleteConfirmDescription: string;
+    item: string;
+    items: string;
+    success: string;
+    deletedMessage: string;
+    error: string;
+    deleteFailedMessage: string;
   };
 }
 
@@ -485,8 +507,11 @@ export const translations: Record<Language, Translations> = {
       slideText: 'Texto',
       imagePrompt: 'Prompt da Imagem',
       imageModel: 'Modelo de Imagem',
-      generateNew: 'Gerar Novo',
-      presentationTheme: 'Tema da Apresentação',
+          generateNew: 'Gerar Novo',
+    regenerate: 'Regenerar',
+    loadingPresentation: 'Carregando Apresentação',
+    gettingSlidesReady: 'Preparando seus slides...',
+    presentationTheme: 'Tema da Apresentação',
       chooseThemeForPresentation: 'Escolha um tema para sua apresentação',
       createNewTheme: 'Criar Novo Tema',
       myThemes: 'Meus Temas',
@@ -634,6 +659,25 @@ export const translations: Record<Language, Translations> = {
       editingWithAI: 'Peça à IA para editar a imagem',
       aiWillEdit: 'A IA irá editar sua imagem preservando a composição original e aplicando apenas as modificações solicitadas',
       costPerEdit: 'créditos por edição',
+    },
+    presentationsDashboard: {
+      yourPresentations: 'Suas Apresentações',
+      createNewPresentation: 'Criar Nova Apresentação',
+      select: 'Selecionar',
+      cancel: 'Cancelar',
+      selectAll: 'Selecionar Todas',
+      deselectAll: 'Desmarcar Todas',
+      delete: 'Excluir',
+      failedToLoad: 'Falha ao carregar apresentações',
+      noPresentationsFound: 'Nenhuma apresentação encontrada',
+      deleteConfirmTitle: 'Tem certeza absoluta?',
+      deleteConfirmDescription: 'Esta ação não pode ser desfeita. Isso excluirá permanentemente {count} {itemType} selecionado(s).',
+      item: 'item',
+      items: 'itens',
+      success: 'Sucesso',
+      deletedMessage: 'Apresentações selecionadas excluídas',
+      error: 'Erro',
+      deleteFailedMessage: 'Falha ao excluir apresentações',
     },
   },
   'en-US': {
@@ -802,8 +846,11 @@ export const translations: Record<Language, Translations> = {
       slideText: 'Text',
       imagePrompt: 'Image Prompt',
       imageModel: 'Image Model',
-      generateNew: 'Generate New',
-      presentationTheme: 'Presentation Theme',
+          generateNew: 'Generate New',
+    regenerate: 'Regenerate',
+    loadingPresentation: 'Loading Presentation',
+    gettingSlidesReady: 'Getting your slides ready...',
+    presentationTheme: 'Presentation Theme',
       chooseThemeForPresentation: 'Choose a theme for your presentation',
       createNewTheme: 'Create New Theme',
       myThemes: 'My Themes',
@@ -951,6 +998,25 @@ export const translations: Record<Language, Translations> = {
       editingWithAI: 'Ask AI to edit the image',
       aiWillEdit: 'AI will edit your image preserving the original composition and applying only the requested modifications',
       costPerEdit: 'credits per edit',
+    },
+    presentationsDashboard: {
+      yourPresentations: 'Your Presentations',
+      createNewPresentation: 'Create New Presentation',
+      select: 'Select',
+      cancel: 'Cancel',
+      selectAll: 'Select All',
+      deselectAll: 'Deselect All',
+      delete: 'Delete',
+      failedToLoad: 'Failed to load presentations',
+      noPresentationsFound: 'No presentations found',
+      deleteConfirmTitle: 'Are you absolutely sure?',
+      deleteConfirmDescription: 'This action cannot be undone. This will permanently delete {count} selected {itemType}.',
+      item: 'item',
+      items: 'items',
+      success: 'Success',
+      deletedMessage: 'Selected presentations deleted',
+      error: 'Error',
+      deleteFailedMessage: 'Failed to delete presentations',
     },
   },
   'es-ES': {
@@ -1120,6 +1186,9 @@ export const translations: Record<Language, Translations> = {
       imagePrompt: 'Prompt de Imagen',
       imageModel: 'Modelo de Imagen',
       generateNew: 'Generar Nuevo',
+      regenerate: 'Regenerar',
+      loadingPresentation: 'Cargando Presentación',
+      gettingSlidesReady: 'Preparando tus diapositivas...',
       presentationTheme: 'Tema de Presentación',
       chooseThemeForPresentation: 'Elige un tema para tu presentación',
       createNewTheme: 'Crear Nuevo Tema',
@@ -1268,6 +1337,25 @@ export const translations: Record<Language, Translations> = {
       editingWithAI: 'Pide a la IA que edite la imagen',
       aiWillEdit: 'La IA editará tu imagen preservando la composición original y aplicando solo las modificaciones solicitadas',
       costPerEdit: 'créditos por edición',
+    },
+    presentationsDashboard: {
+      yourPresentations: 'Tus Presentaciones',
+      createNewPresentation: 'Crear Nueva Presentación',
+      select: 'Seleccionar',
+      cancel: 'Cancelar',
+      selectAll: 'Seleccionar Todas',
+      deselectAll: 'Deseleccionar Todas',
+      delete: 'Eliminar',
+      failedToLoad: 'Error al cargar presentaciones',
+      noPresentationsFound: 'No se encontraron presentaciones',
+      deleteConfirmTitle: '¿Estás absolutamente seguro?',
+      deleteConfirmDescription: 'Esta acción no se puede deshacer. Esto eliminará permanentemente {count} {itemType} seleccionado(s).',
+      item: 'elemento',
+      items: 'elementos',
+      success: 'Éxito',
+      deletedMessage: 'Presentaciones seleccionadas eliminadas',
+      error: 'Error',
+      deleteFailedMessage: 'Error al eliminar presentaciones',
     },
   },
 }; 

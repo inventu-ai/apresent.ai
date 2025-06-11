@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Check, Trash2, X } from "lucide-react";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface SelectionControlsProps {
   isSelecting: boolean;
@@ -31,6 +32,8 @@ export function SelectionControls({
   onDeselectAll,
   onDelete,
 }: SelectionControlsProps) {
+  const { t } = useTranslation();
+
   if (!isSelecting) {
     return (
       <Button
@@ -40,10 +43,14 @@ export function SelectionControls({
         className="gap-2"
       >
         <Check className="h-4 w-4" />
-        Select
+        {t.presentationsDashboard.select}
       </Button>
     );
   }
+
+  const deleteDescription = t.presentationsDashboard.deleteConfirmDescription
+    .replace('{count}', selectedCount.toString())
+    .replace('{itemType}', selectedCount === 1 ? t.presentationsDashboard.item : t.presentationsDashboard.items);
 
   return (
     <div className="flex items-center gap-2">
@@ -54,7 +61,7 @@ export function SelectionControls({
         className="gap-2"
       >
         <X className="h-4 w-4" />
-        Cancel
+        {t.presentationsDashboard.cancel}
       </Button>
 
       {selectedCount > 0 ? (
@@ -64,7 +71,7 @@ export function SelectionControls({
           onClick={onDeselectAll}
           className="gap-2"
         >
-          Deselect All ({selectedCount})
+          {t.presentationsDashboard.deselectAll} ({selectedCount})
         </Button>
       ) : (
         <Button
@@ -73,7 +80,7 @@ export function SelectionControls({
           onClick={onSelectAll}
           className="gap-2"
         >
-          Select All ({totalCount})
+          {t.presentationsDashboard.selectAll} ({totalCount})
         </Button>
       )}
 
@@ -82,25 +89,23 @@ export function SelectionControls({
           <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm" className="gap-2">
               <Trash2 className="h-4 w-4" />
-              Delete ({selectedCount})
+              {t.presentationsDashboard.delete} ({selectedCount})
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle>{t.presentationsDashboard.deleteConfirmTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete{" "}
-                {selectedCount} selected{" "}
-                {selectedCount === 1 ? "item" : "items"}.
+                {deleteDescription}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t.presentationsDashboard.cancel}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={onDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                Delete
+                {t.presentationsDashboard.delete}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

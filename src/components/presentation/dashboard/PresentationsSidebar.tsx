@@ -21,6 +21,7 @@ import { type Prisma } from "@prisma/client";
 import { SelectionControls } from "./SelectionControls";
 import { deletePresentations } from "@/app/_actions/presentation/presentationActions";
 import { fetchPresentations } from "@/app/_actions/presentation/fetchPresentations";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 type PresentationDocument = Prisma.BaseDocumentGetPayload<{
   include: {
@@ -34,6 +35,7 @@ interface PresentationResponse {
 }
 
 export function PresentationsSidebar() {
+  const { t } = useTranslation();
   const { ref: loadMoreRef, inView } = useInView();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -56,7 +58,7 @@ export function PresentationsSidebar() {
     mutationFn: async () => {
       const result = await deletePresentations(selectedPresentations);
       if (!result.success && !result.partialSuccess) {
-        throw new Error(result.message ?? "Failed to delete presentations");
+        throw new Error(result.message ?? t.presentationsDashboard.deleteFailedMessage);
       }
       return result;
     },
@@ -66,16 +68,16 @@ export function PresentationsSidebar() {
       deselectAllPresentations();
       toggleSelecting();
       toast({
-        title: "Success",
-        description: result.message || "Selected presentations deleted",
+        title: t.presentationsDashboard.success,
+        description: result.message || t.presentationsDashboard.deletedMessage,
       });
     },
     onError: (error) => {
       console.error("Failed to delete presentations:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to delete presentations",
+        title: t.presentationsDashboard.error,
+        description: t.presentationsDashboard.deleteFailedMessage,
       });
     },
   });
@@ -130,7 +132,7 @@ export function PresentationsSidebar() {
         <div className="flex flex-col items-center justify-center gap-4 p-8">
           <FileX className="h-12 w-12 text-muted-foreground" />
           <p className="text-center text-sm text-muted-foreground">
-            Failed to load presentations
+            {t.presentationsDashboard.failedToLoad}
           </p>
         </div>
       );
@@ -141,7 +143,7 @@ export function PresentationsSidebar() {
         <div className="flex flex-col items-center justify-center gap-4 p-8">
           <FileX className="h-12 w-12 text-muted-foreground" />
           <p className="text-center text-sm text-muted-foreground">
-            No presentations found
+            {t.presentationsDashboard.noPresentationsFound}
           </p>
         </div>
       );
@@ -187,13 +189,13 @@ export function PresentationsSidebar() {
         <div className="p-6">
           <SheetHeader className="space-y-4">
             <SheetTitle className="flex items-center justify-between">
-              <span>Your Presentations</span>
+              <span>{t.presentationsDashboard.yourPresentations}</span>
             </SheetTitle>
 
             {!isSelecting && (
               <Button onClick={handleCreateNew} className="w-full">
                 <Plus className="mr-2 h-4 w-4" />
-                Create New Presentation
+                {t.presentationsDashboard.createNewPresentation}
               </Button>
             )}
             <div className="flex items-center justify-end">

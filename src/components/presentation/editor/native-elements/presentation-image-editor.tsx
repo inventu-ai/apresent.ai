@@ -355,7 +355,7 @@ export const PresentationImageEditor = ({
                 disabled={isGenerating}
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Regenerate
+                {t.presentation.regenerate}
               </Button>
             )}
           </div>
