@@ -11,13 +11,13 @@ import { canConsumeCredits, consumeCredits, canUseImageQuality, checkAndResetCre
 // Helper function to convert aspect ratio to Ideogram format
 function convertToIdeogramAspectRatio(aspectRatio: string): string {
   const aspectMap: Record<string, string> = {
-    "4:3": "ASPECT_4_3",
-    "16:9": "ASPECT_16_9", 
-    "1:1": "ASPECT_1_1",
-    "3:4": "ASPECT_3_4",
-    "9:16": "ASPECT_9_16"
+    "4:3": "4x3",
+    "16:9": "16x9", 
+    "1:1": "1x1",
+    "3:4": "3x4",
+    "9:16": "9x16"
   };
-  return aspectMap[aspectRatio] || "ASPECT_4_3";
+  return aspectMap[aspectRatio] || "4x3";
 }
 
 export type ImageModelList =
@@ -305,11 +305,17 @@ async function generateWithOpenAI(prompt: string, model: string): Promise<string
 
 // Google Cloud Imagen implementation using REST API
 async function generateWithGoogleImagen(prompt: string, aspectRatio: string = "1:1", fast: boolean = false): Promise<string> {
-  const { GoogleAuth } = await import("google-auth-library");
-  
+  // Check if Google Cloud credentials are properly configured
   if (!env.GOOGLE_CLOUD_PROJECT_ID) {
-    throw new Error("GOOGLE_CLOUD_PROJECT_ID not configured");
+    throw new Error("Google Imagen indisponível: GOOGLE_CLOUD_PROJECT_ID não configurado");
   }
+
+  // Additional check for credentials availability
+  if (!env.GOOGLE_APPLICATION_CREDENTIALS && process.env.NODE_ENV === 'development') {
+    throw new Error("Google Imagen indisponível: Credenciais do Google Cloud não configuradas. Configure GOOGLE_APPLICATION_CREDENTIALS ou execute em ambiente com Application Default Credentials.");
+  }
+
+  const { GoogleAuth } = await import("google-auth-library");
 
   // Convert aspect ratio to Imagen format
   let imagenAspectRatio = "1:1";
@@ -569,6 +575,9 @@ export async function generateImageAction(
         id: randomUUID(),
         url: permanentUrl,
         prompt: prompt,
+        model: model,
+        aspectRatio: aspectRatio,
+        quality: quality,
         userId: session.user.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

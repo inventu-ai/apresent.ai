@@ -52,25 +52,53 @@ export const MODEL_CREDIT_MAPPING: Record<ImageModelList, "BASIC_IMAGE" | "ADVAN
 };
 
 /**
+ * Verificar se o Google Imagen está configurado corretamente
+ */
+export function isGoogleImagenConfigured(): boolean {
+  // Sempre retornar true para não filtrar modelos na interface
+  // A validação real será feita no backend durante a geração
+  return true;
+}
+
+/**
  * Obter todos os modelos disponíveis para um plano específico
  */
 export function getModelsForPlan(planName: 'FREE' | 'PRO' | 'PREMIUM'): ImageModelList[] {
+  let models: ImageModelList[];
+  
   switch (planName) {
     case 'FREE':
-      return IMAGE_MODELS_BY_PLAN.FREE;
+      models = [...IMAGE_MODELS_BY_PLAN.FREE];
+      break;
     case 'PRO':
-      return [...IMAGE_MODELS_BY_PLAN.FREE, ...IMAGE_MODELS_BY_PLAN.PRO];
+      models = [...IMAGE_MODELS_BY_PLAN.FREE, ...IMAGE_MODELS_BY_PLAN.PRO];
+      break;
     case 'PREMIUM':
-      return [...IMAGE_MODELS_BY_PLAN.FREE, ...IMAGE_MODELS_BY_PLAN.PRO, ...IMAGE_MODELS_BY_PLAN.PREMIUM];
+      models = [...IMAGE_MODELS_BY_PLAN.FREE, ...IMAGE_MODELS_BY_PLAN.PRO, ...IMAGE_MODELS_BY_PLAN.PREMIUM];
+      break;
     default:
-      return IMAGE_MODELS_BY_PLAN.FREE;
+      models = [...IMAGE_MODELS_BY_PLAN.FREE];
   }
+  
+  // Remover modelos do Google Imagen se não estiverem configurados
+  if (!isGoogleImagenConfigured()) {
+    models = models.filter(model => 
+      !model.includes('google-imagen')
+    );
+  }
+  
+  return models;
 }
 
 /**
  * Verificar se um modelo específico está disponível para um plano
  */
 export function isModelAvailableForPlan(model: ImageModelList, planName: 'FREE' | 'PRO' | 'PREMIUM'): boolean {
+  // Verificação especial para Google Imagen
+  if (model.includes('google-imagen') && !isGoogleImagenConfigured()) {
+    return false;
+  }
+  
   const availableModels = getModelsForPlan(planName);
   return availableModels.includes(model);
 }

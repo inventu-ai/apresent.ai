@@ -202,6 +202,26 @@ export async function canUseImageModel(userId: string, model: ImageModelList): P
   requiredPlan?: 'PRO' | 'PREMIUM';
   message?: string;
 }> {
+  // Verificação especial para Google Imagen
+  if (model.includes('google-imagen')) {
+    const isConfigured = !!(process.env.GOOGLE_CLOUD_PROJECT_ID && 
+                           (process.env.GOOGLE_APPLICATION_CREDENTIALS || 
+                            process.env.NODE_ENV === 'production'));
+    
+    if (!isConfigured) {
+      const plan = await getUserCurrentPlan(userId);
+      const planName = plan?.name || 'FREE';
+      const availableModels = getModelsForPlan(planName as 'FREE' | 'PRO' | 'PREMIUM');
+      
+      return {
+        allowed: false,
+        planName,
+        availableModels,
+        message: 'Google Imagen temporariamente indisponível. Credenciais não configuradas.'
+      };
+    }
+  }
+
   const plan = await getUserCurrentPlan(userId);
   const planName = plan?.name || 'FREE';
   const availableModels = getModelsForPlan(planName as 'FREE' | 'PRO' | 'PREMIUM');

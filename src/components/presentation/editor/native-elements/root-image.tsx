@@ -263,6 +263,30 @@ export default function RootImage({
                 onEdit={handleEditImage}
                 onRemove={removeRootImageFromSlide}
                 onAdjustImage={() => setIsAdjusting(true)}
+                onImageEdited={(newImageUrl) => {
+                  console.log('Root image edited, updating from:', imageUrl, 'to:', newImageUrl);
+                  setImageUrl(newImageUrl);
+                  // Atualizar o estado global
+                  const { slides } = usePresentationState.getState();
+                  const updatedSlides = slides.map((slide: any, index: number) => {
+                    if (index === slideIndex && slide.rootImage) {
+                      return {
+                        ...slide,
+                        rootImage: {
+                          ...slide.rootImage,
+                          url: newImageUrl,
+                        },
+                      };
+                    }
+                    return slide;
+                  });
+                  setSlides(updatedSlides);
+                  saveImmediately();
+                  // Força re-renderização
+                  setTimeout(() => {
+                    setImageUrl(prev => prev); // Trigger re-render
+                  }, 100);
+                }}
               >
                 <div className="relative h-full" tabIndex={0}>
                   {/* Renderizar o editor de ajuste apenas para layouts não verticais */}
@@ -317,6 +341,7 @@ export default function RootImage({
                   }}>
                     {/*  eslint-disable-next-line @next/next/no-img-element */}
                     <img
+                      key={imageUrl ?? image.url} // Força re-renderização quando URL muda
                       src={imageUrl ?? image.url}
                       alt={image.query}
                       className="h-full w-full object-cover"

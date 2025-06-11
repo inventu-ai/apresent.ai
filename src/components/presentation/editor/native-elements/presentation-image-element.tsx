@@ -170,6 +170,20 @@ export const PresentationImageElement = withHOC(
                             setIsAdjusting(true);
                           }
                         }}
+                        onImageEdited={(newImageUrl) => {
+                          if (!readOnly) {
+                            console.log('Image edited, updating from:', imageUrl, 'to:', newImageUrl);
+                            setImageUrl(newImageUrl);
+                            setNode(editor, props.element, {
+                              url: newImageUrl,
+                            });
+                            saveImmediately();
+                            // Força re-renderização
+                            setTimeout(() => {
+                              setImageUrl(prev => prev); // Trigger re-render
+                            }, 100);
+                          }
+                        }}
                       >
                         <div className="relative overflow-hidden" style={{ position: 'relative' }}>
                           <div style={{ 
@@ -213,6 +227,7 @@ export const PresentationImageElement = withHOC(
                           }}>
                             <Image
                               ref={handleRef}
+                              key={imageUrl} // Força re-renderização quando URL muda
                               className={cn(
                                 "presentation-image",
                                 "cursor-pointer",

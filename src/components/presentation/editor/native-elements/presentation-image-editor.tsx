@@ -283,6 +283,16 @@ export const PresentationImageEditor = ({
                         const info = MODEL_INFO[model];
                         const isAvailable = isModelAvailableForPlan(model, planName);
                         
+                        // Determinar qual plano é necessário para este modelo específico
+                        let requiredPlanText = '';
+                        if (!isAvailable) {
+                          if (isModelAvailableForPlan(model, 'PRO')) {
+                            requiredPlanText = 'Pro';
+                          } else if (isModelAvailableForPlan(model, 'PREMIUM')) {
+                            requiredPlanText = 'Premium';
+                          }
+                        }
+                        
                         return (
                           <SelectItem 
                             key={model} 
@@ -301,9 +311,9 @@ export const PresentationImageEditor = ({
                                   </span>
                                 </div>
                               </div>
-                              {!isAvailable && (
+                              {!isAvailable && requiredPlanText && (
                                 <Badge variant="secondary" className="text-xs opacity-60">
-                                  🔒 Requer {planType === 'PRO' ? 'Pro' : 'Premium'}
+                                  🔒 Requer {requiredPlanText}
                                 </Badge>
                               )}
                             </div>

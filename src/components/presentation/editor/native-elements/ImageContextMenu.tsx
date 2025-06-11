@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { useDebouncedSave } from "@/hooks/presentation/useDebouncedSave";
+import { ImageEditDialog } from "./ImageEditDialog";
 
 interface ImageContextMenuProps {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ interface ImageContextMenuProps {
   onEdit?: () => void;
   onRemove?: () => void;
   onAdjustImage?: () => void;
+  onImageEdited?: (newImageUrl: string) => void;
 }
 
 export function ImageContextMenu({
@@ -37,8 +39,10 @@ export function ImageContextMenu({
   onEdit,
   onRemove,
   onAdjustImage,
+  onImageEdited,
 }: ImageContextMenuProps) {
   const { saveImmediately } = useDebouncedSave();
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Função para copiar a imagem para a área de transferência
   const handleCopy = async () => {
@@ -110,9 +114,28 @@ export function ImageContextMenu({
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>{children}</ContextMenuTrigger>
-      <ContextMenuContent className="w-64">
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger>{children}</ContextMenuTrigger>
+        <ContextMenuContent className="w-64">
+        <ContextMenuItem onSelect={onEdit}>
+          <Edit className="mr-2 h-4 w-4" />
+          Editar imagem...
+        </ContextMenuItem>
+        <ContextMenuItem 
+          onSelect={() => setShowEditDialog(true)}
+          disabled={!imageUrl || !onImageEdited}
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          Peça à IA para...
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={onAdjustImage} disabled={!onAdjustImage}>
+          <Maximize className="mr-2 h-4 w-4" />
+          Ajustar imagem
+        </ContextMenuItem>
+        
+        <ContextMenuSeparator />
+        
         <ContextMenuItem onSelect={handleCopy}>
           <Copy className="mr-2 h-4 w-4" />
           Copiar
@@ -132,26 +155,25 @@ export function ImageContextMenu({
         
         <ContextMenuSeparator />
         
-        <ContextMenuItem onSelect={onEdit}>
-          <Edit className="mr-2 h-4 w-4" />
-          Editar imagem...
-        </ContextMenuItem>
-        <ContextMenuItem disabled>
-          <Sparkles className="mr-2 h-4 w-4" />
-          Peça à IA para...
-        </ContextMenuItem>
-        <ContextMenuItem onSelect={onAdjustImage} disabled={!onAdjustImage}>
-          <Maximize className="mr-2 h-4 w-4" />
-          Ajustar imagem
-        </ContextMenuItem>
-        
-        <ContextMenuSeparator />
-        
         <ContextMenuItem onSelect={onRemove} className="text-destructive">
           <X className="mr-2 h-4 w-4" />
           Remover imagem de destaque
         </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      {/* Diálogo de edição de imagem */}
+      {imageUrl && onImageEdited && (
+        <ImageEditDialog
+          isOpen={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          imageUrl={imageUrl}
+          onImageEdited={(newImageUrl) => {
+            onImageEdited(newImageUrl);
+            saveImmediately();
+          }}
+        />
+      )}
+    </>
   );
 }
