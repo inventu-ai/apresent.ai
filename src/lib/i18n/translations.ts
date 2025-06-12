@@ -40,6 +40,20 @@ export interface Translations {
     accountCreated: string;
     invalidCredentials: string;
     passwordResetSent: string;
+    loginModal: {
+      title: string;
+      subtitle: string;
+      benefits: {
+        aiSlides: string;
+        secureStorage: string;
+        unlimitedThemes: string;
+      };
+      continueWithGoogle: string;
+      createFreeAccount: string;
+      or: string;
+      freeToStart: string;
+      loggingIn: string;
+    };
   };
   profile: {
     title: string;
@@ -184,68 +198,68 @@ export interface Translations {
     enterThemeName: string;
     themeDescription: string;
     enterThemeDescription: string;
-          makeThemePublic: string;
-      presentationStyles: {
-        professional: string;
-        creative: string;
-        minimal: string;
-        bold: string;
-        elegant: string;
-      };
-      themeDescriptions: {
-        modern: string;
-        professional: string;
-        futuristic: string;
-        classic: string;
-        dark: string;
-        highContrast: string;
-        boldPassionate: string;
-        warm: string;
-        natural: string;
-      };
-      themeModal: {
-        youHaventCreated: string;
-        createFirstTheme: string;
-        chooseBaseTheme: string;
-        startFromScratch: string;
-        createBlankTheme: string;
-        yourThemePreview: string;
-        themePreviewDescription: string;
-        primaryButton: string;
-        secondaryButton: string;
-        baseTheme: string;
-        colors: string;
-        typography: string;
-        logo: string;
-        finish: string;
-        continue: string;
-      };
-      colorLabels: {
-        primaryColor: string;
-        secondaryColor: string;
-        accentColor: string;
-        backgroundColor: string;
-        textColor: string;
-        headingColor: string;
-        mutedColor: string;
-      };
-      fontLabels: {
-        headingFont: string;
-        bodyFont: string;
-      };
-      logoUpload: {
-        uploadLogo: string;
-        addLogoDescription: string;
-        themeLogo: string;
-      };
-      finishTheme: {
-        finishYourTheme: string;
-        themeName: string;
-        enterThemeName: string;
-        description: string;
-        enterThemeDescription: string;
-        makeThemePublic: string;
-      };
+    makeThemePublic: string;
+    presentationStyles: {
+      professional: string;
+      creative: string;
+      minimal: string;
+      bold: string;
+      elegant: string;
+    };
+    themeDescriptions: {
+      modern: string;
+      professional: string;
+      futuristic: string;
+      classic: string;
+      dark: string;
+      highContrast: string;
+      boldPassionate: string;
+      warm: string;
+      natural: string;
+    };
+    themeModal: {
+      youHaventCreated: string;
+      createFirstTheme: string;
+      chooseBaseTheme: string;
+      startFromScratch: string;
+      createBlankTheme: string;
+      yourThemePreview: string;
+      themePreviewDescription: string;
+      primaryButton: string;
+      secondaryButton: string;
+      baseTheme: string;
+      colors: string;
+      typography: string;
+      logo: string;
+      finish: string;
+      continue: string;
+    };
+    colorLabels: {
+      primaryColor: string;
+      secondaryColor: string;
+      accentColor: string;
+      backgroundColor: string;
+      textColor: string;
+      headingColor: string;
+      mutedColor: string;
+    };
+    fontLabels: {
+      headingFont: string;
+      bodyFont: string;
+    };
+    logoUpload: {
+      uploadLogo: string;
+      addLogoDescription: string;
+      themeLogo: string;
+    };
+    finishTheme: {
+      finishYourTheme: string;
+      themeName: string;
+      enterThemeName: string;
+      description: string;
+      enterThemeDescription: string;
+      makeThemePublic: string;
+    };
   };
   userMenu: {
     changeTheme: string;
@@ -338,6 +352,9 @@ export interface Translations {
     error: string;
     deleteFailedMessage: string;
   };
+  home: {
+    inputPlaceholder: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -381,6 +398,20 @@ export const translations: Record<Language, Translations> = {
       accountCreated: 'Conta criada com sucesso',
       invalidCredentials: 'Credenciais inválidas',
       passwordResetSent: 'E-mail de redefinição enviado',
+      loginModal: {
+        title: 'Quase lá! ✨',
+        subtitle: 'Para gerar sua apresentação sobre "{prompt}", você precisa fazer login rapidinho.',
+        benefits: {
+          aiSlides: 'Criação de slides com IA em segundos',
+          secureStorage: 'Suas apresentações salvas com segurança',
+          unlimitedThemes: 'Temas e personalizações ilimitadas',
+        },
+        continueWithGoogle: 'Continuar com Google',
+        createFreeAccount: 'Criar conta grátis',
+        or: 'ou',
+        freeToStart: '100% gratuito para começar • Sem cartão de crédito',
+        loggingIn: 'Entrando...',
+      },
     },
     profile: {
       title: 'Perfil',
@@ -507,11 +538,11 @@ export const translations: Record<Language, Translations> = {
       slideText: 'Texto',
       imagePrompt: 'Prompt da Imagem',
       imageModel: 'Modelo de Imagem',
-          generateNew: 'Gerar Novo',
-    regenerate: 'Regenerar',
-    loadingPresentation: 'Carregando Apresentação',
-    gettingSlidesReady: 'Preparando seus slides...',
-    presentationTheme: 'Tema da Apresentação',
+      generateNew: 'Gerar Novo',
+      regenerate: 'Regenerar',
+      loadingPresentation: 'Carregando Apresentação',
+      gettingSlidesReady: 'Preparando seus slides...',
+      presentationTheme: 'Tema da Apresentação',
       chooseThemeForPresentation: 'Escolha um tema para sua apresentação',
       createNewTheme: 'Criar Novo Tema',
       myThemes: 'Meus Temas',
@@ -679,6 +710,9 @@ export const translations: Record<Language, Translations> = {
       error: 'Erro',
       deleteFailedMessage: 'Falha ao excluir apresentações',
     },
+    home: {
+      inputPlaceholder: 'Digite o que você gostaria de criar...',
+    },
   },
   'en-US': {
     common: {
@@ -720,6 +754,20 @@ export const translations: Record<Language, Translations> = {
       accountCreated: 'Account created successfully',
       invalidCredentials: 'Invalid credentials',
       passwordResetSent: 'Password reset email sent',
+      loginModal: {
+        title: 'Almost there! ✨',
+        subtitle: 'To generate your presentation about "{prompt}", you need to sign in quickly.',
+        benefits: {
+          aiSlides: 'AI slide creation in seconds',
+          secureStorage: 'Your presentations safely stored',
+          unlimitedThemes: 'Unlimited themes and customizations',
+        },
+        continueWithGoogle: 'Continue with Google',
+        createFreeAccount: 'Create free account',
+        or: 'or',
+        freeToStart: '100% free to start • No credit card required',
+        loggingIn: 'Signing in...',
+      },
     },
     profile: {
       title: 'Profile',
@@ -846,11 +894,11 @@ export const translations: Record<Language, Translations> = {
       slideText: 'Text',
       imagePrompt: 'Image Prompt',
       imageModel: 'Image Model',
-          generateNew: 'Generate New',
-    regenerate: 'Regenerate',
-    loadingPresentation: 'Loading Presentation',
-    gettingSlidesReady: 'Getting your slides ready...',
-    presentationTheme: 'Presentation Theme',
+      generateNew: 'Generate New',
+      regenerate: 'Regenerate',
+      loadingPresentation: 'Loading Presentation',
+      gettingSlidesReady: 'Getting your slides ready...',
+      presentationTheme: 'Presentation Theme',
       chooseThemeForPresentation: 'Choose a theme for your presentation',
       createNewTheme: 'Create New Theme',
       myThemes: 'My Themes',
@@ -1018,6 +1066,9 @@ export const translations: Record<Language, Translations> = {
       error: 'Error',
       deleteFailedMessage: 'Failed to delete presentations',
     },
+    home: {
+      inputPlaceholder: 'Type what you would like to create...',
+    },
   },
   'es-ES': {
     common: {
@@ -1059,6 +1110,20 @@ export const translations: Record<Language, Translations> = {
       accountCreated: 'Cuenta creada exitosamente',
       invalidCredentials: 'Credenciales inválidas',
       passwordResetSent: 'Correo de restablecimiento enviado',
+      loginModal: {
+        title: '¡Casi listo! ✨',
+        subtitle: 'Para generar tu presentación sobre "{prompt}", necesitas iniciar sesión rápidamente.',
+        benefits: {
+          aiSlides: 'Creación de diapositivas con IA en segundos',
+          secureStorage: 'Tus presentaciones guardadas de forma segura',
+          unlimitedThemes: 'Temas y personalizaciones ilimitadas',
+        },
+        continueWithGoogle: 'Continuar con Google',
+        createFreeAccount: 'Crear cuenta gratis',
+        or: 'o',
+        freeToStart: '100% gratis para empezar • Sin tarjeta de crédito',
+        loggingIn: 'Iniciando sesión...',
+      },
     },
     profile: {
       title: 'Perfil',
@@ -1357,5 +1422,8 @@ export const translations: Record<Language, Translations> = {
       error: 'Error',
       deleteFailedMessage: 'Error al eliminar presentaciones',
     },
-  },
+    home: {
+      inputPlaceholder: 'Escribe lo que te gustaría crear...',
+    },
+  } as const,
 }; 

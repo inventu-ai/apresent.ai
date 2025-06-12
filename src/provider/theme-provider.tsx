@@ -6,7 +6,6 @@ import { type ThemeProviderProps } from "next-themes/dist/types";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "@/contexts/LanguageContext";
 
@@ -23,11 +22,7 @@ export function ThemeToggle() {
   };
 
   return (
-    <Button
-      variant="outline"
-      className="flex w-full items-center justify-between gap-2 text-primary"
-      onClick={toggleTheme}
-    >
+    <div className="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary hover:bg-accent hover:text-accent-foreground">
       <span>{t.userMenu.changeTheme}</span>
       <div className="flex items-center">
         <Sun className="h-4 w-4 rotate-0 transition-all dark:hidden" />
@@ -39,6 +34,6 @@ export function ThemeToggle() {
         />
       </div>
       <span className="sr-only">Toggle theme</span>
-    </Button>
+    </div>
   );
 }

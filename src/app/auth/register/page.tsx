@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +11,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { registerUser, checkEmailAvailability, type RegisterFormData } from "@/app/_actions/auth/register";
+import { AnimatedBackground } from "@/components/ui/animated-background";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const prompt = searchParams.get("prompt");
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
     email: "",
@@ -58,29 +63,29 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Nome é obrigatório";
+      newErrors.name = "Full name is required";
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Nome deve ter pelo menos 2 caracteres";
+      newErrors.name = "Full name must be at least 2 characters";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email é obrigatório";
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email inválido";
+      newErrors.email = "Invalid email";
     } else if (emailAvailable === false) {
-      newErrors.email = "Este email já está cadastrado";
+      newErrors.email = "This email is already registered";
     }
 
     if (!formData.password) {
-      newErrors.password = "Senha é obrigatória";
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirmação de senha é obrigatória";
+      newErrors.confirmPassword = "Confirm password is required";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Senhas não coincidem";
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -101,7 +106,10 @@ export default function RegisterPage() {
       if (result.success) {
         setSuccess(true);
         setTimeout(() => {
-          router.push("/auth/signin?message=Conta criada com sucesso! Faça login para continuar.");
+          const signInUrl = prompt 
+            ? `/auth/signin?message=Account created successfully! Please log in to continue.&callbackUrl=${encodeURIComponent(callbackUrl)}&prompt=${encodeURIComponent(prompt)}`
+            : "/auth/signin?message=Account created successfully! Please log in to continue.";
+          router.push(signInUrl);
         }, 2000);
       } else {
         if (result.fieldErrors) {
@@ -114,11 +122,11 @@ export default function RegisterPage() {
           });
           setErrors(stringErrors);
         } else {
-          setErrors({ general: result.error || "Erro ao criar conta" });
+          setErrors({ general: result.error || "Error creating account" });
         }
       }
     } catch (error) {
-      setErrors({ general: "Erro interno. Tente novamente." });
+      setErrors({ general: "Internal error. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -138,227 +146,240 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
-              <h2 className="text-xl font-semibold text-green-700 mb-2">
-                Conta criada com sucesso!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Redirecionando para a página de login...
-              </p>
-              <Loader2 className="mx-auto h-6 w-6 animate-spin" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AnimatedBackground showTitle={false}>
+        <div className="min-h-screen flex items-center justify-center relative z-50 px-4">
+          <Card className="w-full max-w-md shadow-xl bg-white/95 backdrop-blur-sm border-white/20 relative z-50">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
+                <h2 className="text-xl font-semibold text-green-700 mb-2">
+                  Account created successfully!
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Redirecting to login page...
+                </p>
+                <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AnimatedBackground>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Criar conta
-          </CardTitle>
-          <CardDescription className="text-center">
-            Preencha os dados abaixo para criar sua conta
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {errors.general && (
-              <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
-                <AlertDescription>{errors.general}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Seu nome completo"
-                value={formData.name}
-                onChange={handleInputChange}
-                className={errors.name ? "border-red-500" : ""}
-                disabled={isLoading}
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name}</p>
+    <AnimatedBackground showTitle={false}>
+      <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-50">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl text-white text-center font-serif italic">
+          Register
+        </h1>
+      </div>
+      
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="w-full max-w-md shadow-xl bg-white/95 backdrop-blur-sm border-white/20">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center text-gray-900">
+              Create account
+            </CardTitle>
+            <CardDescription className="text-center text-gray-600">
+              Fill in the details below to create your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {errors.general && (
+                <Alert variant="destructive">
+                  <XCircle className="h-4 w-4" />
+                  <AlertDescription>{errors.general}</AlertDescription>
+                </Alert>
               )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-gray-700">Full name</Label>
                 <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={formData.email}
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Your full name"
+                  value={formData.name}
                   onChange={handleInputChange}
-                  className={errors.email ? "border-red-500" : emailAvailable === true ? "border-green-500" : ""}
+                  className={`bg-white border-gray-300 text-gray-900 ${errors.name ? "border-red-500" : ""}`}
                   disabled={isLoading}
                 />
-                {checkingEmail && (
-                  <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin" />
-                )}
-                {!checkingEmail && emailAvailable === true && (
-                  <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-500" />
-                )}
-                {!checkingEmail && emailAvailable === false && (
-                  <XCircle className="absolute right-3 top-3 h-4 w-4 text-red-500" />
+                {errors.name && (
+                  <p className="text-sm text-red-500">{errors.name}</p>
                 )}
               </div>
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email}</p>
-              )}
-              {emailAvailable === true && (
-                <p className="text-sm text-green-600">Email disponível</p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Sua senha"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={errors.password ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-700">Email</Label>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`bg-white border-gray-300 text-gray-900 ${errors.email ? "border-red-500" : emailAvailable === true ? "border-green-500" : ""}`}
+                    disabled={isLoading}
+                  />
+                  {checkingEmail && (
+                    <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin" />
                   )}
-                </Button>
-              </div>
-              {formData.password && (
-                <div className="space-y-1">
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-1 w-full rounded ${
-                          level <= passwordStrength
-                            ? passwordStrength <= 2
-                              ? "bg-red-500"
-                              : passwordStrength <= 3
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
-                            : "bg-gray-200"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-600">
-                    Força da senha: {
-                      passwordStrength <= 2 ? "Fraca" :
-                      passwordStrength <= 3 ? "Média" : "Forte"
-                    }
-                  </p>
+                  {!checkingEmail && emailAvailable === true && (
+                    <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-500" />
+                  )}
+                  {!checkingEmail && emailAvailable === false && (
+                    <XCircle className="absolute right-3 top-3 h-4 w-4 text-red-500" />
+                  )}
                 </div>
-              )}
-              {errors.password && (
-                <p className="text-sm text-red-500">{errors.password}</p>
-              )}
-            </div>
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email}</p>
+                )}
+                {emailAvailable === true && (
+                  <p className="text-sm text-green-600">Email available</p>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar senha</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirme sua senha"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className={errors.confirmPassword ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-gray-700">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Your password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={`bg-white border-gray-300 text-gray-900 ${errors.password ? "border-red-500" : ""}`}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {formData.password && (
+                  <div className="space-y-1">
+                    <div className="flex space-x-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`h-1 w-full rounded ${
+                            level <= passwordStrength
+                              ? passwordStrength <= 2
+                                ? "bg-red-500"
+                                : passwordStrength <= 3
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
+                              : "bg-gray-200"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      Password strength: {
+                        passwordStrength <= 2 ? "Weak" :
+                        passwordStrength <= 3 ? "Medium" : "Strong"
+                      }
+                    </p>
+                  </div>
+                )}
+                {errors.password && (
+                  <p className="text-sm text-red-500">{errors.password}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-gray-700">Confirm password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={`bg-white border-gray-300 text-gray-900 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={isLoading}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500 text-center">
+                  By creating an account, you agree to our{" "}
+                  <Link href="/terms" className="text-blue-600 hover:text-blue-500 underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="text-blue-600 hover:text-blue-500 underline">
+                    Privacy Policy
+                  </Link>.
+                </p>
+
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={isLoading}
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || emailAvailable === false}
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    "Create account"
                   )}
                 </Button>
               </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-500">{errors.confirmPassword}</p>
-              )}
-            </div>
+            </form>
 
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                Ao criar uma conta, você concorda com nossos{" "}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-500 underline">
-                  Termos de Serviço
-                </Link>{" "}
-                e{" "}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-500 underline">
-                  Política de Privacidade
-                </Link>.
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{" "}
+                <Link
+                  href={prompt 
+                    ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}&prompt=${encodeURIComponent(prompt)}`
+                    : "/auth/signin"
+                  }
+                  className="font-medium text-blue-600 hover:text-blue-500"
+                >
+                  Sign in
+                </Link>
               </p>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || emailAvailable === false}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Criando conta...
-                  </>
-                ) : (
-                  "Criar conta"
-                )}
-              </Button>
             </div>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Já tem uma conta?{" "}
-              <Link
-                href="/auth/signin"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Fazer login
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AnimatedBackground>
   );
 }

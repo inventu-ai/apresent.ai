@@ -9,10 +9,18 @@ import { usePresentationState } from "@/states/presentation-state"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createEmptyPresentation } from "@/app/_actions/presentation/presentationActions"
-import { useMemo } from "react"
+import { useMemo, useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useSearchParams } from "next/navigation"
+import { LoginModal } from "@/components/auth/LoginModal"
+import { useTranslation } from "@/contexts/LanguageContext"
 
 function ApresentAI() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { t } = useTranslation();
   const {
     presentationInput,
     setPresentationInput,
@@ -21,6 +29,18 @@ function ApresentAI() {
     setIsGeneratingOutline,
     setOriginalPrompt,
   } = usePresentationState();
+
+  // Check for prompt in URL parameters (after login redirect)
+  useEffect(() => {
+    const promptFromUrl = searchParams.get('prompt');
+    if (promptFromUrl && !presentationInput) {
+      setPresentationInput(decodeURIComponent(promptFromUrl));
+      // Clean up URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('prompt');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams, presentationInput, setPresentationInput]);
 
   // Arrays de cores e fontes para randomização
   const backgroundColors = [
@@ -34,7 +54,14 @@ function ApresentAI() {
   const fontFamilies = [
     'font-sans', 'font-serif', 'font-mono',
     'font-bold', 'font-semibold', 'font-medium',
-    'font-light', 'font-thin', 'font-normal'
+    'font-light', 'font-thin', 'font-normal',
+    'font-extrabold', 'font-black', 'font-extralight',
+    'text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl',
+    'text-2xl', 'text-3xl', 'text-4xl', 'text-5xl',
+    'uppercase', 'lowercase', 'capitalize',
+    'italic', 'not-italic',
+    'tracking-tight', 'tracking-normal', 'tracking-wide', 'tracking-wider', 'tracking-widest',
+    'leading-tight', 'leading-normal', 'leading-relaxed', 'leading-loose'
   ];
 
   // Função para gerar estilo aleatório
@@ -67,6 +94,16 @@ function ApresentAI() {
   const handleGenerate = async () => {
     if (!presentationInput.trim()) {
       toast.error("Please enter a topic for your presentation");
+      return;
+    }
+
+    // Check if user is logged in before proceeding
+    if (!session) {
+      // Store the prompt to preserve user input during auth flow
+      setOriginalPrompt(presentationInput);
+      
+      // Show friendly login modal instead of redirecting immediately
+      setShowLoginModal(true);
       return;
     }
 
@@ -104,6 +141,12 @@ function ApresentAI() {
       e.preventDefault();
       handleGenerate();
     }
+  };
+
+  const handleLoginSuccess = () => {
+    setShowLoginModal(false);
+    // After login, the user will be redirected back with the prompt
+    // The useEffect will handle setting the prompt and we can proceed
   };
 
   return (
@@ -257,7 +300,7 @@ function ApresentAI() {
               value={presentationInput}
               onChange={(e) => setPresentationInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="What would you like to create a presentation about?"
+              placeholder={session ? t.home.inputPlaceholder : "What would you like to create a presentation about?"}
               className="w-full h-28 pr-16 pl-4 py-5 rounded-xl border border-white/10 bg-black/10 backdrop-blur-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30 focus:bg-black/20 resize-none transition-all duration-200"
               rows={2}
             />
@@ -276,6 +319,14 @@ function ApresentAI() {
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        prompt={presentationInput}
+        onSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }

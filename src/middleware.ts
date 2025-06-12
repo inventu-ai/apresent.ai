@@ -14,11 +14,10 @@ export async function middleware(request: NextRequest) {
     "/privacy",
   ];
   
-  // Define protected routes that require authentication
-  const protectedRoutes = [
-    "/profile",
-    "/apresentai",
-  ];
+     // Define protected routes that require authentication
+   const protectedRoutes = [
+     "/profile",
+   ];
   
   const isAuthPage = pathname.startsWith("/auth");
   const isPublicRoute = publicRoutes.some(route => 
@@ -49,7 +48,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/profile/:path*",
-    "/apresentai/:path*", 
     "/auth/:path*",
   ],
 };
