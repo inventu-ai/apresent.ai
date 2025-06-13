@@ -6,6 +6,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { SlideParser, type PlateSlide } from "../utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { extractSlideCount } from "@/lib/utils/prompt-parser";
+import { detectLanguage, mapToSystemLanguage, getLanguageDisplayName } from "@/lib/language-detection";
 
 export function PresentationGenerationManager() {
   const {
@@ -23,6 +24,7 @@ export function PresentationGenerationManager() {
     setIsGeneratingPresentation,
     setNumSlides,
     isNumSlidesManuallySet,
+    setLanguage,
   } = usePresentationState();
 
   // Create a ref for the streaming parser to persist between renders
@@ -133,8 +135,33 @@ export function PresentationGenerationManager() {
         try {
           setIsGeneratingOutline(true);
           // Get current state
-          const { presentationInput } = usePresentationState.getState();
-          // Debug logs
+          const { presentationInput, setLanguage } = usePresentationState.getState();
+          
+          // Detect language from the prompt
+          const detectedLang = detectLanguage(presentationInput ?? "");
+          const systemLanguage = mapToSystemLanguage(detectedLang);
+          
+          // Update the language in the state
+          setLanguage(systemLanguage);
+          
+          // Save the detected language to the database immediately
+          const { currentPresentationId } = usePresentationState.getState();
+          if (currentPresentationId) {
+            try {
+              await updatePresentation({
+                id: currentPresentationId,
+                language: systemLanguage,
+              });
+            } catch (error) {
+              console.error('Failed to save detected language to database:', error);
+            }
+          }
+          
+          // Show a toast notification about the detected language
+          const languageName = getLanguageDisplayName(systemLanguage);
+          toast.info(`Idioma detectado: ${languageName}`, {
+            duration: 3000,
+          });
           
           let finalSlideCount = numSlides;
           // PRIORITY 1: If user manually set the slide count, ALWAYS use it
@@ -149,8 +176,7 @@ export function PresentationGenerationManager() {
             setNumSlides(extractedSlideCount, false);
             finalSlideCount = extractedSlideCount;
           }
-          // Get the updated state after setting numSlides
-          const { language } = usePresentationState.getState();
+          
           // Start the RAF cycle for outline updates
           if (outlineRafIdRef.current === null) {
             outlineRafIdRef.current =
@@ -160,7 +186,7 @@ export function PresentationGenerationManager() {
             body: {
               prompt: presentationInput ?? "",
               numberOfCards: finalSlideCount, // Use the final count (extracted or manual)
-              language,
+              language: systemLanguage, // Use the detected language
             },
           });
         } catch (error) {
@@ -179,7 +205,7 @@ export function PresentationGenerationManager() {
     useCompletion({
       api: "/api/presentation/generate",
       onFinish: (_prompt, _completion) => {
-        const { currentPresentationId, currentPresentationTitle, theme } =
+        const { currentPresentationId, currentPresentationTitle, theme, language } =
           usePresentationState.getState();
         const parser = streamingParserRef.current;
         parser.reset();
@@ -195,6 +221,7 @@ export function PresentationGenerationManager() {
             content: { slides: slides },
             title: currentPresentationTitle ?? "",
             theme,
+            language, // Save the detected language to the presentation
           });
         }
         setIsGeneratingPresentation(false);
@@ -246,6 +273,16 @@ export function PresentationGenerationManager() {
         presentationStyle,
         currentPresentationTitle,
       } = usePresentationState.getState();
+      
+      // Detect language from the prompt if not already detected
+      const detectedLang = detectLanguage(presentationInput ?? "");
+      const systemLanguage = mapToSystemLanguage(detectedLang);
+      
+      // Update the language in the state if it's different
+      if (systemLanguage !== language) {
+        setLanguage(systemLanguage);
+      }
+      
       // Reset the parser before starting a new generation
       streamingParserRef.current.reset();
       setIsGeneratingPresentation(true);
@@ -257,12 +294,12 @@ export function PresentationGenerationManager() {
         body: {
           title: presentationInput ?? currentPresentationTitle ?? "",
           outline,
-          language,
+          language: systemLanguage, // Use the detected language
           tone: presentationStyle,
         },
       });
     }
-  }, [shouldStartPresentationGeneration]);
+  }, [shouldStartPresentationGeneration, setLanguage]);
 
   // Clean up RAF on unmount
   useEffect(() => {

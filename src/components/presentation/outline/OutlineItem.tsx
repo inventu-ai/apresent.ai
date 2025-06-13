@@ -1,12 +1,13 @@
 import { useState, useEffect, memo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, X, Brain } from "lucide-react";
+import { GripVertical, X, Brain, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ProseMirrorEditor from "@/components/prose-mirror/ProseMirrorEditor";
 import { useCompletion } from "ai/react";
 import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface OutlineItemProps {
   id: string;
@@ -32,6 +33,7 @@ export const OutlineItem = memo(function OutlineItem({
   const [editedTitle, setEditedTitle] = useState(title);
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, outline } = usePresentationState();
+  const { t } = useTranslation();
 
   const {
     attributes,
@@ -74,11 +76,12 @@ export const OutlineItem = memo(function OutlineItem({
       setIsGenerating(false);
       if (completion) {
         onTitleChange(id, completion);
+        toast.success(t.presentation.topicRegenerated);
       }
     },
     onError: (error) => {
       setIsGenerating(false);
-      toast.error("Failed to generate topic: " + error.message);
+      toast.error(t.presentation.topicRegenerationError + ": " + error.message);
     },
   });
 
@@ -97,6 +100,27 @@ export const OutlineItem = memo(function OutlineItem({
     } catch (error) {
       console.error("Error generating topic:", error);
       setIsGenerating(false);
+      toast.error(t.presentation.topicRegenerationError);
+    }
+  };
+
+  const handleRegenerateTopic = async () => {
+    if (isGenerating || isLoading) return;
+    
+    setIsGenerating(true);
+    try {
+      await generateTopic("", {
+        body: {
+          suggestion: editedTitle,
+          existingTopics: outline.filter((_, i) => i !== index), // Exclude current topic
+          language,
+          isRegeneration: true,
+        },
+      });
+    } catch (error) {
+      console.error("Error regenerating topic:", error);
+      setIsGenerating(false);
+      toast.error(t.presentation.topicRegenerationError);
     }
   };
 
@@ -129,25 +153,39 @@ export const OutlineItem = memo(function OutlineItem({
           showFloatingToolbar={false}
         />
       </div>
-      {isNew && (
+      <div className="flex items-center gap-2">
+        {isNew ? (
+          <button
+            onClick={handleGenerateTopic}
+            disabled={isGenerating || isLoading}
+            className={cn(
+              "text-indigo-400 opacity-100 transition-opacity hover:text-indigo-600",
+              (isGenerating || isLoading) && "animate-pulse"
+            )}
+            title={t.presentation.regenerateTopic}
+          >
+            <Brain size={20} />
+          </button>
+        ) : (
+          <button
+            onClick={handleRegenerateTopic}
+            disabled={isGenerating || isLoading}
+            className={cn(
+              "text-blue-400 opacity-0 transition-opacity hover:text-blue-600 group-hover:opacity-100",
+              (isGenerating || isLoading) && "animate-spin opacity-100"
+            )}
+            title={t.presentation.regenerateTopic}
+          >
+            <RefreshCw size={18} />
+          </button>
+        )}
         <button
-          onClick={handleGenerateTopic}
-          disabled={isGenerating || isLoading}
-          className={cn(
-            "text-indigo-400 opacity-100 transition-opacity hover:text-indigo-600",
-            (isGenerating || isLoading) && "animate-pulse"
-          )}
-          title="Generate topic from this suggestion"
+          onClick={() => onDelete(id)}
+          className="text-muted-foreground opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
         >
-          <Brain size={20} />
+          <X size={20} />
         </button>
-      )}
-      <button
-        onClick={() => onDelete(id)}
-        className="text-muted-foreground opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
-      >
-        <X size={20} />
-      </button>
+      </div>
     </div>
   );
 });

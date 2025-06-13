@@ -154,6 +154,10 @@ export interface Translations {
     regenerateOutline: string;
     regenerating: string;
     outline: string;
+    regenerateTopic: string;
+    regeneratingTopic: string;
+    topicRegenerated: string;
+    topicRegenerationError: string;
     addCard: string;
     cardsTotal: string;
     customizeTheme: string;
@@ -520,9 +524,13 @@ export const translations: Record<Language, Translations> = {
       back: 'Voltar',
       prompt: 'Prompt',
       slide: 'slide',
-      regenerateOutline: 'Regenerar Estrutura',
-      regenerating: 'Regenerando...',
-      outline: 'Estrutura',
+          regenerateOutline: 'Regenerar Estrutura',
+    regenerating: 'Regenerando...',
+    outline: 'Estrutura',
+    regenerateTopic: 'Regenerar Tópico',
+    regeneratingTopic: 'Regenerando tópico...',
+    topicRegenerated: 'Tópico regenerado com sucesso',
+    topicRegenerationError: 'Erro ao regenerar tópico',
       addCard: 'Adicionar card',
       cardsTotal: 'cards total',
       customizeTheme: 'Personalizar Tema',
@@ -877,9 +885,13 @@ export const translations: Record<Language, Translations> = {
       back: 'Back',
       prompt: 'Prompt',
       slide: 'slide',
-      regenerateOutline: 'Regenerate Outline',
-      regenerating: 'Regenerating...',
-      outline: 'Outline',
+          regenerateOutline: 'Regenerate Outline',
+    regenerating: 'Regenerating...',
+    outline: 'Outline',
+    regenerateTopic: 'Regenerate Topic',
+    regeneratingTopic: 'Regenerating topic...',
+    topicRegenerated: 'Topic regenerated successfully',
+    topicRegenerationError: 'Error regenerating topic',
       addCard: 'Add card',
       cardsTotal: 'cards total',
       customizeTheme: 'Customize Theme',
@@ -1234,9 +1246,13 @@ export const translations: Record<Language, Translations> = {
       back: 'Atrás',
       prompt: 'Prompt',
       slide: 'diapositiva',
-      regenerateOutline: 'Regenerar Esquema',
-      regenerating: 'Regenerando...',
-      outline: 'Esquema',
+          regenerateOutline: 'Regenerar Esquema',
+    regenerating: 'Regenerando...',
+    outline: 'Esquema',
+    regenerateTopic: 'Regenerar Tema',
+    regeneratingTopic: 'Regenerando tema...',
+    topicRegenerated: 'Tema regenerado exitosamente',
+    topicRegenerationError: 'Error al regenerar tema',
       addCard: 'Añadir tarjeta',
       cardsTotal: 'tarjetas total',
       customizeTheme: 'Personalizar Tema',

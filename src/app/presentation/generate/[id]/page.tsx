@@ -132,8 +132,9 @@ export default function PresentationGenerateWithIdPage() {
         setPresentationStyle(presentationData.presentation.presentationStyle);
       }
 
-      // Set language if available
-      if (presentationData.presentation?.language) {
+      // Set language if available, but only if we're not currently generating
+      // (to avoid overriding the detected language during generation)
+      if (presentationData.presentation?.language && !isGeneratingOutline) {
         setLanguage(presentationData.presentation.language);
       }
     }

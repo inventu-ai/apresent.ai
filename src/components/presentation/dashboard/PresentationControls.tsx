@@ -24,6 +24,10 @@ export function PresentationControls({
     setPageStyle,
   } = usePresentationState();
   
+
+  
+
+  
   const { maxCards, planName } = useUserPlanLimits();
   
   const SLIDE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30];
@@ -112,7 +116,7 @@ export function PresentationControls({
             Language
           </label>
         )}
-        <Select value={language} onValueChange={setLanguage}>
+        <Select key={language} value={language} onValueChange={setLanguage}>
           <SelectTrigger>
             <SelectValue placeholder="Select language" />
           </SelectTrigger>
