@@ -123,7 +123,7 @@ CREATE INDEX IF NOT EXISTS idx_base_document_user_id ON "BaseDocument"("userId")
 CREATE INDEX IF NOT EXISTS idx_base_document_type ON "BaseDocument"(type);
 CREATE INDEX IF NOT EXISTS idx_base_document_public ON "BaseDocument"("isPublic");
 CREATE INDEX IF NOT EXISTS idx_custom_theme_user_id ON "CustomTheme"("userId");
-CREATE INDEX IF NOT EXISTS idx_custom_theme_public ON "CustomTheme"("isPublic");
+
 CREATE INDEX IF NOT EXISTS idx_favorite_document_user_id ON "FavoriteDocument"("userId");
 CREATE INDEX IF NOT EXISTS idx_favorite_document_document_id ON "FavoriteDocument"("documentId");
 CREATE INDEX IF NOT EXISTS idx_generated_image_user_id ON "GeneratedImage"("userId");
@@ -206,7 +206,7 @@ CREATE POLICY "Users can delete own presentations" ON "Presentation" FOR DELETE 
 
 -- RLS Policies for CustomTheme table
 CREATE POLICY "Users can view own themes" ON "CustomTheme" FOR SELECT USING (auth.uid()::text = "userId"::text);
-CREATE POLICY "Users can view public themes" ON "CustomTheme" FOR SELECT USING ("isPublic" = true);
+
 CREATE POLICY "Users can insert own themes" ON "CustomTheme" FOR INSERT WITH CHECK (auth.uid()::text = "userId"::text);
 CREATE POLICY "Users can update own themes" ON "CustomTheme" FOR UPDATE USING (auth.uid()::text = "userId"::text);
 CREATE POLICY "Users can delete own themes" ON "CustomTheme" FOR DELETE USING (auth.uid()::text = "userId"::text);

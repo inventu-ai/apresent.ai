@@ -21,9 +21,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import {
   getUserCustomThemes,
-  getPublicCustomThemes,
 } from "@/app/_actions/presentation/theme-actions";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeCreator } from "./ThemeCreator";
 import { useTranslation } from "@/contexts/LanguageContext";
@@ -62,22 +60,8 @@ export function ThemeSelector() {
   const { theme: presentationTheme, setTheme: setPresentationTheme } =
     usePresentationState();
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("my-themes");
   const isDark = systemTheme === "dark";
   const { t, language } = useTranslation();
-
-  // Helper function for language-dependent text
-  const getByText = (userName: string | null) => {
-    const by = language === 'pt-BR' ? 'Por' : language === 'es-ES' ? 'Por' : 'By';
-    const unknown = language === 'pt-BR' ? 'Desconhecido' : language === 'es-ES' ? 'Desconocido' : 'Unknown';
-    return `${by} ${userName ?? unknown}`;
-  };
-
-  const getNoThemesText = () => {
-    return language === 'pt-BR' ? 'Nenhum tema público disponível' :
-           language === 'es-ES' ? 'No hay temas públicos disponibles' :
-           'No public themes available';
-  };
 
   const getHeadingText = () => {
     return language === 'pt-BR' ? 'Título' :
@@ -100,17 +84,6 @@ export function ThemeSelector() {
     },
     enabled: isThemeSheetOpen,
   });
-
-  // Fetch public themes with React Query
-  const { data: publicThemes = [], isLoading: isLoadingPublicThemes } =
-    useQuery({
-      queryKey: ["publicThemes"],
-      queryFn: async () => {
-        const result = await getPublicCustomThemes();
-        return result.success ? (result.themes as CustomTheme[]) : [];
-      },
-      enabled: isThemeSheetOpen,
-    });
 
   // Handle theme selection
   const handleThemeSelect = (
@@ -158,19 +131,79 @@ export function ThemeSelector() {
           </div>
         </SheetHeader>
 
-        <Tabs
-          defaultValue="my-themes"
-          value={activeTab}
-          onValueChange={setActiveTab}
-        >
-          <div className="mb-4">
-            <TabsList>
-              <TabsTrigger value="my-themes">{t.presentation.myThemes}</TabsTrigger>
-              <TabsTrigger value="public-themes">{t.presentation.publicThemes}</TabsTrigger>
-            </TabsList>
+        <div className="space-y-6">
+          {/* Built-in Themes */}
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-muted-foreground">
+              {t.presentation.builtInThemes}
+            </h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {Object.entries(themes).map(([key, themeData]) => {
+                const modeColors = isDark
+                  ? themeData.colors.dark
+                  : themeData.colors.light;
+                const modeShadows = isDark
+                  ? themeData.shadows.dark
+                  : themeData.shadows.light;
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleThemeSelect(key as Themes)}
+                    className={cn(
+                      "group relative space-y-2 rounded-lg border p-4 text-left transition-all",
+                      presentationTheme === key
+                        ? "border-primary bg-primary/5"
+                        : "hover:border-primary/50 hover:bg-muted/50"
+                    )}
+                    style={{
+                      borderRadius: themeData.borderRadius,
+                      boxShadow: modeShadows.card,
+                      transition: themeData.transitions.default,
+                    }}
+                  >
+                    <div
+                      className="font-medium"
+                      style={{
+                        color: modeColors.heading,
+                        fontFamily: themeData.fonts.heading,
+                      }}
+                    >
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </div>
+                    <div
+                      className="text-sm"
+                      style={{
+                        color: modeColors.text,
+                        fontFamily: themeData.fonts.body,
+                      }}
+                    >
+                      {getHeadingText()} • {getBodyText()}
+                    </div>
+                    <div className="flex gap-2">
+                      {[
+                        modeColors.primary,
+                        modeColors.secondary,
+                        modeColors.accent,
+                      ].map((color, i) => (
+                        <div
+                          key={i}
+                          className="h-4 w-4 rounded-full ring-1 ring-inset ring-white/10"
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <TabsContent value="my-themes">
+          {/* Custom Themes */}
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-muted-foreground">
+              {t.presentation.myThemes}
+            </h3>
             {isLoadingUserThemes ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {[1, 2, 3, 4].map((i) => (
@@ -198,15 +231,12 @@ export function ThemeSelector() {
                         "group relative space-y-2 rounded-lg border p-4 text-left transition-all",
                         presentationTheme === theme.id
                           ? "border-primary bg-primary/5"
-                          : "border-muted hover:border-primary/50 hover:bg-muted/50"
+                          : "hover:border-primary/50 hover:bg-muted/50"
                       )}
                       style={{
                         borderRadius: themeData.borderRadius,
                         boxShadow: modeShadows.card,
                         transition: themeData.transitions.default,
-                        backgroundColor: isDark
-                          ? "rgba(0,0,0,0.3)"
-                          : "rgba(255,255,255,0.9)",
                       }}
                     >
                       <div
@@ -245,182 +275,15 @@ export function ThemeSelector() {
                 })}
               </div>
             ) : (
-              <div className="flex h-64 flex-col items-center justify-center">
-                <p className="mb-4 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-8">
+                <p className="mb-4 text-sm text-muted-foreground">
                   {t.presentation.themeModal.youHaventCreated}
                 </p>
                 <ThemeCreator>
-                                      <Button>{t.presentation.themeModal.createFirstTheme}</Button>
+                  <Button size="sm">{t.presentation.themeModal.createFirstTheme}</Button>
                 </ThemeCreator>
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="public-themes">
-            {isLoadingPublicThemes ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <ThemeCardSkeleton key={i} />
-                ))}
-              </div>
-            ) : publicThemes.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {publicThemes.map((theme) => {
-                  const themeData = theme.themeData;
-                  const modeColors = isDark
-                    ? themeData.colors.dark
-                    : themeData.colors.light;
-                  const modeShadows = isDark
-                    ? themeData.shadows.dark
-                    : themeData.shadows.light;
-
-                  return (
-                    <button
-                      key={theme.id}
-                      onClick={() =>
-                        handleThemeSelect(theme.id as ThemeId, themeData)
-                      }
-                      className={cn(
-                        "group relative space-y-2 rounded-lg border p-4 text-left transition-all",
-                        presentationTheme === theme.id
-                          ? "border-primary bg-primary/5"
-                          : "border-muted hover:border-primary/50 hover:bg-muted/50"
-                      )}
-                      style={{
-                        borderRadius: themeData.borderRadius,
-                        boxShadow: modeShadows.card,
-                        transition: themeData.transitions.default,
-                        backgroundColor: isDark
-                          ? "rgba(0,0,0,0.3)"
-                          : "rgba(255,255,255,0.9)",
-                      }}
-                    >
-                      <div
-                        className="font-medium"
-                        style={{
-                          color: modeColors.heading,
-                          fontFamily: themeData.fonts.heading,
-                        }}
-                      >
-                        {theme.name}
-                      </div>
-                      <div
-                        className="text-sm"
-                        style={{
-                          color: modeColors.text,
-                          fontFamily: themeData.fonts.body,
-                        }}
-                      >
-                        {theme.description ?? "Custom theme"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {getByText(theme.user?.name ?? null)}
-                      </div>
-                      <div className="flex gap-2">
-                        {[
-                          modeColors.primary,
-                          modeColors.secondary,
-                          modeColors.accent,
-                        ].map((color, i) => (
-                          <div
-                            key={i}
-                            className="h-4 w-4 rounded-full ring-1 ring-inset ring-white/10"
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex h-64 items-center justify-center">
-                <p className="text-muted-foreground">
-                  {getNoThemesText()}
-                </p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        <div className="mt-8">
-          <h3 className="mb-4 text-lg font-semibold">{t.presentation.builtInThemes}</h3>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {Object.entries(themes).map(([key, themeOption]) => {
-              const modeColors = isDark
-                ? themeOption.colors.dark
-                : themeOption.colors.light;
-              const modeShadows = isDark
-                ? themeOption.shadows.dark
-                : themeOption.shadows.light;
-
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleThemeSelect(key as ThemeId)}
-                  className={cn(
-                    "group relative space-y-2 rounded-lg border p-4 text-left transition-all",
-                    presentationTheme === key
-                      ? "border-primary bg-primary/5"
-                      : "border-muted hover:border-primary/50 hover:bg-muted/50"
-                  )}
-                  style={{
-                    borderRadius: themeOption.borderRadius,
-                    boxShadow: modeShadows.card,
-                    transition: themeOption.transitions.default,
-                    backgroundColor:
-                      presentationTheme === key
-                        ? `${modeColors.primary}${isDark ? "15" : "08"}`
-                        : isDark
-                        ? "rgba(0,0,0,0.3)"
-                        : "rgba(255,255,255,0.9)",
-                  }}
-                >
-                  <div
-                    className="font-medium"
-                    style={{
-                      color: modeColors.heading,
-                      fontFamily: themeOption.fonts.heading,
-                    }}
-                  >
-                    {themeOption.name}
-                  </div>
-                  <div
-                    className="text-sm"
-                    style={{
-                      color: modeColors.text,
-                      fontFamily: themeOption.fonts.body,
-                    }}
-                  >
-                    {themeOption.description}
-                  </div>
-                  <div className="flex gap-2">
-                    {[
-                      modeColors.primary,
-                      modeColors.secondary,
-                      modeColors.accent,
-                    ].map((color, i) => (
-                      <div
-                        key={i}
-                        className="h-4 w-4 rounded-full ring-1 ring-inset ring-white/10"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                  <div
-                    className="mt-2 text-xs"
-                    style={{ color: modeColors.muted }}
-                  >
-                    <span className="block">
-                      {getHeadingText()}: {themeOption.fonts.heading}
-                    </span>
-                    <span className="block">
-                      {getBodyText()}: {themeOption.fonts.body}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
           </div>
         </div>
       </SheetContent>

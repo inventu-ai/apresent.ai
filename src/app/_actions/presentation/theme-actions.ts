@@ -259,42 +259,7 @@ export async function getUserCustomThemes() {
   }
 }
 
-// Get all public themes
-export async function getPublicCustomThemes() {
-  try {
-    const { data: themes, error } = await supabaseAdmin
-      .from('CustomTheme')
-      .select(`
-        *,
-        user:users(name)
-      `)
-      .eq('isPublic', true)
-      .order('createdAt', { ascending: false });
 
-    if (error) {
-      console.error("Error fetching public themes:", error);
-      return {
-        success: false,
-        message:
-          "Unable to load public themes at this time. Please try again later.",
-        themes: [],
-      };
-    }
-
-    return {
-      success: true,
-      themes: themes || [],
-    };
-  } catch (error) {
-    console.error("Failed to fetch public themes:", error);
-    return {
-      success: false,
-      message:
-        "Unable to load public themes at this time. Please try again later.",
-      themes: [],
-    };
-  }
-}
 
 // Get a single theme by ID
 export async function getCustomThemeById(themeId: string) {

@@ -183,7 +183,6 @@ export interface Translations {
     chooseThemeForPresentation: string;
     createNewTheme: string;
     myThemes: string;
-    publicThemes: string;
     builtInThemes: string;
     darkMode: string;
     primaryColor: string;
@@ -203,7 +202,6 @@ export interface Translations {
     enterThemeName: string;
     themeDescription: string;
     enterThemeDescription: string;
-    makeThemePublic: string;
     presentationStyles: {
       professional: string;
       creative: string;
@@ -263,7 +261,6 @@ export interface Translations {
       enterThemeName: string;
       description: string;
       enterThemeDescription: string;
-      makeThemePublic: string;
     };
   };
   userMenu: {
@@ -556,7 +553,6 @@ export const translations: Record<Language, Translations> = {
       chooseThemeForPresentation: 'Escolha um tema para sua apresentação',
       createNewTheme: 'Criar Novo Tema',
       myThemes: 'Meus Temas',
-      publicThemes: 'Temas Públicos',
       builtInThemes: 'Temas Integrados',
       darkMode: 'Modo Escuro',
       primaryColor: 'Cor Primária',
@@ -576,7 +572,6 @@ export const translations: Record<Language, Translations> = {
       enterThemeName: 'Digite o nome do tema',
       themeDescription: 'Descrição',
       enterThemeDescription: 'Digite a descrição do tema',
-      makeThemePublic: 'Tornar tema público',
       presentationStyles: {
         professional: 'Profissional',
         creative: 'Criativo',
@@ -636,7 +631,6 @@ export const translations: Record<Language, Translations> = {
         enterThemeName: 'Digite o nome do tema',
         description: 'Descrição',
         enterThemeDescription: 'Digite a descrição do tema',
-        makeThemePublic: 'Tornar tema público',
       },
     },
     navigation: {
@@ -917,7 +911,6 @@ export const translations: Record<Language, Translations> = {
       chooseThemeForPresentation: 'Choose a theme for your presentation',
       createNewTheme: 'Create New Theme',
       myThemes: 'My Themes',
-      publicThemes: 'Public Themes',
       builtInThemes: 'Built-in Themes',
       darkMode: 'Dark Mode',
       primaryColor: 'Primary Color',
@@ -937,7 +930,6 @@ export const translations: Record<Language, Translations> = {
       enterThemeName: 'Enter theme name',
       themeDescription: 'Description',
       enterThemeDescription: 'Enter theme description',
-      makeThemePublic: 'Make theme public',
       presentationStyles: {
         professional: 'Professional',
         creative: 'Creative',
@@ -997,7 +989,6 @@ export const translations: Record<Language, Translations> = {
         enterThemeName: 'Enter theme name',
         description: 'Description',
         enterThemeDescription: 'Enter theme description',
-        makeThemePublic: 'Make theme public',
       },
     },
     navigation: {
@@ -1278,7 +1269,6 @@ export const translations: Record<Language, Translations> = {
       chooseThemeForPresentation: 'Elige un tema para tu presentación',
       createNewTheme: 'Crear Nuevo Tema',
       myThemes: 'Mis Temas',
-      publicThemes: 'Temas Públicos',
       builtInThemes: 'Temas Integrados',
       darkMode: 'Modo Oscuro',
       primaryColor: 'Color Primario',
@@ -1298,7 +1288,6 @@ export const translations: Record<Language, Translations> = {
       enterThemeName: 'Introduce el nombre del tema',
       themeDescription: 'Descripción',
       enterThemeDescription: 'Introduce la descripción del tema',
-      makeThemePublic: 'Hacer tema público',
       presentationStyles: {
         professional: 'Profesional',
         creative: 'Creativo',
@@ -1358,7 +1347,6 @@ export const translations: Record<Language, Translations> = {
         enterThemeName: 'Introduce el nombre del tema',
         description: 'Descripción',
         enterThemeDescription: 'Introduce la descripción del tema',
-        makeThemePublic: 'Hacer tema público',
       },
     },
     navigation: {

@@ -3,7 +3,6 @@ import { type Themes } from "@/lib/presentation/themes";
 export type ThemeFormValues = {
   name: string;
   description: string;
-  isPublic: boolean;
   themeBase: Themes | "blank";
   colors: {
     light: {

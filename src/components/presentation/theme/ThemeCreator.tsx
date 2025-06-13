@@ -51,7 +51,6 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
     defaultValues: {
       name: "",
       description: "",
-      isPublic: false,
       themeBase: "mystique",
       colors: {
         light: { ...themes.mystique.colors.light },
@@ -149,12 +148,12 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
       }
 
       // Separate the basic metadata from the theme styling data
-      const { name, description, isPublic, ...themeStyleData } = data;
+      const { name, description, ...themeStyleData } = data;
 
       const themeData = {
         name,
         description,
-        isPublic,
+        isPublic: false, // Always set to false since we removed public themes
         logo: logoUrl,
         themeData: themeStyleData, // Add the theme styling data as nested themeData field
       };
@@ -433,19 +432,7 @@ export function ThemeCreator({ children }: { children?: ReactNode }) {
                       />
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Controller
-                        name="isPublic"
-                        control={control}
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        )}
-                      />
-                      <Label>{t.presentation.makeThemePublic}</Label>
-                    </div>
+
                   </div>
                 </div>
               )}
