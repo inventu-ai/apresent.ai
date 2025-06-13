@@ -133,6 +133,7 @@ export function PresentationThumbnail({
       >
         {isReady && (
           <div
+            className="absolute inset-0"
             style={{
               transform: `scale(${scale})`,
               transformOrigin: "top left",
@@ -182,7 +183,7 @@ export function PresentationThumbnail({
               <DndProvider backend={HTML5Backend}>
                 <PresentationEditor
                   initialContent={firstSlide}
-                  className="min-h-[500px] w-[800px]"
+                  className="min-h-[500px] w-[800px] border-0"
                   slideIndex={0}
                   isGenerating={false}
                   readOnly={true}

@@ -41,6 +41,11 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
     }
   }, [currentPresentationTitle, title]);
 
+  // Hide header completely during presentation
+  if (isPresenting) {
+    return null;
+  }
+
   return (
     <header className="flex h-12 w-full items-center justify-between border-b border-accent bg-background px-4">
       {/* Left section with breadcrumb navigation */}
@@ -58,29 +63,27 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
         <SaveStatus />
 
         {/* View Presentations button */}
-        {!isPresenting && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleViewPresentations}
-            className="h-8 w-8"
-            title="View Presentations"
-          >
-            <History className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleViewPresentations}
+          className="h-8 w-8"
+          title="View Presentations"
+        >
+          <History className="h-4 w-4" />
+        </Button>
 
         {/* Theme selector - Only in presentation page, not outline */}
         {isPresentationPage && <ThemeSelector />}
 
         {/* Share button - Only in presentation page, not outline */}
-        {isPresentationPage && !isPresenting && <ShareButton />}
+        {isPresentationPage && <ShareButton />}
 
         {/* Present button - Only in presentation page, not outline */}
         {isPresentationPage && <PresentButton />}
 
         {/* User profile dropdown - Keep this on all pages */}
-        {!isPresenting && <SideBarDropdown />}
+        <SideBarDropdown />
       </div>
     </header>
   );

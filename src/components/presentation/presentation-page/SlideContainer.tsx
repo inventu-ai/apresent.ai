@@ -1,6 +1,6 @@
 "use client";
 
-import { GripVertical, Plus, Trash } from "lucide-react";
+import { GripVertical, Plus, Trash, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SlideEditPopover } from "./SlideEditPopover";
 import { nanoid } from "nanoid";
-import { PresentModeHeader } from "./PresentModeHeader";
+import { useEffect, useCallback } from "react";
 
 interface SlideContainerProps {
   children: React.ReactNode;
@@ -41,10 +41,9 @@ export function SlideContainer({
     slides,
     setSlides,
     isPresenting,
-    currentPresentationTitle,
     currentSlideIndex,
-    shouldShowExitHeader,
     setCurrentSlideIndex,
+    setIsPresenting,
   } = usePresentationState();
 
   const currentSlide = slides[index];
@@ -61,6 +60,54 @@ export function SlideContainer({
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  // Improved keyboard navigation for presentation mode
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Only handle keyboard events if we're presenting and this is the current slide
+    if (!isPresenting || index !== currentSlideIndex) return;
+
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+      case " ": // Space bar
+        event.preventDefault();
+        event.stopPropagation();
+        if (currentSlideIndex < slides.length - 1) {
+          setCurrentSlideIndex(currentSlideIndex + 1);
+        }
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        event.preventDefault();
+        event.stopPropagation();
+        if (currentSlideIndex > 0) {
+          setCurrentSlideIndex(currentSlideIndex - 1);
+        }
+        break;
+      case "Escape":
+        event.preventDefault();
+        event.stopPropagation();
+        setIsPresenting(false);
+        break;
+      case "Home":
+        event.preventDefault();
+        event.stopPropagation();
+        setCurrentSlideIndex(0);
+        break;
+      case "End":
+        event.preventDefault();
+        event.stopPropagation();
+        setCurrentSlideIndex(slides.length - 1);
+        break;
+    }
+  }, [isPresenting, index, currentSlideIndex, slides.length, setCurrentSlideIndex, setIsPresenting]);
+
+  useEffect(() => {
+    if (!isPresenting || index !== currentSlideIndex) return;
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isPresenting, index, currentSlideIndex, handleKeyDown]);
 
   const addNewSlide = (position: "before" | "after") => {
     const newSlide: PlateSlide = {
@@ -86,6 +133,10 @@ export function SlideContainer({
     setSlides(updatedSlides);
   };
 
+  // Determine if this slide should be visible
+  const isCurrentSlide = index === currentSlideIndex;
+  const shouldShow = !isPresenting || isCurrentSlide;
+
   return (
     <div
       ref={setNodeRef}
@@ -93,23 +144,31 @@ export function SlideContainer({
       className={cn(
         "group/card-container relative z-10 grid w-full place-items-center pb-6",
         isDragging && "z-50 opacity-50",
-        isPresenting && "fixed inset-0 pb-0",
-        index === currentSlideIndex && isPresenting && "z-[999]",
-        // Ocultar slides que não são o atual no modo apresentação
-        isPresenting && index !== currentSlideIndex && "hidden"
+        isPresenting && "fixed inset-0 pb-0 group/presentation",
+        isCurrentSlide && isPresenting && "z-[999]",
+        // Hide slides that are not current during presentation
+        !shouldShow && "hidden"
       )}
       {...attributes}
     >
-      <PresentModeHeader
-        presentationTitle={currentPresentationTitle}
-        showHeader={isPresenting && shouldShowExitHeader}
-      />
+      {/* Exit button for presentation mode */}
+      {isPresenting && isCurrentSlide && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed right-4 top-4 z-[1002] h-10 w-10 rounded-full bg-black/50 text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 hover:bg-black/70 group-hover/presentation:opacity-100"
+          onClick={() => setIsPresenting(false)}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      )}
+
       <div
         className={cn(
           "relative w-full",
           !isPresenting && currentSlide?.width !== "M" && "max-w-5xl",
           !isPresenting && currentSlide?.width !== "L" && "max-w-6xl",
-          isPresenting && "h-full w-full",
+          isPresenting && "h-full w-full flex items-center justify-center",
           className
         )}
       >
@@ -182,19 +241,19 @@ export function SlideContainer({
         </div>
       )}
 
-      {isPresenting && (
+      {isPresenting && isCurrentSlide && (
         <div className="absolute bottom-0.5 left-1 right-1 z-[1001]">
           <div className="flex h-1.5 w-full gap-1">
-            {slides.map((_, index) => (
+            {slides.map((_, slideIndex) => (
               <button
-                key={index}
+                key={slideIndex}
                 className={`h-full flex-1 rounded-full transition-all ${
-                  index === currentSlideIndex
+                  slideIndex === currentSlideIndex
                     ? "bg-primary shadow-sm"
                     : "bg-white/20 hover:bg-white/40"
                 }`}
-                onClick={() => setCurrentSlideIndex(index)}
-                aria-label={`Go to slide ${index + 1}`}
+                onClick={() => setCurrentSlideIndex(slideIndex)}
+                aria-label={`Go to slide ${slideIndex + 1}`}
               />
             ))}
           </div>

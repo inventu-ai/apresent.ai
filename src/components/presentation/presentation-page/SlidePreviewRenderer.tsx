@@ -55,7 +55,7 @@ export function SlidePreviewRenderer({
 
     // Only update if we have valid dimensions
     if (previewWidth > 0 && editorWidth > 0 && editorHeight > 0) {
-      const newScale = Math.min(previewWidth / editorWidth, 0.3); // Cap the scale at 0.3
+      const newScale = Math.min(previewWidth / editorWidth, 0.25); // Slightly increased max scale
       
       setDimensions({
         editorWidth,
@@ -129,7 +129,7 @@ export function SlidePreviewRenderer({
   const previewEditor = (
     <PresentationEditor
       initialContent={slide}
-      className="min-h-[300px] border"
+      className="min-h-[300px] border-0"
       id={previewId}
       isPreview={true}
       readOnly={true}
@@ -147,12 +147,13 @@ export function SlidePreviewRenderer({
         visibility: "hidden",
         width: "800px", // Fixed width for consistent calculations
         height: "600px", // Fixed height for consistent calculations
+        pointerEvents: "none",
       }}
     >
       {previewEditor}
       {createPortal(
         <div
-          className="max-h-96 transition-all duration-300 ease-in-out"
+          className="max-h-96 transition-all duration-300 ease-in-out overflow-hidden"
           style={{
             height: isReady ? `${finalHeight}px` : "75px",
             opacity: isReady ? 1 : 0.7,
@@ -166,6 +167,7 @@ export function SlidePreviewRenderer({
               height: dimensions.editorHeight,
               pointerEvents: "none",
               transition: "transform 0.2s ease-in-out",
+              overflow: "hidden",
             }}
           >
             {previewEditor}
