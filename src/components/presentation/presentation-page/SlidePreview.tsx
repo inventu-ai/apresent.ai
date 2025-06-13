@@ -38,7 +38,11 @@ export function SlidePreview({
             </div>
             <div
               id={`slide-preview-${index}`}
-              className="pointer-events-none h-max min-h-9 w-full overflow-hidden bg-card"
+              className="pointer-events-none min-h-[75px] w-full overflow-hidden bg-card transition-all duration-300 ease-in-out"
+              style={{
+                aspectRatio: "16/9", // Maintain consistent aspect ratio
+                maxHeight: "120px", // Prevent thumbnails from getting too large
+              }}
             />
           </div>
         ))}
