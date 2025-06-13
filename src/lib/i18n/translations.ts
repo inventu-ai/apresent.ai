@@ -50,6 +50,7 @@ export interface Translations {
       };
       continueWithGoogle: string;
       createFreeAccount: string;
+      alreadyHaveAccount: string;
       or: string;
       freeToStart: string;
       loggingIn: string;
@@ -408,6 +409,7 @@ export const translations: Record<Language, Translations> = {
         },
         continueWithGoogle: 'Continuar com Google',
         createFreeAccount: 'Criar conta grátis',
+        alreadyHaveAccount: 'Já tenho uma conta',
         or: 'ou',
         freeToStart: '100% gratuito para começar • Sem cartão de crédito',
         loggingIn: 'Entrando...',
@@ -764,6 +766,7 @@ export const translations: Record<Language, Translations> = {
         },
         continueWithGoogle: 'Continue with Google',
         createFreeAccount: 'Create free account',
+        alreadyHaveAccount: 'Already have an account? Sign in',
         or: 'or',
         freeToStart: '100% free to start • No credit card required',
         loggingIn: 'Signing in...',
@@ -1120,6 +1123,7 @@ export const translations: Record<Language, Translations> = {
         },
         continueWithGoogle: 'Continuar con Google',
         createFreeAccount: 'Crear cuenta gratis',
+        alreadyHaveAccount: '¿Ya tienes cuenta? Iniciar sesión',
         or: 'o',
         freeToStart: '100% gratis para empezar • Sin tarjeta de crédito',
         loggingIn: 'Iniciando sesión...',

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FaGoogle } from "react-icons/fa";
-import { Sparkles, Zap, Shield } from "lucide-react";
+import { Sparkles, Zap, Shield, LogIn } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -47,6 +47,11 @@ export function LoginModal({ isOpen, onClose, prompt, onSuccess }: LoginModalPro
   const handleCreateAccount = () => {
     const callbackUrl = encodeURIComponent(window.location.href);
     window.location.href = `/auth/register?callbackUrl=${callbackUrl}&prompt=${encodeURIComponent(prompt)}`;
+  };
+
+  const handleExistingAccount = () => {
+    const callbackUrl = encodeURIComponent(window.location.href);
+    window.location.href = `/auth/signin?callbackUrl=${callbackUrl}&prompt=${encodeURIComponent(prompt)}`;
   };
 
   return (
@@ -87,7 +92,7 @@ export function LoginModal({ isOpen, onClose, prompt, onSuccess }: LoginModalPro
               className="w-full gap-2"
               size="lg"
             >
-              <FaGoogle className="h-4 w-4" />
+              <FaGoogle size={16} />
               {isLoading ? "Signing in..." : "Continue with Google"}
             </Button>
 
@@ -107,6 +112,17 @@ export function LoginModal({ isOpen, onClose, prompt, onSuccess }: LoginModalPro
               size="lg"
             >
               Create free account
+            </Button>
+
+            {/* Novo botão para usuários que já têm conta */}
+            <Button
+              onClick={handleExistingAccount}
+              variant="ghost"
+              className="w-full gap-2 text-muted-foreground hover:text-foreground"
+              size="lg"
+            >
+              <LogIn className="h-4 w-4" />
+              Already have an account? Sign in
             </Button>
           </div>
         </div>

@@ -22,6 +22,28 @@ const config = {
       },
     ],
   },
+  webpack: (config, { dev, isServer }) => {
+    // Suprimir warnings específicos do Supabase
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      {
+        module: /node_modules\/@supabase\/realtime-js/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+    ];
+
+    // Configurações adicionais para melhor compatibilidade
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+
+    return config;
+  },
 };
 
 export default config;

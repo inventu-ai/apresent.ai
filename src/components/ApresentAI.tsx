@@ -1,5 +1,6 @@
 'use client'
 
+import React from "react"
 import { Gravity, MatterBody } from "@/components/ui/gravity"
 import PresentationHeader from "@/components/presentation/presentation-page/PresentationHeader"
 import { PresentationsSidebar } from "@/components/presentation/dashboard/PresentationsSidebar"
@@ -13,14 +14,14 @@ import { useMemo, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import { LoginModal } from "@/components/auth/LoginModal"
-import { useTranslation } from "@/contexts/LanguageContext"
+// import { useTranslation } from "@/contexts/LanguageContext"
 
 function ApresentAI() {
   const router = useRouter();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const {
     presentationInput,
     setPresentationInput,
@@ -300,7 +301,7 @@ function ApresentAI() {
               value={presentationInput}
               onChange={(e) => setPresentationInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={session ? t.home.inputPlaceholder : "What would you like to create a presentation about?"}
+              placeholder={session ? "What would you like to create a presentation about?" : "What would you like to create a presentation about?"}
               className="w-full h-28 pr-16 pl-4 py-5 rounded-xl border border-white/10 bg-black/10 backdrop-blur-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30 focus:bg-black/20 resize-none transition-all duration-200"
               rows={2}
             />

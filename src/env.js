@@ -3,36 +3,33 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.string().url().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
 
-    OPENAI_API_KEY: z.string(),
-    TOGETHER_AI_API_KEY: z.string(),
-    APIFRAME_API_KEY: z.string(),
-    IDEOGRAM_API_KEY: z.string(),
-    GOOGLE_CLOUD_PROJECT_ID: z.string(),
+    OPENAI_API_KEY: z.string().optional(),
+    TOGETHER_AI_API_KEY: z.string().optional(),
+    APIFRAME_API_KEY: z.string().optional(),
+    IDEOGRAM_API_KEY: z.string().optional(),
+    GOOGLE_CLOUD_PROJECT_ID: z.string().optional(),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     GOOGLE_SERVICE_ACCOUNT_KEY: z.string().optional(),
-    GOOGLE_CLIENT_ID: z.string(),
-    GOOGLE_CLIENT_SECRET: z.string(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
     NEXTAUTH_URL: z.preprocess(
       (str) => process.env.VERCEL_URL ?? str,
-      process.env.VERCEL ? z.string() : z.string().url()
+      process.env.VERCEL ? z.string().optional() : z.string().url().optional()
     ),
-    NEXTAUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    NEXTAUTH_SECRET: z.string().optional(),
     
     // Supabase
-    SUPABASE_SERVICE_ROLE_KEY: z.string(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   },
 
   client: {
-    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   },
 
   runtimeEnv: {
@@ -56,6 +53,6 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
 
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION || process.env.NODE_ENV === "development",
   emptyStringAsUndefined: true,
 });

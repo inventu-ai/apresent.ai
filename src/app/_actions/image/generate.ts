@@ -5,7 +5,14 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { auth } from "@/server/auth";
 import { utapi } from "@/app/api/uploadthing/core";
 import { UTFile } from "uploadthing/server";
-import { randomUUID } from "crypto";
+// Simple UUID generator for server-side use
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 import { canConsumeCredits, consumeCredits, canUseImageQuality, checkAndResetCreditsIfNeeded, canUseImageModel, consumeImageModelCredits, type CreditAction } from "@/lib/credit-system";
 
 // Helper function to convert aspect ratio to Ideogram format
@@ -182,6 +189,10 @@ async function generateWithIdeogram(prompt: string, model: string, aspectRatio: 
   const isV3 = model === "ideogram-v3";
   const ideogramAspectRatio = convertToIdeogramAspectRatio(aspectRatio, isV3);
   
+  if (!env.IDEOGRAM_API_KEY) {
+    throw new Error("Ideogram API key not configured");
+  }
+
   let requestBody;
   const headers: Record<string, string> = {
     "Api-Key": env.IDEOGRAM_API_KEY,
@@ -563,7 +574,7 @@ export async function generateImageAction(
     const { data: generatedImage, error } = await supabaseAdmin
       .from('GeneratedImage')
       .insert({
-        id: randomUUID(),
+        id: generateUUID(),
         url: permanentUrl,
         prompt: prompt,
         model: model,
