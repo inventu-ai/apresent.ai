@@ -36,6 +36,8 @@ import { type BaseDocument } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 import { usePresentationState } from "@/states/presentation-state";
+import { PresentationThumbnail } from "./dashboard/PresentationThumbnail";
+import { type PlateSlide } from "./utils/parser";
 import {
   deletePresentations,
   duplicatePresentation,
@@ -267,15 +269,23 @@ export function PresentationItem({
               {isSelected && <Check className="h-3 w-3" />}
             </div>
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-16 w-24 items-center justify-center rounded-lg overflow-hidden bg-muted">
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              ) : presentation.presentation?.content ? (
+                <PresentationThumbnail
+                  firstSlide={
+                    ((presentation.presentation.content as { slides: PlateSlide[] })?.slides?.[0]) || null
+                  }
+                  theme={presentation.presentation.theme || "mystique"}
+                  className="h-full w-full"
+                />
               ) : (
                 <Presentation className="h-5 w-5 text-primary" />
               )}
             </div>
           )}
-          <div>
+          <div className="flex-1">
             <h3 className="font-medium text-foreground">
               {isLoading ? "Loading..." : presentation.title || "Untitled"}
             </h3>

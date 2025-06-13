@@ -50,6 +50,8 @@ import {
   addToFavorites,
   removeFromFavorites,
 } from "@/app/_actions/presentation/toggleFavorite";
+import { PresentationThumbnail } from "./PresentationThumbnail";
+import { type PlateSlide } from "../utils/parser";
 
 type PresentationDocument = BaseDocument & {
   presentation: {
@@ -322,15 +324,16 @@ export function RecentPresentations() {
             className="group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
           >
             <div
-              className="relative aspect-video bg-muted"
+              className="relative aspect-video bg-muted cursor-pointer"
               onClick={() => handlePresentationClick(presentation)}
             >
-              {presentation.thumbnailUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={presentation.thumbnailUrl}
-                  alt={presentation.title || "Presentation thumbnail"}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              {presentation.presentation?.content ? (
+                <PresentationThumbnail
+                  firstSlide={
+                    ((presentation.presentation.content as { slides: PlateSlide[] })?.slides?.[0]) || null
+                  }
+                  theme={presentation.presentation.theme || "mystique"}
+                  className="h-full w-full transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-primary/10">
