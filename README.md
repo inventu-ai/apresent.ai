@@ -1,231 +1,330 @@
-# ALLWEONE® AI Presentation Generator
-⭐ Help us reach more developers and grow the ALLWEONE community. Star this repo!
-
-https://github.com/user-attachments/assets/a21dbd49-75b8-4822-bcec-a75b581d9c60
-
+# Apresent.ai - Gerador de Apresentações com IA
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3.0-green?logo=supabase&logoColor=white)](https://supabase.com/)
 
-An open-source inspired by gamma.app ,AI-powered presentation generator that creates beautiful Slides with AI, customizable slides in minutes. This tool is part of the broader ALLWEONE AI platform.
+> Um gerador de apresentações com IA que cria slides profissionais em minutos. Sistema completo com planos, créditos e múltiplos modelos de IA.
 
-[Live Demo](https://allweone.com/presentations) | [Video Tutorial](https://www.youtube.com/watch?v=UUePLJeFqVQ)
+## 🌟 Principais Funcionalidades
 
-## 🌟 Features
+### 🎯 **Geração de Apresentações com IA**
+- Criação completa de apresentações a partir de tópicos
+- Geração automática de outline editável
+- Múltiplos modelos de IA para diferentes necessidades
+- Suporte a 3 idiomas: Português, Inglês e Espanhol
 
-- **AI-Powered Content Generation**: Create complete presentations on any topic with AI
-- **Customizable Slides**: Choose the number of slides, language, and page style
-- **Editable Outlines**: Review and modify AI-generated outlines before finalizing
-- **Multiple Themes**: 9 built-in themes with more coming soon
-- **Custom Theme Creation**: Create and save your own themes from scratch
-- **Image Generation**: Choose different AI image generation models for your slides
-- **Audience-Focused Styles**: Select between professional and casual presentation styles
-- **Real-Time Generation**: Watch your presentation build live as content is created
-- **Full Editability**: Modify text, fonts, and design elements as needed
-- **Presentation Mode**: Present directly from the application
-- **Auto-Save**: Everything saves automatically as you work
+### 🎨 **Sistema de Temas Avançado**
+- **9 temas built-in** profissionais
+- **Criação de temas customizados** do zero
+- **Editor visual completo** para cores, fontes e logos
+- **Pré-visualização em tempo real**
 
-## 🚀 Getting Started
+### 💎 **Sistema de Planos e Créditos**
+- **3 planos**: FREE (500 créditos), PRO (2000 créditos), PREMIUM (ilimitado)
+- **Reset automático** de créditos a cada 30 dias
+- **Limitação inteligente** de cards por plano (10/20/30)
+- **Badges visuais** de plano em toda interface
 
-### Prerequisites
+### 🖼️ **Modelos de IA de Imagem**
+Suporte a **13 modelos diferentes** organizados por qualidade:
 
-- Node.js 18.x or higher
-- npm or yarn
-- OpenAI API key (for AI generation features)
-- Together AI API key (for Image generation)
-- Google Client ID and Secret for authentication feature
+#### 🆓 **FREE** (5 créditos)
+- Flux Fast 1.1
+- Google Imagen 3 Fast
+- Ideogram v2
 
-### Installation
+#### ⭐ **PRO** (10 créditos)
+- Flux Pro / Flux Dev / Flux Pro 1.1
+- Ideogram v2 Turbo
+- Google Imagen 3
 
-1. Clone the repository:
+#### 💎 **PREMIUM** (15 créditos)
+- Midjourney Imagine
+- DALL-E 3
+- Flux Pro 1.1 Ultra
+- Ideogram v3
+- GPT Image 1
 
-   ```bash
-   git clone git@github.com:allweonedev/presentation-ai.git
-   cd presentation-ai
-   ```
+### 🎨 **Editor de Slides Avançado**
+- **Plate Editor** com rich text
+- **Drag & Drop** para reorganização
+- **Edição em tempo real** de texto e imagens
+- **Regeneração de conteúdo** com IA
+- **Modo apresentação** integrado
 
-2. Install dependencies:
+### 🌍 **Internacionalização (i18n)**
+- **Português (pt-BR)** - Idioma principal
+- **Inglês (en-US)** - Internacional
+- **Espanhol (es-ES)** - Expansão latina
+- **Detecção automática** do idioma do browser
+- **Configuração por usuário** sincronizada
 
-   ```bash
-   pnpm install
-   ```
+### 🔐 **Autenticação e Perfil**
+- **NextAuth.js** com Google OAuth
+- **Perfil completo** com configurações
+- **Gerenciamento de créditos** em tempo real
+- **Histórico de uso** e resets
 
-3. Set up environment variables:
-   Create a `.env` file in the root directory with:
+## 🚀 Instalação e Configuração
 
-   ```
-   # AI Providers
-   OPENAI_API_KEY=""
-   TOGETHER_AI_API_KEY=""
+### Pré-requisitos
+- Node.js 18.x ou superior
+- pnpm (gerenciador de pacotes)
+- Banco PostgreSQL (Supabase recomendado)
 
-
-   # For Next Auth
-   NEXTAUTH_SECRET=""
-   NEXTAUTH_URL=""
-   NEXTAUTH_URL="http://192.168.1.83:3000"
-
-   # Next Auth Google Provider
-   GOOGLE_CLIENT_ID=""
-   GOOGLE_CLIENT_SECRET=""
-
-   # For Uploadthing
-   UPLOADTHING_TOKEN=""
-
-   # PostgreSQL Database URL
-   DATABASE_URL="postgresql://username:password@localhost:5432/presentation_ai"
-
-   ```
-
-   Note: You need to set up a PostgreSQL database for testing the application.
-
-4. Set up the database:
-
-   ```bash
-   pnpm db:push
-   ```
-
-5. Start the development server:
-
-   ```bash
-   pnpm dev
-   ```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
-
-## 💻 Usage
-
-### Creating a Presentation
-
-1. Navigate to the dashboard
-2. Enter your presentation topic
-3. Choose the number of slides (recommended: 5-10)
-4. Select your preferred language
-5. Choose a page style
-6. Click "Generate Outline"
-7. Review and edit the AI-generated outline
-8. Select a theme for your presentation
-9. Choose an image generation model
-10. Select your presentation style (Professional/Casual)
-11. Click "Generate Presentation"
-12. Wait for the AI to create your slides in real-time
-13. Preview, edit, and refine your presentation as needed
-14. Present directly from the app or export your presentation
-
-### Custom Themes
-
-1. Click "Create New Theme"
-2. Start from scratch or derive from an existing theme
-3. Customize colors, fonts, and layout
-4. Save your theme for future use
-
-## 🧰 Tech Stack
-
-This project is built with:
-
-- **Next.js**: React framework for server-rendered applications
-- **React**: UI library for building user interfaces
-- **Prisma**: Database ORM with PostgreSQL
-- **Tailwind CSS**: Utility-first CSS framework
-- **TypeScript**: Typed JavaScript
-- **OpenAI API**: For AI content generation
-- **Radix UI**: Headless UI components
-- **Plate Editor**: Rich text editing system for handling text, images, and slide components
-- **Authentication**: NextAuth.js for user authentication
-- **UploadThing**: File uploads
-- **DND Kit**: Drag and drop functionality
-
-## 🛠️ Project Structure
-
-```
-presentation/
-├── .next/               # Next.js build output
-├── node_modules/        # Dependencies
-├── prisma/              # Database schema
-│   └── schema.prisma    # Prisma database model
-├── src/                 # Source code
-│   ├── app/             # Next.js app router
-│   ├── components/      # Reusable UI components
-│   │   ├── auth/        # Authentication components
-│   │   ├── presentation/  # Presentation-related components
-│   │   │   ├── dashboard/   # Dashboard UI
-│   │   │   ├── editor/      # Presentation editor
-│   │   │   │   ├── custom-elements/  # Custom editor elements
-│   │   │   │   ├── dnd/              # Drag and drop functionality
-│   │   │   │   └── native-elements/  # Native editor elements
-│   │   │   ├── outline/     # Presentation outline components
-│   │   │   ├── theme/       # Theme-related components
-│   │   │   └── utils/       # Presentation utilities
-│   │   ├── prose-mirror/  # ProseMirror editor components for the outline part
-│   │   ├── text-editor/   # Text editor components
-│   │   │   ├── hooks/       # Editor hooks
-│   │   │   ├── lib/         # Editor libraries
-│   │   │   ├── plate-ui/    # Plate editor UI components
-│   │   │   └── plugins/     # Editor plugins
-│   │   └── ui/           # Shared UI components
-│   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Utility functions and shared code
-│   ├── provider/        # Context providers
-│   ├── server/          # Server-side code
-│   ├── states/          # State management
-│   ├── middleware.ts    # Next.js middleware
-│   └── env.js           # Environment configuration
-├── .env                 # Environment variables
-├── .env.example         # Example environment variables
-├── next.config.js       # Next.js configuration
-├── package.json         # Project dependencies and scripts
-├── tailwind.config.ts   # Tailwind CSS configuration
-└── tsconfig.json        # TypeScript configuration
+### 1. Clone o repositório
+```bash
+git clone https://github.com/seu-usuario/apresent-ai.git
+cd apresent-ai
 ```
 
-## 🤝 Contributing
+### 2. Instale as dependências
+```bash
+pnpm install
+```
 
-We welcome contributions to the ALLWEONE Presentation Generator! Here's how you can help:
+### 3. Configure as variáveis de ambiente
+Crie um arquivo `.env.local` com:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+```env
+# Banco de dados
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/apresentai"
 
-Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="https://seu-projeto.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-chave-publica"
+SUPABASE_SERVICE_ROLE_KEY="sua-chave-servico"
 
-## 📝 License
+# NextAuth.js
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="sua-chave-secreta-super-forte"
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+# OAuth Google
+GOOGLE_CLIENT_ID="seu-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="seu-client-secret"
 
-## 🙏 Acknowledgements
+# APIs de IA
+OPENAI_API_KEY="sk-sua-chave-openai"
+TOGETHER_AI_API_KEY="sua-chave-together"
+APIFRAME_API_KEY="sua-chave-apiframe"
+IDEOGRAM_API_KEY="sua-chave-ideogram"
 
-- [OpenAI](https://openai.com/) for AI generation capabilities
-- [Plate Editor](https://plate.udecode.io/) for rich text editing
-- [Radix UI](https://www.radix-ui.com/) for accessible UI components
-- [Next.js](https://nextjs.org/) for the React framework
-- All our open-source [contributors](https://github.com/allweonedev/presentation-ai/graphs/contributors)
+# Google Cloud (para Imagen)
+GOOGLE_CLOUD_PROJECT_ID="seu-projeto-id"
+GOOGLE_SERVICE_ACCOUNT_KEY="sua-chave-service-account-json"
+```
 
-## 🔮 Round Map 
+### 4. Configure o banco de dados
+```bash
+# Aplicar schema do Prisma
+pnpm db:push
 
-Project Management
-ALLWEONE is a collaborative initiative! While we thrive on contributions from the community, the core team actively steers the project to ensure clarity and coordination. Our goal is to organize development efforts transparently, so everyone can easily understand where the current priorities lie and how to get involved effectively.
+# Executar setup completo do Supabase
+psql -f supabase_setup.sql
+```
 
-Requested Additions ✅  ⬜ 
- ⬜ Prompt Colors (@helberthass)
- ⬜ python implementation (@Yerkhatt)
- ⬜ Integrate Llama 4 and Pinokio(@exzosdigital )
- ⬜ Ollama models  (@matos242)
- ⬜ Fast image generator  HD (@allweonedev)
- ⬜ Card templates (@allweonedev)
- ⬜ Card layouts (@allweonedev)
- ⬜ Collections and sequences (@allweonedev)
- ⬜ Pyramids and funnels(@allweonedev)
- ⬜ Charts, statistics and data(@allweonedev)
- ⬜ Embeds ( youtube, webpage etc)(@allweonedev)
- ⬜ Progressive disclosure(@allweonedev)
- ⬜ Miscellaneous(@allweonedev)
- ⬜ + More Customize Theme (@allweonedev)
+### 5. Execute o projeto
+```bash
+pnpm dev
+```
 
-https://github.com/user-attachments/assets/2a479040-a9db-4e88-a72a-70f040fa853b
+Acesse [http://localhost:3000](http://localhost:3000)
 
+## 🏗️ Arquitetura do Sistema
 
-Built with ❤️ by the ALLWEONE™ team 🇺🇸🇧🇷🇳🇵🇮🇳🇨🇳🇯🇵🇸🇬🇩🇪🏴󠁧󠁢󠁥󠁮󠁧󠁿🇺🇦🇰🇿🇷🇺🇦🇪🇸🇦🇰🇷🇹🇭🇮🇩🇲🇽🇬🇹🇫🇷🇮🇱🇻🇳
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── auth/              # Autenticação
+│   ├── presentation/      # Editor de apresentações
+│   └── profile/           # Perfil do usuário
+├── components/            # Componentes React
+│   ├── auth/             # Auth UI
+│   ├── presentation/     # Editor e dashboard
+│   ├── text-editor/      # Plate Editor
+│   └── ui/               # Componentes base
+├── lib/                  # Utilitários
+│   ├── credit-system.ts  # Sistema de créditos
+│   ├── i18n/            # Internacionalização
+│   └── supabase.ts      # Configuração DB
+├── hooks/                # React Hooks
+├── contexts/             # Context Providers
+└── states/               # Zustand stores
+```
 
-For any questions or support, please open an issue on GitHub or contact us at Discord https://discord.gg/JRcHcaUD
+## 💻 Principais Componentes
+
+### Sistema de Créditos
+```typescript
+// Custos por ação
+CREDIT_COSTS = {
+  PRESENTATION_CREATION: 40,  // Apresentação completa
+  IMAGE_GENERATION: 5,        // Gerar imagem
+  SLIDE_GENERATION: 5,        // Gerar slide
+  CARD_GENERATION: 2,         // Gerar card
+  TOPIC_REGENERATION: 2,      // Regenerar tópico
+}
+```
+
+### Modelos de IA
+```typescript
+// Modelos por plano
+IMAGE_MODELS_BY_PLAN = {
+  FREE: ["flux-fast-1.1", "google-imagen-3-fast", "ideogram-v2"],
+  PRO: ["flux-pro", "flux-dev", "google-imagen-3"],
+  PREMIUM: ["dall-e-3", "midjourney-imagine", "gpt-image-1"]
+}
+```
+
+### Limitações por Plano
+```typescript
+MAX_CARDS_BY_PLAN = {
+  FREE: 10,     // Máximo 10 cards
+  PRO: 20,      // Máximo 20 cards  
+  PREMIUM: 30,  // Máximo 30 cards
+}
+```
+
+## 🎯 Funcionalidades Implementadas
+
+### ✅ Sistema de Usuários
+- [x] Autenticação com Google OAuth
+- [x] Perfil completo com configurações
+- [x] Sistema de planos (FREE/PRO/PREMIUM)
+- [x] Badges visuais de plano
+- [x] Gerenciamento de créditos
+
+### ✅ Geração de Apresentações
+- [x] Criação automática com IA
+- [x] Outline editável
+- [x] Múltiplos temas
+- [x] Customização de temas
+- [x] Geração de imagens
+
+### ✅ Editor de Slides
+- [x] Plate Editor integrado
+- [x] Drag & Drop
+- [x] Edição em tempo real
+- [x] Regeneração de conteúdo
+- [x] Modo apresentação
+
+### ✅ Sistema de Créditos
+- [x] Consumo por ação
+- [x] Reset automático (30 dias)
+- [x] Limitações por plano
+- [x] Histórico de uso
+
+### ✅ Modelos de IA
+- [x] 13 modelos de imagem
+- [x] Restrições por plano
+- [x] Qualidades diferentes
+- [x] Integração com múltiplas APIs
+
+### ✅ Internacionalização
+- [x] 3 idiomas suportados
+- [x] Detecção automática
+- [x] Sincronização com perfil
+- [x] Traduções completas
+
+## 🔧 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+pnpm dev                    # Servidor de desenvolvimento
+pnpm build                  # Build de produção
+pnpm start                  # Servidor de produção
+
+# Banco de dados
+pnpm db:push               # Aplicar schema
+pnpm db:studio             # Prisma Studio
+
+# Utilitários
+pnpm lint                  # ESLint
+pnpm convert-google-credentials  # Converter credenciais Google
+```
+
+## 🌐 Tecnologias Utilizadas
+
+### **Frontend**
+- **Next.js 14.2** - Framework React com App Router
+- **TypeScript 5.7** - Tipagem estática
+- **Tailwind CSS 3.4** - Estilização
+- **Radix UI** - Componentes acessíveis
+- **Plate Editor** - Editor rich text
+- **Zustand** - Gerenciamento de estado
+
+### **Backend**
+- **NextAuth.js 5.0** - Autenticação
+- **Prisma 5.22** - ORM
+- **Supabase** - Banco PostgreSQL
+- **tRPC** - API type-safe
+
+### **Integrações de IA**
+- **OpenAI API** - DALL-E 3, GPT Image 1
+- **Together AI** - Flux models
+- **Google Cloud** - Imagen 3 / Imagen 3 Fast
+- **APIFrame** - Midjourney, Flux Pro
+- **Ideogram API** - Ideogram v2/v3
+
+### **Infraestrutura**
+- **Vercel** - Deploy e hosting
+- **Supabase** - Banco e auth
+- **UploadThing** - Upload de arquivos
+- **Google Cloud** - AI services
+
+## 📊 Métricas e Limites
+
+### Planos de Uso
+| Plano | Créditos/mês | Cards máx | Modelos | Preço |
+|-------|-------------|-----------|---------|-------|
+| FREE | 500 | 10 | 3 básicos | Grátis |
+| PRO | 2000 | 20 | 8 modelos | $9.99 |
+| PREMIUM | Ilimitado | 30 | 13 modelos | $19.99 |
+
+### Custos por Ação
+- **Apresentação completa**: 40 créditos
+- **Imagem básica**: 5 créditos
+- **Imagem avançada**: 10 créditos
+- **Imagem premium**: 15 créditos
+- **Regenerar slide**: 5 créditos
+
+## 🔐 Segurança
+
+- **Autenticação** com NextAuth.js e Google OAuth
+- **Autorização** baseada em planos
+- **Validação** de créditos server-side
+- **Rate limiting** para APIs
+- **Sanitização** de inputs
+- **Variáveis de ambiente** seguras
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+1. Conecte seu repositório GitHub
+2. Configure as variáveis de ambiente
+3. Deploy automático
+
+### Docker
+```dockerfile
+# Dockerfile incluído no projeto
+docker build -t apresentai .
+docker run -p 3000:3000 apresentai
+```
+
+### Configuração de Produção
+```env
+# .env.production
+NODE_ENV=production
+NEXTAUTH_URL=https://seu-dominio.com
+DATABASE_URL=sua-url-producao
+# ... outras variáveis
+```
+---
+
+**Construído com ❤️ pela equipe Inventu**
+
+Para mais informações sobre configuração específica, consulte os arquivos de documentação no diretório raiz do projeto. 
