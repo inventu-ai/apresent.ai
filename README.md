@@ -31,17 +31,17 @@
 ### 🖼️ **Modelos de IA de Imagem**
 Suporte a **13 modelos diferentes** organizados por qualidade:
 
-#### 🆓 **FREE** (5 créditos)
+#### 🆓 **FREE**
 - Flux Fast 1.1
 - Google Imagen 3 Fast
 - Ideogram v2
 
-#### ⭐ **PRO** (10 créditos)
+#### ⭐ **PRO**
 - Flux Pro / Flux Dev / Flux Pro 1.1
 - Ideogram v2 Turbo
 - Google Imagen 3
 
-#### 💎 **PREMIUM** (15 créditos)
+#### 💎 **PREMIUM**
 - Midjourney Imagine
 - DALL-E 3
 - Flux Pro 1.1 Ultra
@@ -282,8 +282,8 @@ pnpm convert-google-credentials  # Converter credenciais Google
 | Plano | Créditos/mês | Cards máx | Modelos | Preço |
 |-------|-------------|-----------|---------|-------|
 | FREE | 500 | 10 | 3 básicos | Grátis |
-| PRO | 2000 | 20 | 8 modelos | $9.99 |
-| PREMIUM | Ilimitado | 30 | 13 modelos | $19.99 |
+| PRO | 2000 | 20 | 8 modelos | R$29.99 |
+| PREMIUM | Ilimitado | 30 | 13 modelos | R$59.99 |
 
 ### Custos por Ação
 - **Apresentação completa**: 40 créditos
