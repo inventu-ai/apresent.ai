@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/server/auth";
-import { canConsumeCredits, consumeCredits, checkAndResetCreditsIfNeeded, canUseImageModel } from "@/lib/credit-system";
+import { consumeImageEditingCredits, canExecuteAction, checkAndResetCreditsIfNeeded, canUseImageModel } from "@/lib/credit-system";
 import { type ImageModelList } from "./generate";
 import { utapi } from "@/app/api/uploadthing/core";
 import { UTFile } from "uploadthing/server";
@@ -649,11 +649,8 @@ export async function editImageAction(
     editPrompt: editPrompt,
   });
 
-  // Edição de imagem usa PREMIUM_IMAGE (15 créditos)
-  const creditAction = 'PREMIUM_IMAGE';
-  
-  // Verificar se o usuário tem créditos suficientes usando o sistema unificado
-  const creditCheck = await canConsumeCredits(session.user.id, creditAction, 1);
+  // Verificar se o usuário tem créditos suficientes para edição de imagem (20 créditos)
+  const creditCheck = await canExecuteAction(session.user.id, 'IMAGE_EDITING');
   
   if (!creditCheck.allowed) {
     return {
@@ -668,8 +665,8 @@ export async function editImageAction(
     const result = await editWithOpenAI({ imageUrl, editPrompt, model: targetModel, maskUrl });
 
     if (result.success) {
-      // Consumir créditos usando o sistema unificado
-      const consumeResult = await consumeCredits(session.user.id, creditAction, 1);
+      // Consumir créditos para edição de imagem
+      const consumeResult = await consumeImageEditingCredits(session.user.id);
       
       if (!consumeResult.success) {
         console.error('Error consuming credits:', consumeResult.message);

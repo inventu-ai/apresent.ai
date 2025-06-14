@@ -13,7 +13,7 @@ function generateUUID(): string {
     return v.toString(16);
   });
 }
-import { canConsumeCredits, consumeCredits, canUseImageQuality, checkAndResetCreditsIfNeeded, canUseImageModel, consumeImageModelCredits, type CreditAction } from "@/lib/credit-system";
+import { consumeImageGenerationCredits, canExecuteAction, canUseImageQuality, checkAndResetCreditsIfNeeded, canUseImageModel, consumeImageModelCredits, type CreditAction } from "@/lib/credit-system";
 
 // Helper function to convert aspect ratio to Ideogram format
 function convertToIdeogramAspectRatio(aspectRatio: string, isV3: boolean = false): string {
@@ -462,7 +462,8 @@ export async function generateImageAction(
   prompt: string,
   model: ImageModelList = "flux-dev",
   quality: CreditAction = "BASIC_IMAGE", 
-  aspectRatio: "4:3" | "16:9" | "1:1" | "3:4" | "9:16" = "4:3"
+  aspectRatio: "4:3" | "16:9" | "1:1" | "3:4" | "9:16" = "4:3",
+  shouldConsumeCredits: boolean = true
 ) {
   const session = await auth();
 
@@ -491,25 +492,29 @@ export async function generateImageAction(
     };
   }
 
-  const creditCheck = await canConsumeCredits(session.user.id, quality, 1);
-  if (!creditCheck.allowed) {
-    return {
-      success: false,
-      error: creditCheck.message || "Créditos insuficientes",
-      creditsNeeded: creditCheck.cost,
-      currentCredits: creditCheck.currentCredits,
-    };
+  // Só verificar e consumir créditos se shouldConsumeCredits for true
+  if (shouldConsumeCredits) {
+    const creditCheck = await canExecuteAction(session.user.id, 'IMAGE_GENERATION');
+    if (!creditCheck.allowed) {
+      return {
+        success: false,
+        error: creditCheck.message || "Créditos insuficientes",
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+      };
+    }
   }
 
   try {
-
-
-    const creditResult = await consumeCredits(session.user.id, quality, 1);
-    if (!creditResult.success) {
-      return {
-        success: false,
-        error: creditResult.message || "Erro ao consumir créditos",
-      };
+    let creditResult: { success: boolean; creditsUsed: number; remainingCredits: number; message?: string } | null = null;
+    if (shouldConsumeCredits) {
+      creditResult = await consumeImageGenerationCredits(session.user.id);
+      if (!creditResult.success) {
+        return {
+          success: false,
+          error: creditResult.message || "Erro ao consumir créditos",
+        };
+      }
     }
 
 
@@ -595,8 +600,8 @@ export async function generateImageAction(
     return {
       success: true,
       image: generatedImage,
-      creditsUsed: creditResult.creditsUsed,
-      remainingCredits: creditResult.remainingCredits,
+      creditsUsed: creditResult?.creditsUsed || 0,
+      remainingCredits: creditResult?.remainingCredits || 0,
       quality,
     };
   } catch (error) {

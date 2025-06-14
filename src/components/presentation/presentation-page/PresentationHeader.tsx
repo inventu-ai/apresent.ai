@@ -13,6 +13,7 @@ import { SaveStatus } from "./buttons/SaveStatus";
 import { Brain } from "@/components/ui/icons";
 import SideBarDropdown from "@/components/auth/Dropdown";
 import { Button } from "@/components/ui/button";
+import { CreditDisplay } from "@/components/ui/credit-display";
 
 interface PresentationHeaderProps {
   title?: string;
@@ -72,6 +73,9 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
         >
           <History className="h-4 w-4" />
         </Button>
+
+        {/* Credit Display - Between history and profile */}
+        <CreditDisplay />
 
         {/* Theme selector - Only in presentation page, not outline */}
         {isPresentationPage && <ThemeSelector />}

@@ -3,15 +3,24 @@ import { getUserCurrentPlan, getPlanLimit, incrementUserUsage, checkUserLimit } 
 import { getModelsForPlan, isModelAvailableForPlan, getModelCreditCost, MODEL_CREDIT_MAPPING } from "./image-model-restrictions";
 import type { ImageModelList } from "@/app/_actions/image/generate";
 
-// Custos por ação em créditos
+// Custos por ação em créditos - NOVOS VALORES
 export const CREDIT_COSTS = {
-  PRESENTATION_CREATION: 40,  // Custo fixo por apresentação completa
+  // Apresentação completa
+  PRESENTATION_CREATION: 40,  // Criar apresentação completa com imagens
+  
+  // Imagens
+  IMAGE_GENERATION: 5,        // Gerar nova imagem ou regenerar
+  IMAGE_EDITING: 20,          // Editar imagem com IA
+  
+  // Slides e conteúdo
+  SLIDE_GENERATION: 5,        // Gerar slide com IA
+  TOPIC_REGENERATION: 2,      // Regenerar tópico
+  CARD_GENERATION: 2,         // Gerar novo card com IA
+  
+  // Mantidos para compatibilidade com sistema de modelos
   BASIC_IMAGE: 5,
   ADVANCED_IMAGE: 10,
   PREMIUM_IMAGE: 15,
-  // Mantidos para implementação futura:
-  TEXT_GENERATION: 3,
-  SLIDE_CREATION: 2,
 } as const;
 
 export type CreditAction = keyof typeof CREDIT_COSTS;
@@ -515,4 +524,93 @@ export async function upgradePlan(userId: string, newPlanId: string): Promise<{
       message: 'Erro ao atualizar plano'
     };
   }
+}
+
+/**
+ * Consome créditos para geração de imagem
+ */
+export async function consumeImageGenerationCredits(userId: string): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  return await consumeCredits(userId, 'IMAGE_GENERATION');
+}
+
+/**
+ * Consome créditos para edição de imagem
+ */
+export async function consumeImageEditingCredits(userId: string): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  return await consumeCredits(userId, 'IMAGE_EDITING');
+}
+
+/**
+ * Consome créditos para geração de slide
+ */
+export async function consumeSlideGenerationCredits(userId: string): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  return await consumeCredits(userId, 'SLIDE_GENERATION');
+}
+
+/**
+ * Consome créditos para regeneração de tópico
+ */
+export async function consumeTopicRegenerationCredits(userId: string): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  return await consumeCredits(userId, 'TOPIC_REGENERATION');
+}
+
+/**
+ * Consome créditos para geração de card
+ */
+export async function consumeCardGenerationCredits(userId: string): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  return await consumeCredits(userId, 'CARD_GENERATION');
+}
+
+/**
+ * Consome créditos para criação de apresentação completa
+ */
+export async function consumePresentationCreationCredits(userId: string): Promise<{
+  success: boolean;
+  creditsUsed: number;
+  remainingCredits: number;
+  message?: string;
+}> {
+  return await consumeCredits(userId, 'PRESENTATION_CREATION');
+}
+
+/**
+ * Verifica se o usuário pode executar uma ação específica
+ */
+export async function canExecuteAction(
+  userId: string, 
+  action: CreditAction
+): Promise<{
+  allowed: boolean;
+  cost: number;
+  currentCredits: number;
+  creditLimit: number;
+  isUnlimited: boolean;
+  message?: string;
+}> {
+  return await canConsumeCredits(userId, action);
 }

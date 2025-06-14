@@ -76,7 +76,48 @@ export const PresentationImageElement = withHOC(
         setError(undefined);
         try {
           hasHandledGenerationRef.current = true;
-          const result = await generateImageAction(prompt, imageModel);
+          const result = await generateImageAction(prompt, imageModel, "BASIC_IMAGE", "4:3", false);
+          if (
+            result &&
+            typeof result === "object" &&
+            "success" in result &&
+            result.success === true &&
+            result.image?.url
+          ) {
+            const newImageUrl = result.image.url;
+            setImageUrl(newImageUrl);
+
+            // Update the element's URL and query in the editor
+            setNode(editor, props.element, {
+              url: newImageUrl,
+              query: prompt,
+            });
+
+            // Force an immediate save to ensure the image URL is persisted
+            setTimeout(() => {
+              void saveImmediately();
+            }, 500);
+          }
+        } catch (error) {
+          console.error("Error generating image:", error);
+          setError("Failed to generate image. Please try again.");
+        } finally {
+          setIsGenerating(false);
+        }
+      };
+
+      const generateImageManually = async (prompt: string) => {
+        const container = document.querySelector(".presentation-slides");
+        const isEditorReadOnly = !container?.contains(imageRef?.current);
+        // Prevent image generation in read-only mode
+    
+        if (isEditorReadOnly) {
+          return;
+        }
+        setIsGenerating(true);
+        setError(undefined);
+        try {
+          const result = await generateImageAction(prompt, imageModel, "BASIC_IMAGE", "4:3", true);
           if (
             result &&
             typeof result === "object" &&
@@ -279,11 +320,11 @@ export const PresentationImageElement = withHOC(
             error={error}
             onRegenerateWithSamePrompt={() => {
               if (props.element.query) {
-                void generateImage(props.element.query);
+                void generateImageManually(props.element.query);
               }
             }}
             onGenerateWithNewPrompt={(newPrompt) => {
-              void generateImage(newPrompt);
+              void generateImageManually(newPrompt);
             }}
             onRemove={() => {
               // Remove a imagem definindo a URL como vazia

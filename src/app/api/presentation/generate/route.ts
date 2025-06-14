@@ -5,13 +5,20 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { canConsumeCredits, consumeCredits, canCreateCards, checkAndResetCreditsIfNeeded } from "@/lib/credit-system";
+import { canConsumeCredits, consumeCredits, canCreateCards, checkAndResetCreditsIfNeeded, consumePresentationCreationCredits, canExecuteAction } from "@/lib/credit-system";
 
 interface SlidesRequest {
   title: string; // Presentation title
   outline: string[]; // Array of main topics with markdown content
   language: string; // Language to use for the slides
   tone: string; // Style for image queries (optional)
+}
+
+interface PresentationRequest {
+  title: string;
+  outline: string[];
+  language: string;
+  tone: string;
 }
 
 const slidesTemplate = `
@@ -180,6 +187,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Verificar se o usuário tem créditos suficientes para criação de apresentação completa (40 créditos)
+    const creditCheck = await canExecuteAction(session.user.id, 'PRESENTATION_CREATION');
+    
+    if (!creditCheck.allowed) {
+      return NextResponse.json({
+        error: `Créditos insuficientes. Necessário: ${creditCheck.cost}, disponível: ${creditCheck.currentCredits}`,
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+      }, { status: 402 });
+    }
+
     const { title, outline, language, tone } =
       (await req.json()) as SlidesRequest;
 
@@ -209,30 +227,27 @@ export async function POST(req: Request) {
     }
 
     // Verificar se o usuário tem créditos suficientes (custo fixo de 40 créditos)
-    const creditCheck = await canConsumeCredits(session.user.id, 'PRESENTATION_CREATION', 1);
+    const presentationCreditCheck = await canConsumeCredits(session.user.id, 'PRESENTATION_CREATION', 1);
     
-    if (!creditCheck.allowed) {
+    if (!presentationCreditCheck.allowed) {
       return NextResponse.json(
         { 
           error: "Créditos insuficientes para criar a apresentação",
-          creditsNeeded: creditCheck.cost,
-          currentCredits: creditCheck.currentCredits
+          creditsNeeded: presentationCreditCheck.cost,
+          currentCredits: presentationCreditCheck.currentCredits
         },
         { status: 403 }
       );
     }
 
-    // Consumir créditos antes da geração (40 créditos fixos)
-    const creditResult = await consumeCredits(session.user.id, 'PRESENTATION_CREATION', 1);
-    
-    if (!creditResult.success) {
+    // Consumir créditos para criação de apresentação (40 créditos fixos)
+    const consumeResult = await consumePresentationCreationCredits(session.user.id);
+    if (!consumeResult.success) {
       return NextResponse.json(
         { error: "Erro ao consumir créditos" },
         { status: 500 }
       );
     }
-
-    console.log(`Credits consumed: ${creditResult.creditsUsed}, remaining: ${creditResult.remainingCredits}`);
 
     const prompt = PromptTemplate.fromTemplate(slidesTemplate);
     const stringOutputParser = new StringOutputParser();

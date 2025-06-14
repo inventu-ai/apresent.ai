@@ -290,6 +290,7 @@ export function PresentationGenerationManager() {
       if (slidesRafIdRef.current === null) {
         slidesRafIdRef.current = requestAnimationFrame(updateSlidesWithRAF);
       }
+      
       void generatePresentation(presentationInput ?? "", {
         body: {
           title: presentationInput ?? currentPresentationTitle ?? "",
@@ -299,7 +300,7 @@ export function PresentationGenerationManager() {
         },
       });
     }
-  }, [shouldStartPresentationGeneration, setLanguage]);
+  }, [shouldStartPresentationGeneration]);
 
   // Clean up RAF on unmount
   useEffect(() => {

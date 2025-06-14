@@ -5,6 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { consumeSlideGenerationCredits, canExecuteAction } from "@/lib/credit-system";
 
 interface SlideRegenerationRequest {
   title: string;      // Título da apresentação
@@ -563,6 +564,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Verificar se o usuário tem créditos suficientes para geração de slide (5 créditos)
+    const creditCheck = await canExecuteAction(session.user.id, 'SLIDE_GENERATION');
+    
+    if (!creditCheck.allowed) {
+      return NextResponse.json({
+        error: `Créditos insuficientes. Necessário: ${creditCheck.cost}, disponível: ${creditCheck.currentCredits}`,
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+      }, { status: 402 });
+    }
+
     const { title, topic, slideIndex, language, tone, context } =
       (await req.json()) as SlideRegenerationRequest;
 
@@ -638,6 +650,12 @@ export async function POST(req: Request) {
         } else if (DEBUG_LOGS) {
           console.log("Mantendo layout simples para este slide (30% de chance)");
         }
+      }
+      
+      // Consumir créditos após geração bem-sucedida
+      const consumeResult = await consumeSlideGenerationCredits(session.user.id);
+      if (!consumeResult.success) {
+        console.error('Error consuming credits:', consumeResult.message);
       }
       
       return new Response(finalXml);

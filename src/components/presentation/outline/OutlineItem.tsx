@@ -8,6 +8,7 @@ import { useCompletion } from "ai/react";
 import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { consumeCardGenerationCredits, canExecuteAction } from "@/lib/credit-system";
 
 interface OutlineItemProps {
   id: string;
@@ -87,6 +88,26 @@ export const OutlineItem = memo(function OutlineItem({
 
   const handleGenerateTopic = async () => {
     if (isGenerating || isLoading) return;
+    
+    // Verificar se o usuário tem créditos suficientes para geração de card (2 créditos)
+    try {
+      const creditCheck = await fetch('/api/user/credits/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'CARD_GENERATION' }),
+      });
+      
+      const creditData = await creditCheck.json();
+      
+      if (!creditData.allowed) {
+        toast.error(`Créditos insuficientes. Necessário: ${creditData.cost}, disponível: ${creditData.currentCredits}`);
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking credits:", error);
+      toast.error("Erro ao verificar créditos");
+      return;
+    }
     
     setIsGenerating(true);
     try {

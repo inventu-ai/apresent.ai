@@ -216,11 +216,13 @@ export function CreditSystemDemo() {
           
           <div className="p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium mb-2">Custos por Ação</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-              <div>Apresentação: 40 créditos</div>
-              <div>Imagem básica: 5 créditos</div>
-              <div>Imagem avançada: 10 créditos</div>
-              <div>Imagem premium: 15 créditos</div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+              <div>Apresentação completa: 40 créditos</div>
+              <div>Gerar/regenerar imagem: 5 créditos</div>
+              <div>Editar imagem: 20 créditos</div>
+              <div>Gerar slide: 5 créditos</div>
+              <div>Regenerar tópico: 2 créditos</div>
+              <div>Gerar novo card: 2 créditos</div>
             </div>
           </div>
           

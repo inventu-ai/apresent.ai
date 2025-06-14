@@ -64,7 +64,7 @@ export default function RootImage({
     children: [{ text: "" }],
   };
 
-  // Generate image with the given prompt
+  // Generate image with the given prompt (automatic - no credits)
   const generateImage = async (prompt: string) => {
     if (!shouldGenerate) {
       return;
@@ -73,7 +73,65 @@ export default function RootImage({
     setError(undefined);
     try {
       
-      const result = await generateImageAction(prompt, imageModel);
+      const result = await generateImageAction(prompt, imageModel, "BASIC_IMAGE", "4:3", false);
+      
+      if (result.success && result.image?.url) {
+        const newImageUrl = result.image.url;
+
+        setImageUrl(newImageUrl);
+
+        // Get current slides state
+        const { slides } = usePresentationState.getState();
+
+        // Create updated slides array
+        const updatedSlides = slides.map((slide: PlateSlide, index: number) => {
+          if (index === slideIndex) {
+            return {
+              ...slide,
+              rootImage: {
+                query: prompt,
+                url: newImageUrl,
+              },
+            };
+          }
+          return slide;
+        });
+
+        // Update slides with new array - use a timeout to ensure state update happens
+        // This will trigger a re-render of both the editor and preview
+        setTimeout(() => {
+          setSlides(updatedSlides);
+
+          // Force an immediate save to ensure the image URL is persisted
+          void saveImmediately();
+        }, 100);
+
+        // Ensure the generating state is properly reset
+        setIsGenerating(false);
+      } else {
+        const errorMsg = result.error || "Unknown error occurred";
+        console.error("Image generation failed:", errorMsg);
+        setError(`Failed to generate image: ${errorMsg}`);
+        setIsGenerating(false);
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      setError(`Failed to generate image: ${errorMsg}`);
+      setIsGenerating(false);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Generate image manually (user action - consumes credits)
+  const generateImageManually = async (prompt: string) => {
+    
+    setIsGenerating(true);
+    setError(undefined);
+    try {
+      
+      const result = await generateImageAction(prompt, imageModel, "BASIC_IMAGE", "4:3", true);
       
       if (result.success && result.image?.url) {
         const newImageUrl = result.image.url;
@@ -376,11 +434,11 @@ export default function RootImage({
         error={error}
         onRegenerateWithSamePrompt={() => {
           if (image.query) {
-            void generateImage(image.query);
+            void generateImageManually(image.query);
           }
         }}
         onGenerateWithNewPrompt={(newPrompt) => {
-          void generateImage(newPrompt);
+          void generateImageManually(newPrompt);
         }}
         onRemove={() => {
           // Remove a imagem do slide

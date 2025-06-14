@@ -4,6 +4,7 @@ import { auth } from "@/server/auth";
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
+import { consumeTopicRegenerationCredits, canExecuteAction } from "@/lib/credit-system";
 
 interface TopicRequest {
   suggestion: string;
@@ -90,6 +91,17 @@ export async function POST(req: Request) {
     const { suggestion, existingTopics, language, isRegeneration = false } =
       (await req.json()) as TopicRequest;
 
+    // Verificar se o usuário tem créditos suficientes para regeneração de tópico (2 créditos)
+    const creditCheck = await canExecuteAction(session.user.id, 'TOPIC_REGENERATION');
+    
+    if (!creditCheck.allowed) {
+      return NextResponse.json({
+        error: `Créditos insuficientes. Necessário: ${creditCheck.cost}, disponível: ${creditCheck.currentCredits}`,
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+      }, { status: 402 });
+    }
+
     if (!suggestion || !existingTopics || !language) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -108,6 +120,12 @@ export async function POST(req: Request) {
       existingTopics: formattedTopics,
       language,
     });
+
+    // Consumir créditos após geração bem-sucedida
+    const consumeResult = await consumeTopicRegenerationCredits(session.user.id);
+    if (!consumeResult.success) {
+      console.error('Error consuming credits:', consumeResult.message);
+    }
 
     return LangChainAdapter.toDataStreamResponse(stream);
   } catch (error) {
