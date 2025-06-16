@@ -11,6 +11,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { editImageAction, type ImageEditResult } from "@/app/_actions/image/edit";
 import { type ImageModelList } from "@/app/_actions/image/generate";
 import { toast } from "sonner";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 interface ImageEditDialogProps {
   isOpen: boolean;
@@ -28,9 +31,32 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
   // Sempre usar GPT Image 1 para edições
   const selectedModel: ImageModelList = 'gpt-image-1';
 
+  // Credit validation
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
+
   const handleEditImage = useCallback(async () => {
     if (!editPrompt.trim()) {
       setError("Por favor, descreva o que você gostaria de modificar na imagem");
+      return;
+    }
+
+    // Verificar créditos antes de editar imagem
+    const creditCheck = await checkCredits('IMAGE_EDITING');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Editar Imagem'
+      });
+      setShowInsufficientCreditsModal(true);
       return;
     }
 
@@ -168,6 +194,20 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
             )}
           </Button>
         </DialogFooter>
+
+        {/* Modal de créditos insuficientes */}
+        {creditError && (
+          <InsufficientCreditsModal
+            open={showInsufficientCreditsModal}
+            onOpenChange={setShowInsufficientCreditsModal}
+            creditsNeeded={creditError.creditsNeeded}
+            currentCredits={creditError.currentCredits}
+            actionName={creditError.actionName}
+            currentPlan={currentPlan}
+            userId={userId}
+            nextReset={nextReset || undefined}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

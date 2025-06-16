@@ -30,6 +30,9 @@ import { usePlanBadge } from "@/hooks/usePlanBadge";
 import { getModelsForPlan, getModelCategory, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from "@/lib/image-model-restrictions";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Star, Zap } from "lucide-react";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
   "midjourney-imagine": { label: "Midjourney Imagine", provider: "Midjourney", category: 'PREMIUM' },
   "flux-pro": { label: "Flux Pro", provider: "Black Forest", category: 'PRO' },
@@ -79,6 +82,16 @@ export function GenerateImageDialogContent({
   const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
   const { planName, isLoading: planLoading } = usePlanBadge();
 
+  // Credit validation
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
+
   useEffect(() => {
     if (!planLoading) {
       const userModels = getModelsForPlan(planName);
@@ -109,6 +122,19 @@ export function GenerateImageDialogContent({
       const modelInfo = MODEL_INFO[selectedModel];
       const requiredPlan = modelInfo.category === 'PRO' ? 'Pro' : 'Premium';
       toast.error(`Este modelo requer o plano ${requiredPlan}. Faça upgrade para continuar.`);
+      return;
+    }
+
+    // Verificar créditos antes de gerar imagem
+    const creditCheck = await checkCredits('IMAGE_GENERATION');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Gerar Imagem'
+      });
+      setShowInsufficientCreditsModal(true);
       return;
     }
 
@@ -195,11 +221,6 @@ export function GenerateImageDialogContent({
                   <div className="px-2 py-2 text-xs font-medium text-muted-foreground border-b border-border/50 bg-muted/30 flex items-center gap-2">
                     <PlanIcon className="w-3 h-3" />
                     {PLAN_LABELS[planType as keyof typeof PLAN_LABELS]}
-                    {planType !== 'FREE' && (
-                      <Badge variant="outline" className="text-xs px-1 py-0 h-4">
-                        PLUS
-                      </Badge>
-                    )}
                   </div>
                   
                   {/* Modelos da seção */}
@@ -262,6 +283,20 @@ export function GenerateImageDialogContent({
           </AlertDialogAction>
         </div>
       </AlertDialogFooter>
+
+      {/* Modal de créditos insuficientes */}
+      {creditError && (
+        <InsufficientCreditsModal
+          open={showInsufficientCreditsModal}
+          onOpenChange={setShowInsufficientCreditsModal}
+          creditsNeeded={creditError.creditsNeeded}
+          currentCredits={creditError.currentCredits}
+          actionName={creditError.actionName}
+          currentPlan={currentPlan}
+          userId={userId}
+          nextReset={nextReset || undefined}
+        />
+      )}
     </>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCompletion } from "ai/react";
 import { toast } from "sonner";
 import { usePresentationState } from "@/states/presentation-state";
@@ -7,6 +7,9 @@ import { SlideParser, type PlateSlide } from "../utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { extractSlideCount } from "@/lib/utils/prompt-parser";
 import { detectLanguage, mapToSystemLanguage, getLanguageDisplayName } from "@/lib/language-detection";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 export function PresentationGenerationManager() {
   const {
@@ -25,7 +28,18 @@ export function PresentationGenerationManager() {
     setNumSlides,
     isNumSlidesManuallySet,
     setLanguage,
+    isLanguageManuallySet,
   } = usePresentationState();
+
+  // Credit validation hooks
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
 
   // Create a ref for the streaming parser to persist between renders
   const streamingParserRef = useRef<SlideParser>(new SlideParser());
@@ -135,33 +149,39 @@ export function PresentationGenerationManager() {
         try {
           setIsGeneratingOutline(true);
           // Get current state
-          const { presentationInput, setLanguage } = usePresentationState.getState();
+          const { presentationInput, setLanguage, language: currentLanguage, isLanguageManuallySet } = usePresentationState.getState();
           
-          // Detect language from the prompt
-          const detectedLang = detectLanguage(presentationInput ?? "");
-          const systemLanguage = mapToSystemLanguage(detectedLang);
+          let finalLanguage = currentLanguage;
           
-          // Update the language in the state
-          setLanguage(systemLanguage);
+          // Only detect and change language if user hasn't manually set it
+          if (!isLanguageManuallySet) {
+            // Detect language from the prompt
+            const detectedLang = detectLanguage(presentationInput ?? "");
+            const systemLanguage = mapToSystemLanguage(detectedLang);
+            
+            // Update the language in the state (but don't mark as manual)
+            setLanguage(systemLanguage, false);
+            finalLanguage = systemLanguage;
+            
+            // Show a toast notification about the detected language
+            const languageName = getLanguageDisplayName(systemLanguage);
+            toast.info(`Idioma detectado: ${languageName}`, {
+              duration: 3000,
+            });
+          }
           
-          // Save the detected language to the database immediately
+          // Save the language to the database
           const { currentPresentationId } = usePresentationState.getState();
           if (currentPresentationId) {
             try {
               await updatePresentation({
                 id: currentPresentationId,
-                language: systemLanguage,
+                language: finalLanguage,
               });
             } catch (error) {
-              console.error('Failed to save detected language to database:', error);
+              console.error('Failed to save language to database:', error);
             }
           }
-          
-          // Show a toast notification about the detected language
-          const languageName = getLanguageDisplayName(systemLanguage);
-          toast.info(`Idioma detectado: ${languageName}`, {
-            duration: 3000,
-          });
           
           let finalSlideCount = numSlides;
           // PRIORITY 1: If user manually set the slide count, ALWAYS use it
@@ -186,7 +206,7 @@ export function PresentationGenerationManager() {
             body: {
               prompt: presentationInput ?? "",
               numberOfCards: finalSlideCount, // Use the final count (extracted or manual)
-              language: systemLanguage, // Use the detected language
+              language: finalLanguage, // Use the final language (detected or manual)
             },
           });
         } catch (error) {
@@ -199,7 +219,7 @@ export function PresentationGenerationManager() {
       }
     };
     void startOutlineGeneration();
-  }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet]);
+  }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet, isLanguageManuallySet]);
 
   const { completion: presentationCompletion, complete: generatePresentation } =
     useCompletion({
@@ -265,42 +285,67 @@ export function PresentationGenerationManager() {
   }, [presentationCompletion]);
 
   useEffect(() => {
-    if (shouldStartPresentationGeneration) {
-      const {
-        outline,
-        presentationInput,
-        language,
-        presentationStyle,
-        currentPresentationTitle,
-      } = usePresentationState.getState();
-      
-      // Detect language from the prompt if not already detected
-      const detectedLang = detectLanguage(presentationInput ?? "");
-      const systemLanguage = mapToSystemLanguage(detectedLang);
-      
-      // Update the language in the state if it's different
-      if (systemLanguage !== language) {
-        setLanguage(systemLanguage);
-      }
-      
-      // Reset the parser before starting a new generation
-      streamingParserRef.current.reset();
-      setIsGeneratingPresentation(true);
-      // Start the RAF cycle for slide updates
-      if (slidesRafIdRef.current === null) {
-        slidesRafIdRef.current = requestAnimationFrame(updateSlidesWithRAF);
-      }
-      
-      void generatePresentation(presentationInput ?? "", {
-        body: {
-          title: presentationInput ?? currentPresentationTitle ?? "",
+    const startPresentationGeneration = async () => {
+      if (shouldStartPresentationGeneration) {
+        // Verificar créditos antes de gerar apresentação
+        const creditCheck = await checkCredits('PRESENTATION_CREATION');
+        
+        if (!creditCheck.allowed) {
+          setCreditError({
+            creditsNeeded: creditCheck.cost,
+            currentCredits: creditCheck.currentCredits,
+            actionName: 'Criar Apresentação'
+          });
+          setShowInsufficientCreditsModal(true);
+          resetGeneration();
+          return;
+        }
+
+        const {
           outline,
-          language: systemLanguage, // Use the detected language
-          tone: presentationStyle,
-        },
-      });
-    }
-  }, [shouldStartPresentationGeneration]);
+          presentationInput,
+          language,
+          presentationStyle,
+          currentPresentationTitle,
+          isLanguageManuallySet,
+        } = usePresentationState.getState();
+        
+        let finalLanguage = language;
+        
+        // Only detect and change language if user hasn't manually set it
+        if (!isLanguageManuallySet) {
+          // Detect language from the prompt if not already detected
+          const detectedLang = detectLanguage(presentationInput ?? "");
+          const systemLanguage = mapToSystemLanguage(detectedLang);
+          
+          // Update the language in the state if it's different (but don't mark as manual)
+          if (systemLanguage !== language) {
+            setLanguage(systemLanguage, false);
+            finalLanguage = systemLanguage;
+          }
+        }
+        
+        // Reset the parser before starting a new generation
+        streamingParserRef.current.reset();
+        setIsGeneratingPresentation(true);
+        // Start the RAF cycle for slide updates
+        if (slidesRafIdRef.current === null) {
+          slidesRafIdRef.current = requestAnimationFrame(updateSlidesWithRAF);
+        }
+        
+        void generatePresentation(presentationInput ?? "", {
+          body: {
+            title: presentationInput ?? currentPresentationTitle ?? "",
+            outline,
+            language: finalLanguage, // Use the final language (detected or manual)
+            tone: presentationStyle,
+          },
+        });
+      }
+    };
+
+    void startPresentationGeneration();
+  }, [shouldStartPresentationGeneration, checkCredits, resetGeneration, setLanguage, setIsGeneratingPresentation]);
 
   // Clean up RAF on unmount
   useEffect(() => {
@@ -316,5 +361,21 @@ export function PresentationGenerationManager() {
     };
   }, []);
 
-  return null;
+  return (
+    <>
+      {/* Modal de créditos insuficientes */}
+      {creditError && (
+        <InsufficientCreditsModal
+          open={showInsufficientCreditsModal}
+          onOpenChange={setShowInsufficientCreditsModal}
+          creditsNeeded={creditError.creditsNeeded}
+          currentCredits={creditError.currentCredits}
+          actionName={creditError.actionName}
+          currentPlan={currentPlan}
+          userId={userId}
+          nextReset={nextReset || undefined}
+        />
+      )}
+    </>
+  );
 }

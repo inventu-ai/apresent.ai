@@ -116,7 +116,7 @@ export function PresentationControls({
             Language
           </label>
         )}
-        <Select key={language} value={language} onValueChange={setLanguage}>
+        <Select key={language} value={language} onValueChange={(lang) => setLanguage(lang, true)}>
           <SelectTrigger>
             <SelectValue placeholder="Select language" />
           </SelectTrigger>

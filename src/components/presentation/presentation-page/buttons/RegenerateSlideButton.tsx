@@ -9,6 +9,9 @@ import { SlideParser, type PlateSlide } from "@/components/presentation/utils/pa
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import debounce from "lodash.debounce";
 import { nanoid } from "nanoid";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 interface RegenerateSlideButtonProps {
   slideIndex: number;
@@ -20,6 +23,16 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
   
   // Ref para evitar múltiplos cliques
   const isProcessingRef = useRef(false);
+
+  // Credit validation
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
   
   // Obter apenas o que precisamos do estado global
   const { 
@@ -91,6 +104,19 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
     // Verificar se o índice do slide é válido
     if (slideIndex < 0 || slideIndex >= slides.length) {
       toast.error("Índice de slide inválido para regeneração.");
+      return;
+    }
+
+    // Verificar créditos antes de regenerar slide
+    const creditCheck = await checkCredits('SLIDE_GENERATION');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Regenerar Slide'
+      });
+      setShowInsufficientCreditsModal(true);
       return;
     }
     
@@ -337,17 +363,33 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
   );
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40"
-      onClick={regenerateSlide}
-      disabled={isRegenerating}
-      title="Regenerar slide"
-    >
-      <RefreshCw 
-        className={`h-4 w-4 text-white ${isRegenerating ? "animate-spin" : ""}`} 
-      />
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40"
+        onClick={regenerateSlide}
+        disabled={isRegenerating}
+        title="Regenerar slide"
+      >
+        <RefreshCw 
+          className={`h-4 w-4 text-white ${isRegenerating ? "animate-spin" : ""}`} 
+        />
+      </Button>
+
+      {/* Modal de créditos insuficientes */}
+      {creditError && (
+        <InsufficientCreditsModal
+          open={showInsufficientCreditsModal}
+          onOpenChange={setShowInsufficientCreditsModal}
+          creditsNeeded={creditError.creditsNeeded}
+          currentCredits={creditError.currentCredits}
+          actionName={creditError.actionName}
+          currentPlan={currentPlan}
+          userId={userId}
+          nextReset={nextReset || undefined}
+        />
+      )}
+    </>
   );
 }

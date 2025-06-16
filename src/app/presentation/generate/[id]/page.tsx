@@ -150,7 +150,28 @@ export default function PresentationGenerateWithIdPage() {
     setLanguage,
   ]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    // Verificar créditos antes de redirecionar
+    try {
+      const response = await fetch('/api/user/credits/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'PRESENTATION_CREATION' }),
+      });
+      
+      const creditData = await response.json();
+      
+      if (!creditData.allowed) {
+        // Não redirecionar se não tiver créditos - o modal será mostrado pelo PresentationGenerationManager
+        startPresentationGeneration();
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking credits:", error);
+      return;
+    }
+
+    // Só redirecionar se tiver créditos suficientes
     router.push(`/apresentai/${id}`);
     startPresentationGeneration();
   };

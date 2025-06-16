@@ -106,14 +106,18 @@ export function PricingModal({ open, onOpenChange, currentPlan, userId }: Pricin
     setIsUpgrading(planId);
     
     try {
-      // TODO: Implementar integração com gateway de pagamento
       toast.info("Redirecionando para pagamento...");
       
-      // Simular delay de processamento
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Links de pagamento do Stripe
+      const stripeLinks = {
+        PRO: 'https://buy.stripe.com/3cI5kEbhE1Ma0pu4qrenS0y',
+        PREMIUM: 'https://buy.stripe.com/cNi8wQ2L8duS3BGe11enS0z'
+      };
       
-      // Por enquanto, apenas mostrar sucesso
-      toast.success(`Upgrade para ${planId} realizado com sucesso!`);
+      // Redirecionar para o link do Stripe
+      window.open(stripeLinks[planId], '_blank');
+      
+      // Fechar modal após redirecionamento
       onOpenChange(false);
       
     } catch (error) {

@@ -197,11 +197,6 @@ export function ThemeSettings() {
                   <div className="px-2 py-2 text-xs font-medium text-muted-foreground border-b border-border/50 bg-muted/30 flex items-center gap-2">
                     <PlanIcon className="w-3 h-3" />
                     {PLAN_LABELS[planType as keyof typeof PLAN_LABELS]}
-                    {planType !== 'FREE' && (
-                      <Badge variant="outline" className="text-xs px-1 py-0 h-4">
-                        PLUS
-                      </Badge>
-                    )}
                   </div>
                   
                   {/* Modelos da seção */}

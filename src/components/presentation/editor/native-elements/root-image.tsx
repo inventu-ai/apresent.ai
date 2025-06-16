@@ -15,6 +15,9 @@ import { type PlateSlide } from "../../utils/parser";
 import { useDraggable } from "../dnd/hooks/useDraggable";
 import { ImageContextMenu } from "./ImageContextMenu";
 import { ImageDirectEditor } from "./ImageDirectEditor";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 interface ImagePosition {
   x: number;
@@ -54,6 +57,16 @@ export default function RootImage({
     y: image.position?.y ?? 50,
     scale: image.position?.scale ?? 1,
   });
+
+  // Credit validation
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
   const editor = useEditorRef();
   // Create a fake element for dragging - with a unique ID
   const element = {
@@ -126,6 +139,18 @@ export default function RootImage({
 
   // Generate image manually (user action - consumes credits)
   const generateImageManually = async (prompt: string) => {
+    // Verificar créditos antes de gerar imagem
+    const creditCheck = await checkCredits('IMAGE_GENERATION');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Gerar Imagem'
+      });
+      setShowInsufficientCreditsModal(true);
+      return;
+    }
     
     setIsGenerating(true);
     setError(undefined);
@@ -473,6 +498,20 @@ export default function RootImage({
           }, 100);
         }}
       />
+
+      {/* Modal de créditos insuficientes */}
+      {creditError && (
+        <InsufficientCreditsModal
+          open={showInsufficientCreditsModal}
+          onOpenChange={setShowInsufficientCreditsModal}
+          creditsNeeded={creditError.creditsNeeded}
+          currentCredits={creditError.currentCredits}
+          actionName={creditError.actionName}
+          currentPlan={currentPlan}
+          userId={userId}
+          nextReset={nextReset || undefined}
+        />
+      )}
       
     </>
   );

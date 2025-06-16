@@ -9,6 +9,9 @@ import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { consumeCardGenerationCredits, canExecuteAction } from "@/lib/credit-system";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 
 interface OutlineItemProps {
   id: string;
@@ -35,6 +38,16 @@ export const OutlineItem = memo(function OutlineItem({
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, outline } = usePresentationState();
   const { t } = useTranslation();
+
+  // Credit validation
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
 
   const {
     attributes,
@@ -89,23 +102,16 @@ export const OutlineItem = memo(function OutlineItem({
   const handleGenerateTopic = async () => {
     if (isGenerating || isLoading) return;
     
-    // Verificar se o usuário tem créditos suficientes para geração de card (2 créditos)
-    try {
-      const creditCheck = await fetch('/api/user/credits/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'CARD_GENERATION' }),
+    // Verificar créditos antes de gerar tópico
+    const creditCheck = await checkCredits('CARD_GENERATION');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Gerar Tópico'
       });
-      
-      const creditData = await creditCheck.json();
-      
-      if (!creditData.allowed) {
-        toast.error(`Créditos insuficientes. Necessário: ${creditData.cost}, disponível: ${creditData.currentCredits}`);
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking credits:", error);
-      toast.error("Erro ao verificar créditos");
+      setShowInsufficientCreditsModal(true);
       return;
     }
     
@@ -127,6 +133,19 @@ export const OutlineItem = memo(function OutlineItem({
 
   const handleRegenerateTopic = async () => {
     if (isGenerating || isLoading) return;
+    
+    // Verificar créditos antes de regenerar tópico
+    const creditCheck = await checkCredits('TOPIC_REGENERATION');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Regenerar Tópico'
+      });
+      setShowInsufficientCreditsModal(true);
+      return;
+    }
     
     setIsGenerating(true);
     try {
@@ -207,6 +226,20 @@ export const OutlineItem = memo(function OutlineItem({
           <X size={20} />
         </button>
       </div>
+
+      {/* Modal de créditos insuficientes */}
+      {creditError && (
+        <InsufficientCreditsModal
+          open={showInsufficientCreditsModal}
+          onOpenChange={setShowInsufficientCreditsModal}
+          creditsNeeded={creditError.creditsNeeded}
+          currentCredits={creditError.currentCredits}
+          actionName={creditError.actionName}
+          currentPlan={currentPlan}
+          userId={userId}
+          nextReset={nextReset || undefined}
+        />
+      )}
     </div>
   );
 });

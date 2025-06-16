@@ -6,6 +6,9 @@ import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
 import { SlideParser, type PlateSlide } from "@/components/presentation/utils/parser";
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
+import { useCreditValidation } from "@/hooks/useCreditValidation";
+import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
+import { useUserCredits } from "@/hooks/useUserCredits";
 import debounce from "lodash.debounce";
 import { Brain } from "lucide-react";
 
@@ -16,6 +19,16 @@ interface GenerateSlideFromTextButtonProps {
 export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTextButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const isProcessingRef = useRef(false);
+  
+  // Credit validation
+  const { checkCredits, userId, currentPlan } = useCreditValidation();
+  const { nextReset } = useUserCredits();
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [creditError, setCreditError] = useState<{
+    creditsNeeded: number;
+    currentCredits: number;
+    actionName: string;
+  } | null>(null);
   
   const { 
     slides, 
@@ -107,6 +120,19 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     const cardText = getCardText();
     if (!cardText) {
       toast.error("Não foi possível gerar o slide. Texto não encontrado.");
+      return;
+    }
+
+    // Verificar créditos antes de gerar slide
+    const creditCheck = await checkCredits('SLIDE_GENERATION');
+    
+    if (!creditCheck.allowed) {
+      setCreditError({
+        creditsNeeded: creditCheck.cost,
+        currentCredits: creditCheck.currentCredits,
+        actionName: 'Gerar Slide'
+      });
+      setShowInsufficientCreditsModal(true);
       return;
     }
     
@@ -269,18 +295,34 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className={`!size-10 rounded-full absolute right-2 top-2 z-[200] text-indigo-400 hover:text-indigo-600 shadow-md ${isGenerating ? "animate-pulse" : ""}`}
-      onClick={generateSlide}
-      disabled={isGenerating}
-      title="Gerar slide com IA"
-    >
-      <Brain 
-        size={20}
-        className={isGenerating ? "animate-pulse" : ""}
-      />
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={`!size-10 rounded-full absolute right-2 top-2 z-[200] text-indigo-400 hover:text-indigo-600 shadow-md ${isGenerating ? "animate-pulse" : ""}`}
+        onClick={generateSlide}
+        disabled={isGenerating}
+        title="Gerar slide com IA"
+      >
+        <Brain 
+          size={20}
+          className={isGenerating ? "animate-pulse" : ""}
+        />
+      </Button>
+
+      {/* Modal de créditos insuficientes */}
+      {creditError && (
+        <InsufficientCreditsModal
+          open={showInsufficientCreditsModal}
+          onOpenChange={setShowInsufficientCreditsModal}
+          creditsNeeded={creditError.creditsNeeded}
+          currentCredits={creditError.currentCredits}
+          actionName={creditError.actionName}
+          currentPlan={currentPlan}
+          userId={userId}
+          nextReset={nextReset || undefined}
+        />
+      )}
+    </>
   );
 }

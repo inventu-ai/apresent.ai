@@ -223,8 +223,15 @@ export function ImageQualitySelector({ value, onValueChange, className = "" }: I
               </Button>
               <Button 
                 onClick={() => {
-                  // Aqui você implementaria a lógica de upgrade
-                  console.log('Redirect to upgrade page');
+                  // Links de pagamento do Stripe
+                  const stripeLinks = {
+                    PRO: 'https://buy.stripe.com/3cI5kEbhE1Ma0pu4qrenS0y',
+                    PREMIUM: 'https://buy.stripe.com/cNi8wQ2L8duS3BGe11enS0z'
+                  };
+                  
+                  // Determinar qual plano é necessário baseado no plano atual
+                  const targetPlan = planName === 'FREE' ? 'PRO' : 'PREMIUM';
+                  window.open(stripeLinks[targetPlan], '_blank');
                   setShowUpgradeModal(false);
                 }}
                 className="flex-1"
