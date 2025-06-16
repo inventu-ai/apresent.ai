@@ -148,6 +148,25 @@ export interface Translations {
     insufficientCredits: string;
     creditsRequired: string;
     creditsAvailable: string;
+    creditsModal: {
+      title: string;
+      currentStatus: string;
+      action: string;
+      required: string;
+      available: string;
+      missing: string;
+      credits: string;
+      whatYouCanDo: string;
+      waitNextMonth: string;
+      creditsRenewIn: string;
+      upgradeYourPlan: string;
+      freePlanCredits: string;
+      proPlanCredits: string;
+      premiumPlanCredits: string;
+      understood: string;
+      upgrade: string;
+      alreadyBestPlan: string;
+    };
     back: string;
     prompt: string;
     slide: string;
@@ -518,6 +537,25 @@ export const translations: Record<Language, Translations> = {
       insufficientCredits: 'Créditos insuficientes',
       creditsRequired: 'Necessário',
       creditsAvailable: 'disponível',
+      creditsModal: {
+        title: 'Créditos Insuficientes',
+        currentStatus: 'Status Atual',
+        action: 'Ação',
+        required: 'Necessário',
+        available: 'Disponível',
+        missing: 'Faltam',
+        credits: 'créditos',
+        whatYouCanDo: 'O que você pode fazer:',
+        waitNextMonth: 'Aguardar próximo mês',
+        creditsRenewIn: 'Seus créditos serão renovados em',
+        upgradeYourPlan: 'Fazer upgrade do plano',
+        freePlanCredits: 'Plano Pro: 2.000 créditos/mês',
+        proPlanCredits: 'Plano Premium: Créditos ilimitados',
+        premiumPlanCredits: 'Você já tem o melhor plano!',
+        understood: 'Entendi',
+        upgrade: 'Fazer Upgrade',
+        alreadyBestPlan: 'Você já tem o melhor plano!'
+      },
       back: 'Voltar',
       prompt: 'Prompt',
       slide: 'slide',
@@ -876,6 +914,25 @@ export const translations: Record<Language, Translations> = {
       insufficientCredits: 'Insufficient credits',
       creditsRequired: 'Required',
       creditsAvailable: 'available',
+      creditsModal: {
+        title: 'Insufficient Credits',
+        currentStatus: 'Current Status',
+        action: 'Action',
+        required: 'Required',
+        available: 'Available',
+        missing: 'Missing',
+        credits: 'credits',
+        whatYouCanDo: 'What you can do:',
+        waitNextMonth: 'Wait for next month',
+        creditsRenewIn: 'Your credits will renew in',
+        upgradeYourPlan: 'Upgrade your plan',
+        freePlanCredits: 'Pro Plan: 2,000 credits/month',
+        proPlanCredits: 'Premium Plan: Unlimited credits',
+        premiumPlanCredits: 'You already have the best plan!',
+        understood: 'Understood',
+        upgrade: 'Upgrade',
+        alreadyBestPlan: 'You already have the best plan!'
+      },
       back: 'Back',
       prompt: 'Prompt',
       slide: 'slide',
@@ -1234,6 +1291,25 @@ export const translations: Record<Language, Translations> = {
       insufficientCredits: 'Créditos insuficientes',
       creditsRequired: 'Requerido',
       creditsAvailable: 'disponible',
+      creditsModal: {
+        title: 'Créditos Insuficientes',
+        currentStatus: 'Estado Actual',
+        action: 'Acción',
+        required: 'Requerido',
+        available: 'Disponible',
+        missing: 'Faltan',
+        credits: 'créditos',
+        whatYouCanDo: 'Lo que puedes hacer:',
+        waitNextMonth: 'Esperar al próximo mes',
+        creditsRenewIn: 'Tus créditos se renovarán en',
+        upgradeYourPlan: 'Actualizar tu plan',
+        freePlanCredits: 'Plan Pro: 2,000 créditos/mes',
+        proPlanCredits: 'Plan Premium: Créditos ilimitados',
+        premiumPlanCredits: '¡Ya tienes el mejor plan!',
+        understood: 'Entendido',
+        upgrade: 'Actualizar',
+        alreadyBestPlan: '¡Ya tienes el mejor plan!'
+      },
       back: 'Atrás',
       prompt: 'Prompt',
       slide: 'diapositiva',
