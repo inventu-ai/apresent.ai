@@ -2,9 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Wand2 } from "lucide-react";
+import { ArrowLeft, Wand2, LayoutGrid } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { SimpleCreditDisplay } from "@/components/ui/simple-credit-display";
 import { usePresentationState } from "@/states/presentation-state";
 import {
   type Themes,
@@ -42,6 +43,7 @@ export default function ApresentAIGenerateWithIdPage() {
     setImageModel,
     setPresentationStyle,
     setLanguage,
+    outline,
   } = usePresentationState();
 
   // Track if this is a fresh navigation or a revisit
@@ -237,17 +239,33 @@ export default function ApresentAIGenerateWithIdPage() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center border-t bg-background/80 p-4 backdrop-blur-sm z-50">
-          <Button
-            size="lg"
-            className="gap-2 px-8"
-            onClick={handleGenerate}
-            disabled={isGeneratingPresentation}
-          >
-            <Wand2 className="h-5 w-5" />
-            {isGeneratingPresentation ? t.presentation.generating : t.presentation.generatePresentation}
-          </Button>
-        </div>
+<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center border-t bg-background/80 p-4 backdrop-blur-sm z-50">
+  <div className="flex items-center w-full max-w-4xl">
+    {/* Créditos do usuário (esquerda) - posicionado próximo ao botão */}
+    <div className="flex-1 flex justify-start pr-4">
+      <SimpleCreditDisplay />
+    </div>
+    
+    {/* Botão Gerar (centro) */}
+    <div>
+      <Button
+        size="lg"
+        className="gap-2 px-8 text-base"
+        onClick={handleGenerate}
+        disabled={isGeneratingPresentation}
+      >
+        <Wand2 className="h-5 w-5" />
+        {isGeneratingPresentation ? t.presentation.generating : "Gerar apresentação"}
+      </Button>
+    </div>
+
+    {/* Total de cartões (direita) - posicionado próximo ao botão */}
+    <div className="flex-1 flex justify-end items-center pl-4">
+      <LayoutGrid className="h-4 w-4 text-muted-foreground mr-1" />
+      <span className="text-base font-medium">{outline?.length || 0} cartões no total</span>
+    </div>
+  </div>
+</div>
       </ThemeBackground>
     </div>
   );
