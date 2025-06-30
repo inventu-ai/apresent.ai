@@ -32,11 +32,24 @@ You are an expert presentation designer.Your task is to create an engaging prese
 
 ## FIRST SLIDE (INTRODUCTION) REQUIREMENTS
 - The first slide of the presentation must always be an introduction to the topic.
-- Use a large, bold title with the main subject of the presentation.
+- The first slide must always include a large, bold title (H1) with the main subject of the presentation. If the title is missing, use the presentation title.
 - Below the title, write a short introduction or summary (1-2 paragraphs) that contextualizes the topic, provides key facts, definitions, or impactful data.
+- The introduction text must be concise:
+  - If there are two paragraphs, each paragraph must have a maximum of 3 lines (short, objective sentences).
+  - If there is only one paragraph, it can have up to 7 lines maximum.
+  - Avoid excessive spacing between paragraphs; the text should be visually compact.
+  - Do not use long sentences or large blocks of text.
+  - Example (two paragraphs, max 3 lines each):
+    <P>First paragraph, up to 3 lines.</P>
+    <P>Second paragraph, up to 3 lines.</P>
+  - Example (one paragraph, max 7 lines):
+    <P>Single paragraph, up to 7 lines.</P>
 - Do NOT use bullet points or multiple topics on this slide.
 - Add a large, relevant and visually striking image on either the right or left side of the slide (use layout="right" or "left").
-- Optionally, if the user has a profile (account), include their profile picture and display "by [user name]" on the left side of the slide, below the introduction.
+- Always display the user's name (e.g., "by {USER_NAME}") on the introduction slide, below the introduction text, using ONLY the <h6> tag for maximum visual highlight.
+- Example: <h6>por {USER_NAME}</h6>
+- If the user's name is not inside <h6>, the answer is INVALID.
+- Use "by" in English, "por" in Portuguese, "por" in Spanish, "par" in French, etc., according to the slide language.
 
 ## PRESENTATION DETAILS
 - Title: {TITLE}
@@ -154,6 +167,18 @@ Choose ONE different layout for each slide:
 </STAIRCASE>
 \`\`\`
 
+## STAIRCASE SLIDE REQUIREMENTS
+- Each step in the staircase must have a short title (max 3-4 words) and a short paragraph (max 2-3 lines).
+- Do not use long titles or long paragraphs in the staircase layout.
+- Never overlap step titles and text; each step must be visually separated.
+- If there is general explanatory text, place it outside the <STAIRCASE> block (before or after).
+- Example:
+  <STAIRCASE>
+    <DIV><H3>Step 1</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>Step 2</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>Step 3</H3><P>Short description (max 2-3 lines).</P></DIV>
+  </STAIRCASE>
+
 9. CHART: For data visualization
 \`\`\`xml
 <CHART charttype="vertical-bar">
@@ -192,7 +217,8 @@ For each outline point:
    - Use each layout (left, right, vertical) at least twice
    - Don't use the same layout more than twice in a row
 7. Never repeat the same icon within a single slide. Each topic in an ICONS layout must have a unique and visually distinct icon that properly represents the concept.
-8. For slides with 3 or more topics, do not include images unless the texts are very short.
+8. If the user does not select an icon manually, always choose a unique and contextually relevant icon for each topic. Never use the same icon for different topics in the same slide. Avoid using the first icon in the list as a default for all topics.
+9. For slides with 3 or more topics, do not include images unless the texts are very short.
 9. For slides with charts or tables, omit the image if the chart/table is large; if small, you may include an image, preferably using a lateral layout ("left" or "right").
 
 Now create a complete XML presentation with {TOTAL_SLIDES} slides that significantly expands on the outline.
@@ -222,8 +248,8 @@ export async function POST(req: Request) {
       }, { status: 402 });
     }
 
-    const { title, outline, language, tone } =
-      (await req.json()) as SlidesRequest;
+    const { title, outline, language, tone, userName } =
+      (await req.json()) as SlidesRequest & { userName?: string };
 
     if (!title || !outline || !Array.isArray(outline) || !language) {
       return NextResponse.json(
@@ -283,6 +309,7 @@ export async function POST(req: Request) {
       TONE: tone,
       OUTLINE_FORMATTED: outline.join("\n\n"),
       TOTAL_SLIDES: outline.length,
+      USER_NAME: userName ?? "User"
     });
 
     return LangChainAdapter.toDataStreamResponse(stream);

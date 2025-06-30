@@ -500,7 +500,7 @@ export class SlideParser {
       if (child.tag.toUpperCase() === "IMG") {
         // Only process if we have the complete original tag content
         if (child.originalTagContent) {
-          const url = child.attributes.url ?? child.attributes.src ?? "";
+          const url = child.attributes.url || child.attributes.src || "";
 
           // Check for complete quotes in the query attribute
           const queryStart = child.originalTagContent.indexOf("query=");
@@ -1013,7 +1013,7 @@ export class SlideParser {
       return null;
     }
 
-    const url = node.attributes.url ?? node.attributes.src ?? "";
+    const url = node.attributes.url !== undefined ? node.attributes.url : (node.attributes.src !== undefined ? node.attributes.src : "");
 
     // Check for complete quotes in the query attribute
     const queryStart = node.originalTagContent.indexOf("query=");
@@ -1051,7 +1051,7 @@ export class SlideParser {
     // Query is valid and complete, create the image element
     return {
       type: "img",
-      url: url,
+      url: String(url),
       query: query,
       children: [{ text: "" } as TText],
     } as ImageElement;
@@ -1187,13 +1187,141 @@ export class SlideParser {
           }
         }
 
-        // Add icon element if found - with empty name property
+        // Add icon element if found - map query to icon name for default icon selection
         if (query) {
-          children.unshift({
+          // Simple mapping from query to FontAwesome icon name
+          function mapQueryToIconName(query: string): string {
+            const iconMap: Record<string, string> = {
+              // História e guerra
+              "tank": "FaFighterJet",
+              "battle": "FaFighterJet",
+              "soldier": "FaUser",
+              "commander": "FaUserTie",
+              "general": "FaUserTie",
+              "naval": "FaShip",
+              "ship": "FaShip",
+              "aircraft": "FaPlane",
+              "plane": "FaPlane",
+              "bomb": "FaBomb",
+              "war": "FaBomb",
+              "strategy": "FaChess",
+              "blitzkrieg": "FaBolt",
+              "military": "FaFighterJet",
+              "logistics": "FaTruck",
+              "intelligence": "FaBrain",
+              "radar": "FaBroadcastTower",
+              "map": "FaMap",
+              "front": "FaMapMarkedAlt",
+              "allies": "FaGlobeAmericas",
+              "axis": "FaGlobeEurope",
+              "leader": "FaUserTie",
+              "meeting": "FaUsers",
+              "agreement": "FaHandshake",
+              "diplomacy": "FaHandshake",
+              "peace": "FaPeace",
+              "resistance": "FaFistRaised",
+              "memory": "FaBrain",
+              "genocide": "FaSkullCrossbones",
+              "holocaust": "FaSkullCrossbones",
+              "concentration camp": "FaSkullCrossbones",
+              "justice": "FaBalanceScale",
+              "law": "FaGavel",
+              "court": "FaGavel",
+              "scales": "FaBalanceScale",
+              "document": "FaFileAlt",
+              "book": "FaBook",
+              "folder": "FaFolder",
+              "calendar": "FaCalendar",
+              "timeline": "FaRegClock",
+              "chart": "FaChartBar",
+              "growth": "FaChartLine",
+              "innovation": "FaLightbulb",
+              "idea": "FaLightbulb",
+              "technology": "FaMicrochip",
+              "science": "FaMicroscope",
+              "factory": "FaIndustry",
+              "city": "FaCity",
+              "building": "FaBuilding",
+              "money": "FaMoneyBillWave",
+              "economy": "FaMoneyBillWave",
+              "award": "FaAward",
+              "medal": "FaMedal",
+              "star": "FaStar",
+              "heart": "FaHeart",
+              "rocket": "FaRocket",
+              "shield": "FaShieldAlt",
+              "flag": "FaFlag",
+              "globe": "FaGlobe",
+              "nuclear": "FaRadiation",
+              "team": "FaUsers",
+              "user": "FaUser",
+              "envelope": "FaEnvelope",
+              "mail": "FaEnvelope",
+              "camera": "FaCamera",
+              "photo": "FaCamera",
+              "video": "FaVideo",
+              "music": "FaMusic",
+              "lock": "FaLock",
+              "phone": "FaPhone",
+              "beach": "FaUmbrellaBeach"
+            };
+            const lower = query ? query.toLowerCase() : "";
+            for (const key in iconMap) {
+              if (lower.includes(key)) return iconMap[key];
+            }
+            // Fallbacks por contexto
+            if (lower.includes("camp")) return "FaSkullCrossbones";
+            if (lower.includes("justice")) return "FaBalanceScale";
+            if (lower.includes("memorial") || lower.includes("memory")) return "FaBrain";
+            if (lower.includes("law") || lower.includes("legal")) return "FaGavel";
+            if (lower.includes("peace")) return "FaPeace";
+            if (lower.includes("strategy")) return "FaChess";
+            if (lower.includes("military")) return "FaFighterJet";
+            if (lower.includes("diplomacy")) return "FaHandshake";
+            if (lower.includes("leader")) return "FaUserTie";
+            if (lower.includes("resistance")) return "FaFistRaised";
+            if (lower.includes("innovation")) return "FaLightbulb";
+            if (lower.includes("technology")) return "FaMicrochip";
+            if (lower.includes("growth")) return "FaChartLine";
+            if (lower.includes("award")) return "FaAward";
+            if (lower.includes("medal")) return "FaMedal";
+            if (lower.includes("star")) return "FaStar";
+            if (lower.includes("heart")) return "FaHeart";
+            if (lower.includes("rocket")) return "FaRocket";
+            if (lower.includes("shield")) return "FaShieldAlt";
+            if (lower.includes("flag")) return "FaFlag";
+            if (lower.includes("globe")) return "FaGlobe";
+            if (lower.includes("nuclear")) return "FaRadiation";
+            if (lower.includes("user")) return "FaUser";
+            if (lower.includes("team")) return "FaUsers";
+            if (lower.includes("envelope") || lower.includes("mail")) return "FaEnvelope";
+            if (lower.includes("camera") || lower.includes("photo")) return "FaCamera";
+            if (lower.includes("video")) return "FaVideo";
+            if (lower.includes("music")) return "FaMusic";
+            if (lower.includes("lock")) return "FaLock";
+            if (lower.includes("phone")) return "FaPhone";
+            if (lower.includes("beach")) return "FaUmbrellaBeach";
+            if (lower.includes("calendar")) return "FaCalendar";
+            if (lower.includes("book")) return "FaBook";
+            if (lower.includes("document")) return "FaFileAlt";
+            if (lower.includes("folder")) return "FaFolder";
+            if (lower.includes("timeline")) return "FaRegClock";
+            if (lower.includes("chart")) return "FaChartBar";
+            if (lower.includes("science")) return "FaMicroscope";
+            if (lower.includes("factory")) return "FaIndustry";
+            if (lower.includes("city")) return "FaCity";
+            if (lower.includes("building")) return "FaBuilding";
+            if (lower.includes("money") || lower.includes("economy")) return "FaMoneyBillWave";
+            return "FaQuestion"; // fallback icon
+          }
+          const mappedIconName = mapQueryToIconName(query);
+          const iconElement = {
             type: "icon",
             query: query,
+            name: mappedIconName,
             children: [{ text: "" } as TText],
-          } as IconElement);
+          } as IconElement;
+          children.unshift(iconElement);
         }
 
         const iconItem: IconItemElement = {
@@ -1585,6 +1713,14 @@ export class SlideParser {
 export function parseSlideXml(xmlData: string): PlateSlide[] {
   const parser = new SlideParser();
   parser.parseChunk(xmlData);
-  parser.finalize();
+  const slides = parser.finalize();
+  // Log all icons found in all slides
+  slides.forEach((slide, idx) => {
+    slide.content.forEach((node) => {
+      if (node.type === "icons" && Array.isArray(node.children)) {
+        console.log(`[ICON PARSER][Slide ${idx + 1}] Icon items:`, node.children.map((iconItem: any) => iconItem.children?.[0]));
+      }
+    });
+  });
   return parser.getAllSlides();
 }

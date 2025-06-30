@@ -32,14 +32,14 @@ export function PresentationGenerationManager() {
   } = usePresentationState();
 
   // Credit validation hooks
-  const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
-  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
-  const [creditError, setCreditError] = useState<{
-    creditsNeeded: number;
-    currentCredits: number;
-    actionName: string;
-  } | null>(null);
+  // const { checkCredits, userId, currentPlan } = useCreditValidation();
+  // const { nextReset } = useUserCredits();
+  // const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  // const [creditError, setCreditError] = useState<{
+  //   creditsNeeded: number;
+  //   currentCredits: number;
+  //   actionName: string;
+  // } | null>(null);
 
   // Create a ref for the streaming parser to persist between renders
   const streamingParserRef = useRef<SlideParser>(new SlideParser());
@@ -229,10 +229,19 @@ export function PresentationGenerationManager() {
           usePresentationState.getState();
         const parser = streamingParserRef.current;
         parser.reset();
+        console.log("[ICON DEBUG] XML recebido da IA:", _completion);
         parser.parseChunk(_completion);
         parser.finalize();
         parser.clearAllGeneratingMarks();
         const slides = parser.getAllSlides();
+        // Log all icons found in all slides (debug IA)
+        slides.forEach((slide, idx) => {
+          slide.content.forEach((node) => {
+            if (node.type === "icons" && Array.isArray(node.children)) {
+              console.log(`[ICON PARSER][Slide ${idx + 1}] Icon items:`, node.children.map((iconItem: any) => iconItem.children?.[0]));
+            }
+          });
+        });
         slidesBufferRef.current = slides;
         requestAnimationFrame(updateSlidesWithRAF);
         if (currentPresentationId) {
@@ -268,9 +277,18 @@ export function PresentationGenerationManager() {
     if (presentationCompletion) {
       try {
         streamingParserRef.current.reset();
+        console.log("[ICON DEBUG] XML recebido da IA:", presentationCompletion);
         streamingParserRef.current.parseChunk(presentationCompletion);
         streamingParserRef.current.finalize();
         const allSlides = streamingParserRef.current.getAllSlides();
+        // Log all icons found in all slides (debug IA)
+        allSlides.forEach((slide, idx) => {
+          slide.content.forEach((node) => {
+            if (node.type === "icons" && Array.isArray(node.children)) {
+              console.log(`[ICON PARSER][Slide ${idx + 1}] Icon items:`, node.children.map((iconItem: any) => iconItem.children?.[0]));
+            }
+          });
+        });
         // Store the latest slides in the buffer
         slidesBufferRef.current = allSlides;
         // Only schedule a new frame if one isn't already pending
@@ -286,20 +304,23 @@ export function PresentationGenerationManager() {
 
   useEffect(() => {
     const startPresentationGeneration = async () => {
+      // if (creditError) {
+      //   // Se houver erro de crédito, não tenta gerar novamente
+      //   return;
+      // }
       if (shouldStartPresentationGeneration) {
-        // Verificar créditos antes de gerar apresentação
-        const creditCheck = await checkCredits('PRESENTATION_CREATION');
-        
-        if (!creditCheck.allowed) {
-          setCreditError({
-            creditsNeeded: creditCheck.cost,
-            currentCredits: creditCheck.currentCredits,
-            actionName: 'Criar Apresentação'
-          });
-          setShowInsufficientCreditsModal(true);
-          resetGeneration();
-          return;
-        }
+        // // Verificar créditos antes de gerar apresentação
+        // const creditCheck = await checkCredits('PRESENTATION_CREATION');
+        // if (!creditCheck.allowed) {
+        //   setCreditError({
+        //     creditsNeeded: creditCheck.cost,
+        //     currentCredits: creditCheck.currentCredits,
+        //     actionName: 'Criar Apresentação'
+        //   });
+        //   setShowInsufficientCreditsModal(true);
+        //   resetGeneration();
+        //   return;
+        // }
 
         const {
           outline,
@@ -333,19 +354,22 @@ export function PresentationGenerationManager() {
           slidesRafIdRef.current = requestAnimationFrame(updateSlidesWithRAF);
         }
         
+        // Obter nome do usuário do contexto (ajuste conforme seu contexto real)
+        const userName = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("userName")) || "User";
         void generatePresentation(presentationInput ?? "", {
           body: {
             title: presentationInput ?? currentPresentationTitle ?? "",
             outline,
             language: finalLanguage, // Use the final language (detected or manual)
             tone: presentationStyle,
+            userName: userName
           },
         });
       }
     };
 
     void startPresentationGeneration();
-  }, [shouldStartPresentationGeneration, checkCredits, resetGeneration, setLanguage, setIsGeneratingPresentation]);
+  }, [shouldStartPresentationGeneration, /*checkCredits,*/ resetGeneration, setLanguage, setIsGeneratingPresentation]);
 
   // Clean up RAF on unmount
   useEffect(() => {
@@ -361,13 +385,22 @@ export function PresentationGenerationManager() {
     };
   }, []);
 
+  // Função para fechar o modal, limpar o erro de crédito e resetar geração
+  // const handleCloseInsufficientCreditsModal = (open: boolean) => {
+  //   setShowInsufficientCreditsModal(open);
+  //   if (!open) {
+  //     setCreditError(null);
+  //     resetGeneration();
+  //   }
+  // };
+
   return (
     <>
       {/* Modal de créditos insuficientes */}
-      {creditError && (
+      {/* {creditError && (
         <InsufficientCreditsModal
           open={showInsufficientCreditsModal}
-          onOpenChange={setShowInsufficientCreditsModal}
+          onOpenChange={handleCloseInsufficientCreditsModal}
           creditsNeeded={creditError.creditsNeeded}
           currentCredits={creditError.currentCredits}
           actionName={creditError.actionName}
@@ -375,7 +408,7 @@ export function PresentationGenerationManager() {
           userId={userId}
           nextReset={nextReset || undefined}
         />
-      )}
+      )} */}
     </>
   );
 }
