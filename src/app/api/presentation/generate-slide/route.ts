@@ -79,7 +79,8 @@ You are an expert presentation designer. Your task is to create a single present
 
 1. FORMAT: Use <SECTION> tags for the slide
 2. CONTENT: DO NOT copy the topic verbatim - expand with examples, data, and context
-3. VISUAL: Include detailed image queries (10+ words) in the slide
+3. VARIETY: Use an appropriate layout component for the slide content
+4. VISUALS: Include detailed image queries (10+ words) on the slide
 
 ## SLIDE DETAILS
 - Presentation Title: {TITLE}
@@ -88,6 +89,19 @@ You are an expert presentation designer. Your task is to create a single present
 - Tone: {TONE}
 - Slide Number: {SLIDE_INDEX}
 - Other Slides Context: {CONTEXT}
+
+## CONTENT DENSITY MANAGEMENT
+- For slides with 1-2 topics: include images normally with layout="left" or layout="right".
+- For slides with 3-4 topics with SHORT texts (1-2 lines each): use layout="vertical" (image at the top).
+- For slides with 3-4 topics with MEDIUM texts (3+ lines each): do NOT include images at all.
+- For slides with 5+ topics: NEVER include images regardless of text length.
+- For slides with charts or tables: if necessary, omit the image completely; if the chart or table is small, you may include an image.
+- For slides with charts or tables: if you include an image, use "left" or "right" layout to position the image laterally.
+
+## CONTENT BALANCING
+- Prioritize readability over the number of visual elements.
+- Slides with many topics (3+) should focus on textual content without additional images.
+- Avoid overloading slides with too many elements (text + image + icons).
 
 ## SLIDE STRUCTURE
 \`\`\`xml
@@ -99,12 +113,12 @@ You are an expert presentation designer. Your task is to create a single present
 
 ## SECTION LAYOUTS
 Vary the layout attribute in the SECTION tag to control image placement:
-- layout="left" - Main image appears on the left side
-- layout="right" - Main image appears on the right side
-- layout="vertical" - Main image appears at the top
+- layout="left" - Root image appears on the left side
+- layout="right" - Root image appears on the right side
+- layout="vertical" - Root image appears at the top
 
 ## AVAILABLE LAYOUTS
-Choose ONE different layout for the slide:
+Choose ONE appropriate layout for the slide:
 
 1. COLUMNS: For comparisons
 \`\`\`xml
@@ -125,8 +139,10 @@ Choose ONE different layout for the slide:
 3. ICONS: For concepts with symbols
 \`\`\`xml
 <ICONS>
-  <DIV><ICON query="rocket" /><H3>Innovation</H3><P>Description</P></DIV>
-  <DIV><ICON query="shield" /><H3>Security</H3><P>Description</P></DIV>
+  <DIV><ICON query="rocket" /><H3>Innovation</H3><P>Description of innovation</P></DIV>
+  <DIV><ICON query="shield" /><H3>Security</H3><P>Description of security</P></DIV>
+  <DIV><ICON query="chart-line" /><H3>Growth</H3><P>Description of growth</P></DIV>
+  <DIV><ICON query="lightbulb" /><H3>Ideas</H3><P>Description of ideas</P></DIV>
 </ICONS>
 \`\`\`
 
@@ -176,6 +192,20 @@ Choose ONE different layout for the slide:
 </STAIRCASE>
 \`\`\`
 
+## STAIRCASE SLIDE REQUIREMENTS
+- Each step in the staircase must have a short title (max 3-4 words) and a short paragraph (max 2-3 lines).
+- Do not use long titles or long paragraphs in the staircase layout.
+- Never overlap step titles and text; each step must be visually separated.
+- If there is general explanatory text, place it outside the <STAIRCASE> block (before or after).
+- Add extra visual spacing between the second and third step to improve readability. You can use a comment <!-- extra space -->, a <BR/>, or add style="margin-top:2em" to the third <DIV> if supported.
+- Example:
+  <STAIRCASE>
+    <DIV><H3>Step 1</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>Step 2</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <!-- extra space -->
+    <DIV style="margin-top:2em"><H3>Step 3</H3><P>Short description (max 2-3 lines).</P></DIV>
+  </STAIRCASE>
+
 9. CHART: For data visualization
 \`\`\`xml
 <CHART charttype="vertical-bar">
@@ -206,20 +236,23 @@ For the slide topic:
 
 ## CRITICAL RULES
 1. Generate EXACTLY one slide. NOT MORE, NOT LESS!
-2. DO NOT copy the topic verbatim - expand and enhance
-3. Include at least one detailed image query in the slide
-4. Use appropriate heading hierarchy
-5. Vary the SECTION layout attribute (left/right/vertical)
-6. IMPORTANT: Keep (H1) titles SHORT and CONCISE - max 6-8 words
-7. Use subtitles (H2, H3) and paragraphs (P) for detailed content, not in the main title
-8. NEVER include phrases like "Important aspects about [topic]" or "Tell me more about [topic]" in the content
-9. NEVER repeat the original topic with introductory phrases like "Aspects to consider", "Considerations about", etc.
-10. Treat the topic as the main subject, not as an instruction to be included in the slide
-11. CRITICAL: When using layouts with multiple topics (COLUMNS, BULLETS, ICONS, etc.), ensure ALL topics have SUBSTANTIAL and BALANCED content
-12. Each secondary topic must have at least 2-3 full sentences, not just a generic sentence
-13. Avoid content disparity - do not make the first topic much more detailed than the others
-14. PRIORITIZE complex and varied layouts (COLUMNS, BULLETS, ICONS, CYCLE, ARROWS, TIMELINE, PYRAMID, STAIRCASE) instead of just plain text
-15. VARY layouts between slides - do not use the same layout type repeatedly
+2. NEVER repeat layouts in consecutive slides (consider the context of other slides)
+3. DO NOT copy the topic verbatim - expand and enhance
+4. Include at least one detailed image query in the slide
+5. Use appropriate heading hierarchy
+6. Vary the SECTION layout attribute (left/right/vertical)
+7. IMPORTANT: Keep (H1) titles SHORT and CONCISE - max 6-8 words
+8. Use subtitles (H2, H3) and paragraphs (P) for detailed content, not in the main title
+9. NEVER include phrases like "Important aspects about [topic]" or "Tell me more about [topic]" in the content
+10. NEVER repeat the original topic with introductory phrases like "Aspects to consider", "Considerations about", etc.
+11. Treat the topic as the main subject, not as an instruction to be included in the slide
+12. CRITICAL: When using layouts with multiple topics (COLUMNS, BULLETS, ICONS, etc.), ensure ALL topics have SUBSTANTIAL and BALANCED content
+13. Each secondary topic must have at least 2-3 full sentences, not just a generic sentence
+14. Avoid content disparity - do not make the first topic much more detailed than the others
+15. PRIORITIZE complex and varied layouts (COLUMNS, BULLETS, ICONS, CYCLE, ARROWS, TIMELINE, PYRAMID, STAIRCASE) instead of just plain text
+16. Never repeat the same icon within a single slide. Each topic in an ICONS layout must have a unique and visually distinct icon that properly represents the concept.
+17. For slides with 3 or more topics, do not include images unless the texts are very short.
+18. For slides with charts or tables, omit the image if the chart/table is large; if small, you may include an image, preferably using a lateral layout ("left" or "right").
 
 Now create a complete XML slide that significantly expands on the provided topic.
 `;
@@ -577,6 +610,127 @@ function addComplexLayoutToXml(xml: string, topic: string, slideIndex?: number):
 }
 
 /**
+ * Função para analisar o número de tópicos e o tamanho do texto em um slide
+ * Retorna informações sobre a quantidade de tópicos e se os textos são curtos, médios ou longos
+ */
+function analyzeSlideContent(xml: string): { 
+  topicCount: number; 
+  hasShortTexts: boolean;
+  hasMediumTexts: boolean;
+  hasLongTexts: boolean;
+} {
+  // Inicializar contadores
+  let topicCount = 0;
+  let shortTextCount = 0;
+  let mediumTextCount = 0;
+  let longTextCount = 0;
+  
+  // Contar DIVs em layouts complexos
+  const divMatches = xml.match(/<DIV>/gi);
+  if (divMatches) {
+    topicCount = divMatches.length;
+  }
+  
+  // Se não encontrou DIVs, pode ser um slide simples com apenas parágrafos
+  if (topicCount === 0) {
+    const pMatches = xml.match(/<P>(.*?)<\/P>/gi);
+    if (pMatches) {
+      topicCount = pMatches.length;
+    }
+  }
+  
+  // Analisar o tamanho dos textos nos parágrafos
+  const paragraphRegex = /<P>(.*?)<\/P>/gi;
+  let match;
+  const paragraphs: string[] = [];
+  
+  while ((match = paragraphRegex.exec(xml)) !== null) {
+    if (match[1]) {
+      paragraphs.push(match[1]);
+    }
+  }
+  
+  // Classificar cada parágrafo por tamanho
+  paragraphs.forEach(paragraph => {
+    const words = paragraph.split(/\s+/).length;
+    const lines = paragraph.split(/[.!?]/).length;
+    
+    if (words <= 15 || lines <= 1) {
+      shortTextCount++;
+    } else if (words <= 40 || lines <= 3) {
+      mediumTextCount++;
+    } else {
+      longTextCount++;
+    }
+  });
+  
+  return {
+    topicCount,
+    hasShortTexts: shortTextCount > 0 && mediumTextCount === 0 && longTextCount === 0,
+    hasMediumTexts: mediumTextCount > 0 && longTextCount === 0,
+    hasLongTexts: longTextCount > 0
+  };
+}
+
+/**
+ * Função para aplicar as regras de densidade de conteúdo
+ * Ajusta o layout e a presença de imagens com base no número de tópicos e tamanho do texto
+ */
+function applyContentDensityRules(xml: string, topic: string): string {
+  // Analisar o conteúdo do slide
+  const analysis = analyzeSlideContent(xml);
+  
+  // Verificar se o slide já tem um layout complexo
+  const hasComplexLayout = 
+    xml.includes("<COLUMNS") || 
+    xml.includes("<BULLETS") || 
+    xml.includes("<ICONS") || 
+    xml.includes("<CYCLE") || 
+    xml.includes("<ARROWS") || 
+    xml.includes("<TIMELINE") || 
+    xml.includes("<PYRAMID") || 
+    xml.includes("<STAIRCASE") || 
+    xml.includes("<CHART");
+  
+  // Extrair a consulta de imagem, se existir
+  const imgMatch = xml.match(/<IMG query="([^"]*)"/i);
+  const imgQuery = imgMatch && imgMatch[1] ? imgMatch[1] : `detailed visualization of ${topic}`;
+  
+  // Regra 1: Para slides com 1-2 tópicos, manter imagens com layout left/right
+  if (analysis.topicCount <= 2) {
+    // Não precisa fazer nada, manter como está
+    return xml;
+  }
+  
+  // Regra 2: Para slides com 3-4 tópicos com textos curtos, usar layout="vertical"
+  if (analysis.topicCount >= 3 && analysis.topicCount <= 4 && analysis.hasShortTexts) {
+    // Substituir o atributo layout por "vertical"
+    let modifiedXml = xml.replace(/layout="(left|right)"/i, 'layout="vertical"');
+    
+    // Se não tinha layout, adicionar
+    if (!modifiedXml.includes('layout="')) {
+      modifiedXml = modifiedXml.replace(/<SECTION/i, '<SECTION layout="vertical"');
+    }
+    
+    // Garantir que tem uma imagem
+    if (!modifiedXml.includes("<IMG")) {
+      modifiedXml = modifiedXml.replace(/<\/SECTION>/i, `<IMG query="${imgQuery}" /></SECTION>`);
+    }
+    
+    return modifiedXml;
+  }
+  
+  // Regra 3: Para slides com 3-4 tópicos com textos médios ou 5+ tópicos, remover imagens
+  if ((analysis.topicCount >= 3 && analysis.topicCount <= 4 && analysis.hasMediumTexts) || analysis.topicCount >= 5) {
+    // Remover a tag IMG
+    return xml.replace(/<IMG[^>]*>/i, '');
+  }
+  
+  // Se não se encaixar em nenhuma regra específica, retornar o XML original
+  return xml;
+}
+
+/**
  * Função para forçar o formato correto para slides de introdução
  * Remove layouts complexos e garante que o slide tenha a estrutura esperada
  */
@@ -648,38 +802,71 @@ function enforceIntroSlideFormat(xml: string, userName: string, topic: string, l
 }
 
 /**
+ * Função para limpar e formatar títulos
+ * Remove marcadores de lista, caracteres especiais e limita o comprimento
+ */
+function cleanTitle(title: string): string {
+  // Remover marcadores de lista (hifens, asteriscos, números seguidos de ponto no início de linhas)
+  let cleanedTitle = title.replace(/^[-*#]\s+/gm, '')
+                          .replace(/^\d+\.\s+/gm, '')
+                          .replace(/^[•○●]\s+/gm, '');
+  
+  // Remover caracteres # que podem estar no início (markdown)
+  cleanedTitle = cleanedTitle.replace(/^#+\s+/, '');
+  
+  // Remover quebras de linha e substituir por espaços
+  cleanedTitle = cleanedTitle.replace(/\n/g, ' ');
+  
+  // Remover pontuação excessiva no final
+  cleanedTitle = cleanedTitle.replace(/[.,:;]+$/, '');
+  
+  // Remover espaços extras
+  cleanedTitle = cleanedTitle.replace(/\s+/g, ' ').trim();
+  
+  // Limitar a 8 palavras
+  const words = cleanedTitle.split(/\s+/);
+  if (words.length > 8) {
+    cleanedTitle = words.slice(0, 8).join(' ');
+  }
+  
+  return cleanedTitle;
+}
+
+/**
  * Função para limitar o tamanho dos títulos em um XML
  * Processa o XML e trunca títulos muito longos, movendo o excesso para um parágrafo
+ * Também remove caracteres indesejados e formata corretamente
  */
 function limitTitleLength(xml: string): string {
   // Procurar por tags H1 com conteúdo muito longo
   const h1Regex = /<H1>(.*?)<\/H1>/gi;
   
   return xml.replace(h1Regex, (match, titleContent) => {
-    // Contar palavras no título
-    const words = titleContent.trim().split(/\s+/);
+    // Limpar e formatar o título
+    const cleanedTitle = cleanTitle(titleContent);
     
-    // Se o título tiver mais de 8 palavras, truncá-lo
-    if (words.length > 8) {
-      // Manter as primeiras 8 palavras no título
-      const shortTitle = words.slice(0, 8).join(' ');
-      
-      // Mover o resto para um parágrafo, se não existir um parágrafo logo após o título
-      const restOfContent = words.slice(8).join(' ');
+    // Se o título original e o limpo são diferentes, ou se o título é muito longo
+    if (cleanedTitle !== titleContent.trim() || titleContent.split(/\s+/).length > 8) {
+      // Extrair o conteúdo excedente (palavras após as primeiras 8)
+      const originalWords = titleContent.trim().split(/\s+/);
+      const restOfContent = originalWords.length > 8 ? originalWords.slice(8).join(' ') : '';
       
       // Verificar se já existe um parágrafo após o título
       const afterTitle = xml.substring(xml.indexOf(match) + match.length).trim();
       
       if (afterTitle.startsWith('<P>')) {
         // Se já existe um parágrafo, apenas truncar o título
-        return `<H1>${shortTitle}</H1>`;
+        return `<H1>${cleanedTitle}</H1>`;
+      } else if (restOfContent) {
+        // Se não existe um parágrafo e temos conteúdo excedente, criar um com o conteúdo
+        return `<H1>${cleanedTitle}</H1><P>${restOfContent}</P>`;
       } else {
-        // Se não existe um parágrafo, criar um com o conteúdo excedente
-        return `<H1>${shortTitle}</H1><P>${restOfContent}</P>`;
+        // Se não temos conteúdo excedente, apenas retornar o título limpo
+        return `<H1>${cleanedTitle}</H1>`;
       }
     }
     
-    // Se o título não for muito longo, retorná-lo sem alterações
+    // Se o título não precisou de limpeza, retorná-lo sem alterações
     return match;
   });
 }
@@ -796,6 +983,9 @@ export async function POST(req: Request) {
       // Para slides de introdução, forçar o formato correto
       if (useIntroTemplate) {
         finalXml = enforceIntroSlideFormat(finalXml, userName, topic, language);
+      } else {
+        // Para slides normais, aplicar regras de densidade de conteúdo
+        finalXml = applyContentDensityRules(finalXml, topic);
       }
       
       // Consumir créditos após geração bem-sucedida

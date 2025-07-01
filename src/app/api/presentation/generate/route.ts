@@ -59,8 +59,10 @@ You are an expert presentation designer.Your task is to create an engaging prese
 - Total Slides: {TOTAL_SLIDES}
 
 ## CONTENT DENSITY MANAGEMENT
-- For slides with 1-2 topics: include images normally.
-- For slides with 3 or more topics: do NOT include images, except if the texts are very short.
+- For slides with 1-2 topics: include images normally with layout="left" or layout="right".
+- For slides with 3-4 topics with SHORT texts (1-2 lines each): use layout="vertical" (image at the top).
+- For slides with 3-4 topics with MEDIUM texts (3+ lines each): do NOT include images at all.
+- For slides with 5+ topics: NEVER include images regardless of text length.
 - For slides with charts or tables: if necessary, omit the image completely; if the chart or table is small, you may include an image.
 - For slides with charts or tables: if you include an image, use "left" or "right" layout to position the image laterally.
 
