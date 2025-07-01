@@ -228,7 +228,17 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
       // ETAPA 2: Usar o tópico para gerar o slide
       console.log("Etapa 2: Gerando slide a partir do tópico");
       
+      // Obter nome do usuário do localStorage
+      const userName = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("userName")) || "User";
+      
+      // Log para depuração
+      console.log("Obtendo nome do usuário:", userName);
+      
       // Chamar a API para gerar o slide
+      // Adicionar flag explícita para indicar se é um slide de introdução
+      const isIntroSlide = slideIndex === 0;
+      console.log("É slide de introdução?", isIntroSlide);
+      
       const response = await fetch('/api/presentation/generate-slide', {
         method: 'POST',
         headers: {
@@ -237,10 +247,12 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         body: JSON.stringify({
           title: presentationInput || currentPresentationTitle || "",
           topic: detailedTopic, // Usar o tópico detalhado ou o original
-          slideIndex,
+          slideIndex: isIntroSlide ? 0 : slideIndex, // Garantir que o slideIndex seja exatamente 0 para o slide de introdução
           language,
           tone: presentationStyle,
-          context: otherSlides // Adicionar contexto dos outros slides
+          context: otherSlides, // Adicionar contexto dos outros slides
+          userName, // Incluir o nome do usuário
+          isIntroSlide // Flag explícita para indicar que é um slide de introdução
         }),
       });
       

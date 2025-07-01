@@ -199,6 +199,12 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       // ETAPA 2: Usar o tópico detalhado para gerar o slide
       console.log("Etapa 2: Gerando slide a partir do tópico detalhado");
       
+      // Obter nome do usuário exatamente como é feito na geração completa
+      const userName = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("userName")) || "User";
+      
+      // Log para depuração
+      console.log("Obtendo nome do usuário:", userName);
+      
       // Chamar a API para gerar o slide com o tópico detalhado
       const response = await fetch('/api/presentation/generate-slide', {
         method: 'POST',
@@ -211,7 +217,8 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
           slideIndex,
           language,
           tone: presentationStyle,
-          context: otherSlides // Adicionar contexto dos outros slides
+          context: otherSlides, // Adicionar contexto dos outros slides
+          userName // Exatamente como é feito na geração completa
         }),
       });
       
