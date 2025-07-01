@@ -172,11 +172,13 @@ Choose ONE different layout for each slide:
 - Do not use long titles or long paragraphs in the staircase layout.
 - Never overlap step titles and text; each step must be visually separated.
 - If there is general explanatory text, place it outside the <STAIRCASE> block (before or after).
+- Add extra visual spacing between the second and third step to improve readability. You can use a comment <!-- extra space -->, a <BR/>, or add style="margin-top:2em" to the third <DIV> if supported.
 - Example:
   <STAIRCASE>
     <DIV><H3>Step 1</H3><P>Short description (max 2-3 lines).</P></DIV>
     <DIV><H3>Step 2</H3><P>Short description (max 2-3 lines).</P></DIV>
-    <DIV><H3>Step 3</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <!-- extra space -->
+    <DIV style="margin-top:2em"><H3>Step 3</H3><P>Short description (max 2-3 lines).</P></DIV>
   </STAIRCASE>
 
 9. CHART: For data visualization

@@ -40,27 +40,21 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     currentPresentationId
   } = usePresentationState();
   
-  // Verificar se é um novo card
-  const isNewCard = useCallback(() => {
+  // Mostrar o botão sempre que houver qualquer texto não vazio em qualquer bloco
+  const isEligibleForGeneration = useCallback(() => {
     const slide = slides[slideIndex];
     if (!slide) return false;
-    
-    // Verificar se o slide tem apenas um título e nenhum outro conteúdo significativo
-    if (slide.content.length <= 1) {
-      // Verificar se o conteúdo é um título (h1)
-      if (slide.content[0]?.type === "h1" && 
-          slide.content[0]?.children && 
-          slide.content[0]?.children.length > 0 &&
-          slide.content[0]?.children[0]) {
-        
-        // Verificar se é o texto exato "New Slide" ou qualquer outro texto em um título
-        if ('text' in slide.content[0].children[0]) {
-          console.log("Novo slide detectado no índice:", slideIndex, "com texto:", slide.content[0].children[0].text);
-          return true;
+
+    // Procurar por qualquer texto não vazio em qualquer bloco
+    for (const node of slide.content) {
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          if ('text' in child && typeof child.text === 'string' && child.text.trim().length > 0) {
+            return true;
+          }
         }
       }
     }
-    
     return false;
   }, [slides, slideIndex]);
   
@@ -68,11 +62,11 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
   const getCardText = useCallback(() => {
     const slide = slides[slideIndex];
     if (!slide) return "";
-    
-    // Extrair o texto do título
+
+    // Extrair texto de qualquer bloco do slide
     let text = "";
     for (const node of slide.content) {
-      if (node.type.startsWith('h') && node.children && node.children.length > 0) {
+      if (node.children && node.children.length > 0) {
         for (const child of node.children) {
           if ('text' in child && typeof child.text === 'string') {
             text += child.text + " ";
@@ -80,16 +74,16 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         }
       }
     }
-    
+
     // Limpar o texto removendo frases de instrução comuns
     const cleanedText = text.trim()
       .replace(/^(fale|me\s+fale|conte|me\s+conte|descreva|explique|falar|contar|descrever|explicar)\s+(mais\s+)?(sobre|a\s+respeito\s+de|acerca\s+de)?\s+/i, '')
       .replace(/^(o\s+que\s+é|quem\s+é|como\s+funciona|por\s+que|quando|onde|qual|quais)\s+/i, '')
       .replace(/^(gostaria\s+de\s+saber|quero\s+saber|preciso\s+saber|pode\s+me\s+dizer)\s+(mais\s+)?(sobre|a\s+respeito\s+de)?\s+/i, '');
-    
+
     console.log("Texto original:", text);
     console.log("Texto limpo:", cleanedText);
-    
+
     return cleanedText;
   }, [slides, slideIndex]);
   
@@ -242,8 +236,12 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
           // Criar uma nova cópia do array de slides
           const updatedSlides = [...slides];
           
-          // Substituir o slide no índice especificado
-          updatedSlides[slideIndex] = parsedSlides[0];
+          // Substituir o slide no índice especificado, garantindo id estável
+          updatedSlides[slideIndex] = {
+            ...parsedSlides[0],
+            id: parsedSlides[0].id || (slides[slideIndex]?.id) || require("nanoid").nanoid(),
+            isNew: false, // Remove a flag após gerar
+          };
           
           // Atualizar o estado global com os novos slides
           setSlides(updatedSlides);
@@ -289,8 +287,9 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     [handleGenerateSlide]
   );
 
-  // Se não for um novo card, não renderizar o botão
-  if (!isNewCard()) {
+  // Só mostrar o botão se o slide for novo e elegível
+  const slide = slides[slideIndex];
+  if (!slide?.isNew || !isEligibleForGeneration()) {
     return null;
   }
 

@@ -32,9 +32,9 @@ export function usePresentationSlides() {
     })
   );
 
-  // Ensure all slides have IDs
+  // Assume all slides already have IDs
   const items = useMemo(
-    () => slides.map((slide) => ({ ...slide, id: slide?.id ?? nanoid() })),
+    () => slides,
     [slides]
   );
 

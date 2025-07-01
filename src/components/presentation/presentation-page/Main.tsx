@@ -73,14 +73,16 @@ export default function PresentationPage() {
     const updatedSlides = [...slides];
     // Make sure we have the slide at that index
     if (updatedSlides[slideIndex]) {
-      // Update the content of the slide
-      updatedSlides[slideIndex] = {
-        ...updatedSlides[slideIndex],
-        content: value as PlateNode[],
-      };
-
-      // Update the global state
-      setSlides(updatedSlides);
+      // Só atualiza se o conteúdo realmente mudou
+      const oldContent = JSON.stringify(updatedSlides[slideIndex].content);
+      const newContent = JSON.stringify(value);
+      if (oldContent !== newContent) {
+        updatedSlides[slideIndex] = {
+          ...updatedSlides[slideIndex],
+          content: value as PlateNode[],
+        };
+        setSlides(updatedSlides);
+      }
     }
   }, []);
 

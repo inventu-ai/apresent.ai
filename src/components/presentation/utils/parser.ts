@@ -85,6 +85,7 @@ export type PlateSlide = {
   textColor?: string;
   headingFont?: string;
   textFont?: string;
+  isNew?: boolean; // Flag para identificar slide novo
 };
 
 // Simple XML node interface for our parser
