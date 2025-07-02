@@ -28,6 +28,7 @@ interface IconPickerProps {
   searchTerm?: string; // Added prop to automatically search and select the first matching icon
   size?: "sm" | "md" | "lg";
   className?: string;
+  contextId?: string; // Identificador único para o contexto onde o ícone está sendo usado
 }
 
 // Main Icon Picker Component
@@ -37,6 +38,7 @@ const IconPicker = ({
   searchTerm = "",
   size = "md",
   className,
+  contextId = "default", // Valor padrão para compatibilidade com código existente
 }: IconPickerProps) => {
   const [icon, setIcon] = useState<string>(defaultIcon);
   const [iconComponent, setIconComponent] = useState<ReactNode>(null);
@@ -65,42 +67,67 @@ const IconPicker = ({
   const loadPopularIcons = async () => {
     setIsLoading(true);
     try {
-      // Load a set of common icons from Font Awesome
-      const faModule = await import("react-icons/fa");
-      const popularIconNames = [
-        "FaHome",
-        "FaUser",
-        "FaCog",
-        "FaSearch",
-        "FaBell",
-        "FaCalendar",
-        "FaEnvelope",
-        "FaHeart",
-        "FaStar",
-        "FaBookmark",
-        "FaCheck",
-        "FaTimes",
-        "FaEdit",
-        "FaTrash",
-        "FaDownload",
-        "FaUpload",
-        "FaShare",
-        "FaLink",
-        "FaMapMarker",
-        "FaClock",
-        "FaCamera",
-        "FaVideo",
-        "FaMusic",
-        "FaFile",
-        "FaFolder",
-        "FaComments",
-        "FaThumbsUp",
-        "FaPhone",
-        "FaLock",
-        "FaUserPlus",
+      // Carregar ícones de múltiplas bibliotecas para ter mais opções iniciais
+      const [faModule, mdModule, giModule] = await Promise.all([
+        import("react-icons/fa"),
+        import("react-icons/md"),
+        import("react-icons/gi")
+      ]);
+
+      // Ícones gerais (interface, ações comuns)
+      const generalIcons = [
+        "FaHome", "FaUser", "FaCog", "FaSearch", "FaBell", "FaCalendar", 
+        "FaEnvelope", "FaHeart", "FaStar", "FaBookmark", "FaCheck", 
+        "FaTimes", "FaEdit", "FaTrash", "FaDownload", "FaUpload", 
+        "FaShare", "FaLink", "FaMapMarker", "FaClock", "FaCamera", 
+        "FaVideo", "FaMusic", "FaFile", "FaFolder", "FaComments", 
+        "FaThumbsUp", "FaPhone", "FaLock", "FaUserPlus", "FaQuestion",
+        "FaExclamation", "FaInfo", "FaLightbulb", "FaBrain", "FaGlobe",
+        "FaGraduationCap", "FaBook", "FaNewspaper", "FaChartBar", "FaChartLine"
       ];
 
-      const iconList = popularIconNames
+      // Ícones para apresentações (temas específicos)
+      const presentationIcons = [
+        // Ícones de guerra/militar
+        "FaFighterJet", "FaPlane", "FaBomb", "FaShip", "FaChess", "FaBolt",
+        "FaTruck", "FaMap", "FaMapMarkedAlt", "FaGlobeAmericas", "FaGlobeEurope",
+        "FaUserTie", "FaUsers", "FaHandshake", "FaPeace", "FaFistRaised",
+        "FaSkullCrossbones", "FaBalanceScale", "FaGavel", "FaFileAlt",
+        
+        // Ícones de tecnologia/ciência
+        "FaMicrochip", "FaMicroscope", "FaIndustry", "FaCity", "FaBuilding",
+        "FaMoneyBillWave", "FaAward", "FaMedal", "FaRocket", "FaShieldAlt",
+        "FaFlag", "FaRadiation", "FaAtom", "FaFlask", "FaDna", "FaVirus",
+        
+        // Ícones de comunicação/mídia
+        "FaNewspaper", "FaTv", "FaRadio", "FaMicrophone", "FaHeadphones",
+        "FaFilm", "FaPhotoVideo", "FaPodcast", "FaBullhorn", "FaRss"
+      ];
+
+      // Ícones do Material Design para mais variedade
+      const materialIcons = [
+        "MdDashboard", "MdSettings", "MdPerson", "MdPeople", "MdSchool",
+        "MdWork", "MdBusiness", "MdLocalHospital", "MdRestaurant", "MdLocalCafe",
+        "MdLocalBar", "MdLocalMall", "MdLocalGroceryStore", "MdDirectionsBus",
+        "MdDirectionsCar", "MdFlight", "MdHotel", "MdWifi", "MdComputer",
+        "MdSmartphone", "MdTablet", "MdSecurity", "MdNotifications", "MdEvent",
+        "MdShoppingCart", "MdPayment", "MdAttachMoney", "MdTrendingUp", "MdTrendingDown"
+      ];
+
+      // Ícones de jogos para temas específicos (Game Icons)
+      const gameIcons = [
+        "GiSwordman", "GiCrossedSwords", "GiSwordsEmblem", "GiShield", "GiCastle",
+        "GiCrown", "GiTrophy", "GiLaurelCrown", "GiMedal", "GiTank", "GiJetFighter",
+        "GiMissileLauncher", "GiMissileSwarm", "GiNuclearBomb", "GiRadarSweep",
+        "GiSatelliteCommunication", "GiSpaceship", "GiRocket", "GiChemicalTank",
+        "GiChemicalDrop", "GiGasMask", "GiHazardSign"
+      ];
+
+      // Criar lista de ícones com componentes
+      const iconList: IconItem[] = [];
+
+      // Processar ícones FontAwesome
+      const faIcons = [...generalIcons, ...presentationIcons]
         .map((name) => ({
           name,
           component: faModule[name]
@@ -108,9 +135,38 @@ const IconPicker = ({
             : null,
         }))
         .filter((item) => item.component);
+      
+      iconList.push(...faIcons);
 
-      setAvailableIcons(iconList);
-      setFilteredIcons(iconList);
+      // Processar ícones Material Design
+      const mdIcons = materialIcons
+        .map((name) => ({
+          name,
+          component: mdModule[name]
+            ? React.createElement(mdModule[name], { size: 24 })
+            : null,
+        }))
+        .filter((item) => item.component);
+      
+      iconList.push(...mdIcons);
+
+      // Processar ícones Game Icons
+      const giIcons = gameIcons
+        .map((name) => ({
+          name,
+          component: giModule[name]
+            ? React.createElement(giModule[name], { size: 24 })
+            : null,
+        }))
+        .filter((item) => item.component);
+      
+      iconList.push(...giIcons);
+
+      // Limitar a 100 ícones para não sobrecarregar a interface
+      const limitedIconList = iconList.slice(0, 100);
+
+      setAvailableIcons(limitedIconList);
+      setFilteredIcons(limitedIconList);
     } catch (error) {
       console.error("Error loading popular icons:", error);
     } finally {
@@ -130,7 +186,7 @@ const IconPicker = ({
       const termLower = term.toLowerCase();
       const modules: IconModule[] = [];
 
-      // Try to load the most likely library based on prefix
+      // Carregar mais bibliotecas de ícones para busca
       if (termLower.startsWith("fa")) {
         const mod = await import("react-icons/fa");
         modules.push(mod as unknown as IconModule);
@@ -149,22 +205,110 @@ const IconPicker = ({
       } else if (termLower.startsWith("md")) {
         const mod = await import("react-icons/md");
         modules.push(mod as unknown as IconModule);
+      } else if (termLower.startsWith("gi")) {
+        const mod = await import("react-icons/gi");
+        modules.push(mod as unknown as IconModule);
+      } else if (termLower.startsWith("hi")) {
+        const mod = await import("react-icons/hi");
+        modules.push(mod as unknown as IconModule);
+      } else if (termLower.startsWith("io")) {
+        const mod = await import("react-icons/io");
+        modules.push(mod as unknown as IconModule);
+      } else if (termLower.startsWith("ri")) {
+        const mod = await import("react-icons/ri");
+        modules.push(mod as unknown as IconModule);
       } else {
-        // If no prefix match, search in common libraries
-        const [fa, md] = await Promise.all([
+        // Se não houver correspondência de prefixo, buscar em bibliotecas comuns
+        // Aumentamos o número de bibliotecas para busca
+        const [fa, md, gi, bs, fi] = await Promise.all([
           import("react-icons/fa"),
           import("react-icons/md"),
+          import("react-icons/gi"),
+          import("react-icons/bs"),
+          import("react-icons/fi"),
         ]);
-        modules.push(fa as unknown as IconModule, md as unknown as IconModule);
+        modules.push(
+          fa as unknown as IconModule, 
+          md as unknown as IconModule,
+          gi as unknown as IconModule,
+          bs as unknown as IconModule,
+          fi as unknown as IconModule
+        );
       }
 
-      // Find icons that match the search term
+      // Buscar ícones que correspondam ao termo de pesquisa
       let results: IconItem[] = [];
 
+      // Busca semântica - mapear termos comuns para prefixos de ícones
+      const semanticMappings: Record<string, string[]> = {
+        // Guerra/Militar
+        "guerra": ["sword", "tank", "bomb", "fighter", "military", "army", "weapon"],
+        "militar": ["sword", "tank", "bomb", "fighter", "military", "army", "weapon"],
+        "tanque": ["tank", "military", "army"],
+        "avião": ["plane", "fighter", "jet"],
+        "arma": ["weapon", "sword", "gun", "bomb"],
+        "bomba": ["bomb", "explosion"],
+        
+        // Comunicação
+        "comunicação": ["phone", "message", "mail", "chat", "comment"],
+        "telefone": ["phone", "call"],
+        "mensagem": ["message", "mail", "chat", "comment"],
+        "email": ["mail", "envelope"],
+        
+        // Química
+        "química": ["flask", "vial", "lab", "atom", "radiation"],
+        "laboratório": ["flask", "vial", "lab"],
+        "átomo": ["atom", "radiation"],
+        
+        // Geral
+        "pergunta": ["question"],
+        "ajuda": ["question", "help", "info"],
+        "informação": ["info", "question"],
+        "alerta": ["exclamation", "warning", "alert"],
+        "sucesso": ["check", "success"],
+        "erro": ["times", "error", "close"],
+        "editar": ["edit", "pencil"],
+        "deletar": ["trash", "delete", "remove"],
+        "adicionar": ["plus", "add"],
+        "remover": ["minus", "remove"],
+        "configurar": ["cog", "settings", "gear"],
+        "usuário": ["user", "person", "profile"],
+        "grupo": ["users", "group", "team"],
+        "tempo": ["clock", "time", "watch"],
+        "local": ["map", "location", "marker"],
+        "dinheiro": ["money", "dollar", "coin"],
+        "documento": ["file", "document", "paper"],
+        "pasta": ["folder", "directory"],
+        "imagem": ["image", "photo", "picture"],
+        "vídeo": ["video", "movie", "film"],
+        "música": ["music", "note", "song"],
+        "download": ["download", "arrow-down"],
+        "upload": ["upload", "arrow-up"],
+        "link": ["link", "chain"],
+        "favorito": ["star", "favorite", "bookmark"],
+        "coração": ["heart", "love"],
+        "comentário": ["comment", "chat", "message"],
+        "notificação": ["bell", "notification", "alert"],
+        "calendário": ["calendar", "date", "event"],
+        "busca": ["search", "magnify", "find"],
+        "casa": ["home", "house"],
+        "loja": ["shop", "store", "cart"],
+        "segurança": ["lock", "security", "shield"],
+      };
+
+      // Verificar se o termo de busca corresponde a algum mapeamento semântico
+      let semanticTerms: string[] = [];
+      for (const [key, values] of Object.entries(semanticMappings)) {
+        if (termLower.includes(key)) {
+          semanticTerms = [...semanticTerms, ...values];
+        }
+      }
+
       modules.forEach((module) => {
-        const matches = Object.keys(module)
+        // Primeiro, tentar correspondência direta
+        let matches = Object.keys(module)
           .filter((key) => key.toLowerCase().includes(termLower))
-          .slice(0, 40) // Limit results to prevent too many icons
+          .slice(0, 40)
           .map((name) => ({
             name,
             component: module[name]
@@ -173,10 +317,29 @@ const IconPicker = ({
           }))
           .filter((item) => item.component);
 
+        // Se temos termos semânticos e poucos resultados diretos, adicionar resultados semânticos
+        if (semanticTerms.length > 0 && matches.length < 10) {
+          const semanticMatches = Object.keys(module)
+            .filter((key) => 
+              semanticTerms.some(term => key.toLowerCase().includes(term))
+            )
+            .slice(0, 30)
+            .map((name) => ({
+              name,
+              component: module[name]
+                ? React.createElement(module[name], { size: 24 })
+                : null,
+            }))
+            .filter((item) => item.component);
+          
+          matches = [...matches, ...semanticMatches];
+        }
+
         results = [...results, ...matches];
       });
 
-      setFilteredIcons(results.slice(0, 60)); // Limit total results
+      // Aumentar o limite para mostrar mais resultados
+      setFilteredIcons(results.slice(0, 100));
     } catch (error) {
       console.error("Error searching icons:", error);
     } finally {
@@ -286,9 +449,34 @@ const IconPicker = ({
     }
   };
 
-  // Handle initializing with searchTerm or defaultIcon
+  // Handle initializing with searchTerm, defaultIcon, or localStorage
   useEffect(() => {
     const findAndSelectIcon = async () => {
+      // Primeiro, tentar carregar do localStorage
+      try {
+        const storageKey = `selected-icon-${contextId}-${defaultIcon}`;
+        const savedIcon = localStorage.getItem(storageKey);
+        
+        if (savedIcon) {
+          // Se encontrarmos um ícone salvo, usá-lo em vez do defaultIcon
+          setIcon(savedIcon);
+          const component = await loadIconComponent(savedIcon);
+          setIconComponent(component);
+          
+          // Notificar o componente pai se onIconSelect for fornecido
+          if (onIconSelect) {
+            onIconSelect(savedIcon, component);
+          }
+          
+          setInitialLoadDone(true);
+          return; // Sair da função se carregamos com sucesso do localStorage
+        }
+      } catch (error) {
+        console.error("Error loading icon from localStorage:", error);
+        // Continuar com o fluxo normal se houver erro
+      }
+
+      // Se não encontrarmos no localStorage ou houver erro, continuar com o fluxo normal
       if (searchTerm) {
         // If a searchTerm is provided, search and select the first result
         setIsLoading(true);
@@ -305,6 +493,9 @@ const IconPicker = ({
             iconModule = mod as unknown as IconModule;
           } else if (prefix === "bs") {
             const mod = await import("react-icons/bs");
+            iconModule = mod as unknown as IconModule;
+          } else if (prefix === "gi") {
+            const mod = await import("react-icons/gi");
             iconModule = mod as unknown as IconModule;
           } else {
             // Default to FA
@@ -353,7 +544,7 @@ const IconPicker = ({
     };
 
     void findAndSelectIcon();
-  }, [searchTerm, defaultIcon, onIconSelect]);
+  }, [searchTerm, defaultIcon, onIconSelect, contextId]);
 
   // Handle search input changes
   useEffect(() => {
@@ -379,6 +570,16 @@ const IconPicker = ({
     // If we have an external handler, call it with both the name and component
     if (onIconSelect) {
       onIconSelect(selectedName, component);
+    }
+
+    // Armazenar o ícone selecionado no localStorage para persistência
+    try {
+      // Armazenar o ícone selecionado com um identificador baseado no contextId e defaultIcon
+      // Isso permite que diferentes instâncias do IconPicker mantenham suas próprias seleções
+      const storageKey = `selected-icon-${contextId}-${defaultIcon}`;
+      localStorage.setItem(storageKey, selectedName);
+    } catch (error) {
+      console.error("Error saving icon selection to localStorage:", error);
     }
 
     // Close the sheet after selection

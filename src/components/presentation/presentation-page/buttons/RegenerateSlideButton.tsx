@@ -327,7 +327,8 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           tone: presentationStyle,
           context: otherSlides, // Adicionar contexto dos outros slides
           userName, // Incluir o nome do usuário
-          isIntroSlide // Flag explícita para indicar que é um slide de introdução
+          isIntroSlide, // Flag explícita para indicar que é um slide de introdução
+          forceVariability: true // Forçar variabilidade para gerar um slide significativamente diferente
         }),
       });
       

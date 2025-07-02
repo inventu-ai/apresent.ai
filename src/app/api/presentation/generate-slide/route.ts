@@ -16,6 +16,7 @@ interface SlideRegenerationRequest {
   context?: string[]; // Contexto dos outros slides (opcional)
   userName: string;   // Nome do usuário (obrigatório para o slide de introdução)
   isIntroSlide?: boolean; // Flag explícita para indicar que é um slide de introdução
+  forceVariability?: boolean; // Flag para forçar variabilidade na regeneração de slides
 }
 
 const introSlideTemplate = `
@@ -310,6 +311,7 @@ For the slide topic:
 Now create a complete XML slide that significantly expands on the provided topic.
 `;
 
+// Modelo com temperatura padrão
 const model = new ChatOpenAI({
   modelName: "gpt-4o-mini",
   temperature: 0.7,
@@ -942,7 +944,7 @@ export async function POST(req: Request) {
       }, { status: 402 });
     }
 
-    const { title, topic, slideIndex, language, tone, context, userName, isIntroSlide } =
+    const { title, topic, slideIndex, language, tone, context, userName, isIntroSlide, forceVariability } =
       (await req.json()) as SlideRegenerationRequest;
 
     if (!title || !topic || slideIndex === undefined || !language) {
@@ -962,10 +964,28 @@ export async function POST(req: Request) {
     const useIntroTemplate = slideIndex === 0 || isIntroSlide === true;
     console.log("Usando template de introdução?", useIntroTemplate);
     
+    // Ajustar a temperatura com base no parâmetro forceVariability
+    // Temperatura mais alta para maior variabilidade quando forceVariability é true
+    const temperature = forceVariability === true ? 0.9 : 0.7;
+    model.temperature = temperature;
+    
+    // Criar instruções de variabilidade para regenerações
+    const variabilityInstructions = forceVariability === true ? `
+## VARIABILITY REQUIREMENTS
+- IMPORTANT: Generate a slide with a COMPLETELY DIFFERENT structure than before
+- DO NOT use the same layout component as the previous slide
+- If the previous slide used COLUMNS, use a different layout like CYCLE, TIMELINE, or PYRAMID
+- If the previous slide used BULLETS, use a different layout like ICONS, ARROWS, or STAIRCASE
+- Completely rephrase all content, don't just paraphrase
+- Use a different perspective or approach to the topic
+- If possible, use a different image placement (left/right/vertical)
+- CRITICAL: Ensure the new slide looks and feels distinctly different from the previous version
+` : '';
+
     // Usar prompt especial para o slide de introdução
     const prompt = useIntroTemplate
       ? PromptTemplate.fromTemplate(introSlideTemplate)
-      : PromptTemplate.fromTemplate(singleSlideTemplate);
+      : PromptTemplate.fromTemplate(singleSlideTemplate + variabilityInstructions);
     const stringOutputParser = new StringOutputParser();
     const chain = RunnableSequence.from([prompt, model, stringOutputParser]);
 

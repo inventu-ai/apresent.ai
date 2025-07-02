@@ -44,11 +44,13 @@ export const IconElementComponent = withRef<typeof PlateElement>(
             <IconPicker
               defaultIcon={name}
               onIconSelect={(iconName) => handleIconSelect(iconName)}
+              contextId={element.id as string} // Usar o ID do elemento como contextId
             />
           ) : (
             <IconPicker
               searchTerm={query}
               onIconSelect={(iconName) => handleIconSelect(iconName)}
+              contextId={element.id as string} // Usar o ID do elemento como contextId
             />
           )}
         </div>
