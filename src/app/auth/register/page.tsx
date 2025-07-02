@@ -169,12 +169,6 @@ export default function RegisterPage() {
 
   return (
     <AnimatedBackground showTitle={false}>
-      <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-50">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl text-white text-center font-serif italic">
-          Register
-        </h1>
-      </div>
-      
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="w-full max-w-md shadow-xl bg-white/95 backdrop-blur-sm border-white/20">
           <CardHeader className="space-y-1">
