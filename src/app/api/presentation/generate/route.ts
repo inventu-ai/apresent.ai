@@ -63,8 +63,10 @@ You are an expert presentation designer.Your task is to create an engaging prese
 - For slides with 3-4 topics with SHORT texts (1-2 lines each): use layout="vertical" (image at the top).
 - For slides with 3-4 topics with MEDIUM texts (3+ lines each): do NOT include images at all.
 - For slides with 5+ topics: NEVER include images regardless of text length.
-- For slides with charts or tables: if necessary, omit the image completely; if the chart or table is small, you may include an image.
-- For slides with charts or tables: if you include an image, use "left" or "right" layout to position the image laterally.
+- For slides with CHART components: NEVER include images - charts are the visual focus of the slide.
+- For slides with CHART components: use SHORT to MEDIUM length texts only (maximum 2-3 sentences per paragraph).
+- For slides with tables: if necessary, omit the image completely; if the table is small, you may include an image.
+- For slides with tables: if you include an image, use "left" or "right" layout to position the image laterally.
 
 ## CONTENT BALANCING
 - Prioritize readability over the number of visual elements.
@@ -223,7 +225,12 @@ For each outline point:
 7. Never repeat the same icon within a single slide. Each topic in an ICONS layout must have a unique and visually distinct icon that properly represents the concept.
 8. If the user does not select an icon manually, always choose a unique and contextually relevant icon for each topic. Never use the same icon for different topics in the same slide. Avoid using the first icon in the list as a default for all topics.
 9. For slides with 3 or more topics, do not include images unless the texts are very short.
-9. For slides with charts or tables, omit the image if the chart/table is large; if small, you may include an image, preferably using a lateral layout ("left" or "right").
+10. For slides with CHART components:
+    - NEVER include images - the chart itself is the visual element
+    - Keep all text content concise and brief
+    - Use short paragraphs (maximum 2-3 sentences each)
+    - Focus on explaining the chart data, not adding additional context
+11. For slides with tables: omit the image if the table is large; if small, you may include an image, preferably using a lateral layout ("left" or "right").
 
 Now create a complete XML presentation with {TOTAL_SLIDES} slides that significantly expands on the outline.
 `;

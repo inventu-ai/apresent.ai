@@ -16,6 +16,77 @@ interface GenerateSlideFromTextButtonProps {
   slideIndex: number;
 }
 
+/**
+ * Função para sanitizar o tópico detalhado antes de enviá-lo para a geração do slide
+ * Remove o padrão "0:" que aparece antes de cada palavra e outros problemas de formatação
+ */
+function sanitizeTopic(topic: string): string {
+  // Verificar se o tópico tem o padrão problemático (0:" no início de cada palavra)
+  const hasPattern = topic.includes('0:"');
+  
+  if (hasPattern) {
+    console.log("Detectado padrão problemático no tópico, aplicando sanitização especial");
+    
+    // Remover o padrão "0:" que aparece antes de cada palavra
+    let cleanedTopic = topic.replace(/0:"/g, '');
+    
+    // Remover aspas desnecessárias no final das palavras
+    cleanedTopic = cleanedTopic.replace(/"/g, '');
+    
+    // Remover quebras de linha e substituir por espaços
+    cleanedTopic = cleanedTopic.replace(/\r?\n/g, ' ');
+    
+    // Normalizar espaços múltiplos
+    cleanedTopic = cleanedTopic.replace(/\s+/g, ' ');
+    
+    console.log("Tópico sanitizado:", cleanedTopic);
+    return cleanedTopic.trim();
+  }
+  
+  // Se não tiver o padrão problemático, retornar o tópico original
+  return topic;
+}
+
+/**
+ * Função para sanitizar o XML antes de processá-lo
+ * Remove caracteres problemáticos e formata corretamente
+ * IMPORTANTE: Preserva as tags XML válidas
+ */
+function sanitizeXml(xml: string): string {
+  console.log("Sanitizando XML - versão original:", xml);
+  
+  // Remover caracteres problemáticos
+  let cleanXml = xml
+    // Substituir aspas curvas por aspas retas
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    // Substituir traços longos por hífens
+    .replace(/[\u2013\u2014]/g, '-')
+    // Remover caracteres O" no início de palavras (problema comum)
+    .replace(/O"([a-zA-Z])/g, '$1')
+    .replace(/O" /g, '')
+    // Remover padrão 0:" que pode aparecer no XML
+    .replace(/0:"/g, '')
+    // Normalizar quebras de linha
+    .replace(/\r?\n/g, ' ')
+    // Normalizar espaços múltiplos
+    .replace(/\s+/g, ' ')
+    // Garantir que tags XML estejam corretamente formatadas
+    .replace(/< /g, '<')
+    .replace(/ >/g, '>');
+    
+  // NÃO escapar os caracteres < e > em todo o XML
+  // Isso preserva as tags XML válidas
+  
+  // Verificar se há tags SECTION e fechar se necessário
+  if (cleanXml.includes("<SECTION") && !cleanXml.includes("</SECTION>")) {
+    cleanXml += "</SECTION>";
+  }
+  
+  console.log("XML sanitizado - versão final:", cleanXml);
+  return cleanXml;
+}
+
 export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTextButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const isProcessingRef = useRef(false);
@@ -193,8 +264,12 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       }
       
       // Obter o tópico detalhado
-      const detailedTopic = await topicResponse.text();
-      console.log("Tópico detalhado gerado:", detailedTopic);
+      const rawDetailedTopic = await topicResponse.text();
+      console.log("Tópico detalhado bruto:", rawDetailedTopic);
+      
+      // Sanitizar o tópico detalhado antes de usá-lo
+      const detailedTopic = sanitizeTopic(rawDetailedTopic);
+      console.log("Tópico detalhado sanitizado:", detailedTopic);
       
       // ETAPA 2: Usar o tópico detalhado para gerar o slide
       console.log("Etapa 2: Gerando slide a partir do tópico detalhado");
@@ -230,10 +305,15 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       const xmlContent = await response.text();
       
       try {
+        // Sanitizar o XML antes de processá-lo
+        const sanitizedXml = sanitizeXml(xmlContent);
+        console.log("XML original:", xmlContent);
+        console.log("XML sanitizado:", sanitizedXml);
+        
         // Processar o XML para obter o slide
         const parser = new SlideParser();
         parser.reset();
-        parser.parseChunk(xmlContent);
+        parser.parseChunk(sanitizedXml);
         parser.finalize();
         parser.clearAllGeneratingMarks();
         
