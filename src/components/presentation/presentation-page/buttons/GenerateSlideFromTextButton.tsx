@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
@@ -90,6 +91,7 @@ function sanitizeXml(xml: string): string {
 export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTextButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const isProcessingRef = useRef(false);
+  const { t } = useTranslation();
   
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
@@ -388,7 +390,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         className={`!size-10 rounded-full absolute right-2 top-2 z-[200] text-indigo-400 hover:text-indigo-600 shadow-md ${isGenerating ? "animate-pulse" : ""}`}
         onClick={generateSlide}
         disabled={isGenerating}
-        title="Gerar slide com IA"
+        title={t.presentation.generateSlideWithAI}
       >
         <Brain 
           size={20}

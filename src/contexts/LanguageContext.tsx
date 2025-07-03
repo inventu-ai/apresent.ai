@@ -65,13 +65,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setLanguage = (lang: Language) => {
+    // Ensure the language is valid
+    if (!translations[lang]) {
+      console.error(`Invalid language: ${lang}`);
+      return;
+    }
+    
+    // Update the language state
     setLanguageState(lang);
     
-    // If user is logged in, save to database
-    if (session?.user?.id) {
-      // We'll handle this in the profile settings component
-      // This is just to update the local state immediately
-    }
+    // Log for debugging
+    console.log(`Language changed to: ${lang}`);
+    
+    // If user is logged in, we'll handle database update in the profile settings component
+    // This is just to update the local state immediately
   };
 
   const currentTranslations = translations[language] || translations['pt-BR'];
@@ -102,4 +109,4 @@ export function useLanguage(): LanguageContextType {
 export function useTranslation() {
   const { t, language } = useLanguage();
   return { t, language };
-} 
+}

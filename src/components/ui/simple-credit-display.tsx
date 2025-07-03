@@ -37,7 +37,7 @@ export function SimpleCreditDisplay({ className = "" }: SimpleCreditDisplayProps
     return (
       <div className={`flex items-center gap-2 text-red-500 ${className}`}>
         <AlertCircle className="h-4 w-4" />
-        <span className="text-sm">Erro</span>
+        <span className="text-sm">{t.credits.error}</span>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export function SimpleCreditDisplay({ className = "" }: SimpleCreditDisplayProps
           >
             <Zap className={`h-4 w-4 ${textColorClass}`} />
             <span className={`text-base font-medium ${textColorClass}`}>
-              {isUnlimited ? "∞" : remaining} créditos
+              {isUnlimited ? "∞" : remaining} {t.userMenu.credits}
             </span>
           </div>
         </PopoverTrigger>
@@ -106,19 +106,19 @@ function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPr
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-blue-500" />
-          <h4 className="font-semibold">Saldo da conta</h4>
+          <h4 className="font-semibold">{t.credits.accountBalance}</h4>
         </div>
         
         {isUnlimited ? (
           <div className="text-center py-2">
             <div className="text-2xl font-bold text-green-600">∞</div>
-            <p className="text-sm text-muted-foreground">Créditos ilimitados</p>
+            <p className="text-sm text-muted-foreground">{t.credits.unlimitedCredits}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-blue-600">{remaining} créditos</div>
+            <div className="text-2xl font-bold text-blue-600">{remaining} {t.userMenu.credits}</div>
             <p className="text-sm text-muted-foreground">
-              Os créditos permitem que você crie e edite com a IA.
+              {t.credits.creditsAllowAI}
             </p>
           </div>
         )}
@@ -130,33 +130,33 @@ function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPr
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Info className="h-4 w-4 text-muted-foreground" />
-          <h5 className="font-medium">Quantos créditos custa para usar a IA?</h5>
+          <h5 className="font-medium">{t.credits.howManyCosts}</h5>
         </div>
         
         <div className="space-y-2 text-sm">
           <div className="flex justify-between items-center">
-            <span>Criar apresentação completa:</span>
-            <Badge variant="outline" className="text-xs">40 créditos</Badge>
+            <span>{t.credits.createPresentation}</span>
+            <Badge variant="outline" className="text-xs">40 {t.userMenu.credits}</Badge>
           </div>
           <div className="flex justify-between items-center">
-            <span>Gerar/regenerar imagem:</span>
-            <Badge variant="outline" className="text-xs">5 créditos</Badge>
+            <span>{t.credits.generateImage}</span>
+            <Badge variant="outline" className="text-xs">5 {t.userMenu.credits}</Badge>
           </div>
           <div className="flex justify-between items-center">
-            <span>Editar imagem:</span>
-            <Badge variant="outline" className="text-xs">20 créditos</Badge>
+            <span>{t.credits.editImage}</span>
+            <Badge variant="outline" className="text-xs">20 {t.userMenu.credits}</Badge>
           </div>
           <div className="flex justify-between items-center">
-            <span>Gerar slide com IA:</span>
-            <Badge variant="outline" className="text-xs">5 créditos</Badge>
+            <span>{t.credits.generateSlide}</span>
+            <Badge variant="outline" className="text-xs">5 {t.userMenu.credits}</Badge>
           </div>
           <div className="flex justify-between items-center">
-            <span>Regenerar tópico:</span>
-            <Badge variant="outline" className="text-xs">2 créditos</Badge>
+            <span>{t.credits.regenerateTopic}</span>
+            <Badge variant="outline" className="text-xs">2 {t.userMenu.credits}</Badge>
           </div>
           <div className="flex justify-between items-center">
-            <span>Gerar novo card:</span>
-            <Badge variant="outline" className="text-xs">2 créditos</Badge>
+            <span>{t.credits.generateCard}</span>
+            <Badge variant="outline" className="text-xs">2 {t.userMenu.credits}</Badge>
           </div>
         </div>
       </div>
@@ -167,11 +167,11 @@ function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPr
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-muted-foreground" />
-          <h5 className="font-medium">Como posso ganhar mais créditos?</h5>
+          <h5 className="font-medium">{t.credits.howToGetMore}</h5>
         </div>
         
         <p className="text-sm text-muted-foreground">
-          Você poderá obter créditos ilimitados ao assinar um plano pago.
+          {t.credits.unlimitedWithPlan}
         </p>
 
         <div className="flex flex-col gap-2">
@@ -181,7 +181,7 @@ function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPr
               onClick={onOpenPricing}
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              Ver planos e preços
+              {t.credits.viewPlans}
             </Button>
           )}
         </div>

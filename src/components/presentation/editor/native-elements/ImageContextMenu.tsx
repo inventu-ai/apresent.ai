@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -43,6 +44,7 @@ export function ImageContextMenu({
 }: ImageContextMenuProps) {
   const { saveImmediately } = useDebouncedSave();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const { t } = useTranslation();
 
   // Função para copiar a imagem para a área de transferência
   const handleCopy = async () => {
@@ -120,44 +122,44 @@ export function ImageContextMenu({
         <ContextMenuContent className="w-64">
         <ContextMenuItem onSelect={onEdit}>
           <Edit className="mr-2 h-4 w-4" />
-          Editar imagem...
+          {t.imageContextMenu.editImage}
         </ContextMenuItem>
         <ContextMenuItem 
           onSelect={() => setShowEditDialog(true)}
           disabled={!imageUrl || !onImageEdited}
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          Peça à IA para...
+          {t.imageContextMenu.askAI}
         </ContextMenuItem>
         <ContextMenuItem onSelect={onAdjustImage} disabled={!onAdjustImage}>
           <Maximize className="mr-2 h-4 w-4" />
-          Ajustar imagem
+          {t.imageContextMenu.adjustImage}
         </ContextMenuItem>
         
         <ContextMenuSeparator />
         
         <ContextMenuItem onSelect={handleCopy}>
           <Copy className="mr-2 h-4 w-4" />
-          Copiar
+          {t.imageContextMenu.copy}
         </ContextMenuItem>
         <ContextMenuItem onSelect={handleCopyImageUrl}>
           <Link className="mr-2 h-4 w-4" />
-          Copiar endereço da imagem
+          {t.imageContextMenu.copyImageUrl}
         </ContextMenuItem>
         <ContextMenuItem onSelect={handleOpenInNewTab}>
           <ExternalLink className="mr-2 h-4 w-4" />
-          Abrir imagem em nova aba
+          {t.imageContextMenu.openInNewTab}
         </ContextMenuItem>
         <ContextMenuItem onSelect={handleDownload}>
           <Download className="mr-2 h-4 w-4" />
-          Baixar imagem
+          {t.imageContextMenu.downloadImage}
         </ContextMenuItem>
         
         <ContextMenuSeparator />
         
         <ContextMenuItem onSelect={onRemove} className="text-destructive">
           <X className="mr-2 h-4 w-4" />
-          Remover imagem de destaque
+          {t.imageContextMenu.removeImage}
         </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>

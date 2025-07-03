@@ -24,6 +24,9 @@ export interface Translations {
     error: string;
     warning: string;
     info: string;
+    tryAgain: string;
+    currentImage: string;
+    cmdEnterToSubmit: string;
   };
   auth: {
     signIn: string;
@@ -111,8 +114,20 @@ export interface Translations {
     create: string;
     createNew: string;
     myPresentations: string;
+    generateButton: string;
     title: string;
     description: string;
+    imageTools: {
+      zoomOut: string;
+      zoomIn: string;
+      center: string;
+      reset: string;
+      done: string;
+      dragToAdjust: string;
+      noImageAvailable: string;
+    };
+    regenerateSlide: string;
+    generateSlideWithAI: string;
     slides: string;
     themes: string;
     language: string;
@@ -128,7 +143,6 @@ export interface Translations {
     presentationError: string;
     slideGenerated: string;
     slideError: string;
-    regenerateSlide: string;
     addSlide: string;
     deleteSlide: string;
     duplicateSlide: string;
@@ -353,6 +367,17 @@ export interface Translations {
     editingWithAI: string;
     aiWillEdit: string;
     costPerEdit: string;
+    editPromptPlaceholder: string;
+  };
+  imageContextMenu: {
+    editImage: string;
+    askAI: string;
+    adjustImage: string;
+    copy: string;
+    copyImageUrl: string;
+    openInNewTab: string;
+    downloadImage: string;
+    removeImage: string;
   };
   presentationsDashboard: {
     yourPresentations: string;
@@ -375,6 +400,22 @@ export interface Translations {
   };
   home: {
     inputPlaceholder: string;
+  };
+  credits: {
+    accountBalance: string;
+    unlimitedCredits: string;
+    creditsAllowAI: string;
+    howManyCosts: string;
+    createPresentation: string;
+    generateImage: string;
+    editImage: string;
+    generateSlide: string;
+    regenerateTopic: string;
+    generateCard: string;
+    howToGetMore: string;
+    unlimitedWithPlan: string;
+    viewPlans: string;
+    error: string;
   };
 }
 
@@ -403,6 +444,9 @@ export const translations: Record<Language, Translations> = {
       error: 'Erro',
       warning: 'Aviso',
       info: 'Informação',
+      tryAgain: 'Tente novamente',
+      currentImage: 'Imagem atual',
+      cmdEnterToSubmit: 'Pressione Cmd/Ctrl + Enter para editar rapidamente',
     },
     auth: {
       signIn: 'Entrar',
@@ -500,7 +544,19 @@ export const translations: Record<Language, Translations> = {
       create: 'Criar',
       createNew: 'Criar nova apresentação',
       myPresentations: 'Minhas apresentações',
+      generateButton: 'Gerar apresentação',
       title: 'Título',
+      imageTools: {
+        zoomOut: 'Diminuir zoom',
+        zoomIn: 'Aumentar zoom',
+        center: 'Centralizar',
+        reset: 'Resetar',
+        done: 'Concluído',
+        dragToAdjust: 'Arraste para ajustar a posição',
+        noImageAvailable: 'Nenhuma imagem disponível',
+      },
+      regenerateSlide: 'Regenerar slide',
+      generateSlideWithAI: 'Gerar slide com IA',
       description: 'Descrição',
       slides: 'Slides',
       themes: 'Temas',
@@ -567,7 +623,7 @@ export const translations: Record<Language, Translations> = {
     topicRegenerated: 'Tópico regenerado com sucesso',
     topicRegenerationError: 'Erro ao regenerar tópico',
       addCard: 'Adicionar card',
-      cardsTotal: 'cards total',
+      cardsTotal: 'cartões no total',
       customizeTheme: 'Personalizar Tema',
       themeLayout: 'Tema e Layout',
       moreThemes: 'Mais Temas',
@@ -732,6 +788,17 @@ export const translations: Record<Language, Translations> = {
       editingWithAI: 'Peça à IA para editar a imagem',
       aiWillEdit: 'A IA irá editar sua imagem preservando a composição original e aplicando apenas as modificações solicitadas',
       costPerEdit: 'créditos por edição',
+      editPromptPlaceholder: 'Por exemplo: Adicione um chapéu azul na pessoa, remova o fundo e substitua por uma paisagem montanhosa, mude a cor da camisa para verde...',
+    },
+    imageContextMenu: {
+      editImage: 'Editar imagem...',
+      askAI: 'Peça à IA para...',
+      adjustImage: 'Ajustar imagem',
+      copy: 'Copiar',
+      copyImageUrl: 'Copiar endereço da imagem',
+      openInNewTab: 'Abrir imagem em nova aba',
+      downloadImage: 'Baixar imagem',
+      removeImage: 'Remover imagem de destaque',
     },
     presentationsDashboard: {
       yourPresentations: 'Suas Apresentações',
@@ -754,6 +821,22 @@ export const translations: Record<Language, Translations> = {
     },
     home: {
       inputPlaceholder: 'Digite o que você gostaria de criar...',
+    },
+    credits: {
+      accountBalance: 'Saldo da conta',
+      unlimitedCredits: 'Créditos ilimitados',
+      creditsAllowAI: 'Os créditos permitem que você crie e edite com a IA.',
+      howManyCosts: 'Quantos créditos custa para usar a IA?',
+      createPresentation: 'Criar apresentação completa:',
+      generateImage: 'Gerar/regenerar imagem:',
+      editImage: 'Editar imagem:',
+      generateSlide: 'Gerar slide com IA:',
+      regenerateTopic: 'Regenerar tópico:',
+      generateCard: 'Gerar novo card:',
+      howToGetMore: 'Como posso ganhar mais créditos?',
+      unlimitedWithPlan: 'Você poderá obter créditos ilimitados ao assinar um plano pago.',
+      viewPlans: 'Ver planos e preços',
+      error: 'Erro',
     },
   },
   'en-US': {
@@ -780,6 +863,9 @@ export const translations: Record<Language, Translations> = {
       error: 'Error',
       warning: 'Warning',
       info: 'Information',
+      tryAgain: 'Try again',
+      currentImage: 'Current image',
+      cmdEnterToSubmit: 'Press Cmd/Ctrl + Enter to edit quickly',
     },
     auth: {
       signIn: 'Sign In',
@@ -877,7 +963,19 @@ export const translations: Record<Language, Translations> = {
       create: 'Create',
       createNew: 'Create new presentation',
       myPresentations: 'My presentations',
+      generateButton: 'Generate presentation',
       title: 'Title',
+      imageTools: {
+        zoomOut: 'Zoom out',
+        zoomIn: 'Zoom in',
+        center: 'Center',
+        reset: 'Reset',
+        done: 'Done',
+        dragToAdjust: 'Drag to adjust position',
+        noImageAvailable: 'No image available',
+      },
+      regenerateSlide: 'Regenerate slide',
+      generateSlideWithAI: 'Generate slide with AI',
       description: 'Description',
       slides: 'Slides',
       themes: 'Themes',
@@ -1109,6 +1207,17 @@ export const translations: Record<Language, Translations> = {
       editingWithAI: 'Ask AI to edit the image',
       aiWillEdit: 'AI will edit your image preserving the original composition and applying only the requested modifications',
       costPerEdit: 'credits per edit',
+      editPromptPlaceholder: 'For example: Add a blue hat to the person, remove the background and replace with a mountain landscape, change the shirt color to green...',
+    },
+    imageContextMenu: {
+      editImage: 'Edit image...',
+      askAI: 'Ask AI to...',
+      adjustImage: 'Adjust image',
+      copy: 'Copy',
+      copyImageUrl: 'Copy image URL',
+      openInNewTab: 'Open image in new tab',
+      downloadImage: 'Download image',
+      removeImage: 'Remove featured image',
     },
     presentationsDashboard: {
       yourPresentations: 'Your Presentations',
@@ -1131,6 +1240,22 @@ export const translations: Record<Language, Translations> = {
     },
     home: {
       inputPlaceholder: 'Type what you would like to create...',
+    },
+    credits: {
+      accountBalance: 'Account Balance',
+      unlimitedCredits: 'Unlimited credits',
+      creditsAllowAI: 'Credits allow you to create and edit with AI.',
+      howManyCosts: 'How many credits does it cost to use AI?',
+      createPresentation: 'Create complete presentation:',
+      generateImage: 'Generate/regenerate image:',
+      editImage: 'Edit image:',
+      generateSlide: 'Generate slide with AI:',
+      regenerateTopic: 'Regenerate topic:',
+      generateCard: 'Generate new card:',
+      howToGetMore: 'How can I get more credits?',
+      unlimitedWithPlan: 'You can get unlimited credits by subscribing to a paid plan.',
+      viewPlans: 'View plans and pricing',
+      error: 'Error',
     },
   },
   'es-ES': {
@@ -1157,6 +1282,9 @@ export const translations: Record<Language, Translations> = {
       error: 'Error',
       warning: 'Advertencia',
       info: 'Información',
+      tryAgain: 'Intentar de nuevo',
+      currentImage: 'Imagen actual',
+      cmdEnterToSubmit: 'Presiona Cmd/Ctrl + Enter para editar rápidamente',
     },
     auth: {
       signIn: 'Iniciar Sesión',
@@ -1254,7 +1382,19 @@ export const translations: Record<Language, Translations> = {
       create: 'Crear',
       createNew: 'Crear nueva presentación',
       myPresentations: 'Mis presentaciones',
+      generateButton: 'Generar presentación',
       title: 'Título',
+      imageTools: {
+        zoomOut: 'Reducir zoom',
+        zoomIn: 'Aumentar zoom',
+        center: 'Centrar',
+        reset: 'Reiniciar',
+        done: 'Completado',
+        dragToAdjust: 'Arrastra para ajustar la posición',
+        noImageAvailable: 'No hay imagen disponible',
+      },
+      regenerateSlide: 'Regenerar diapositiva',
+      generateSlideWithAI: 'Generar diapositiva con IA',
       description: 'Descripción',
       slides: 'Diapositivas',
       themes: 'Temas',
@@ -1321,7 +1461,7 @@ export const translations: Record<Language, Translations> = {
     topicRegenerated: 'Tema regenerado exitosamente',
     topicRegenerationError: 'Error al regenerar tema',
       addCard: 'Añadir tarjeta',
-      cardsTotal: 'tarjetas total',
+      cardsTotal: 'tarjetas en total',
       customizeTheme: 'Personalizar Tema',
       themeLayout: 'Tema y Diseño',
       moreThemes: 'Más Temas',
@@ -1486,6 +1626,17 @@ export const translations: Record<Language, Translations> = {
       editingWithAI: 'Pide a la IA que edite la imagen',
       aiWillEdit: 'La IA editará tu imagen preservando la composición original y aplicando solo las modificaciones solicitadas',
       costPerEdit: 'créditos por edición',
+      editPromptPlaceholder: 'Por ejemplo: Añade un sombrero azul a la persona, elimina el fondo y reemplázalo con un paisaje montañoso, cambia el color de la camisa a verde...',
+    },
+    imageContextMenu: {
+      editImage: 'Editar imagen...',
+      askAI: 'Pedir a la IA...',
+      adjustImage: 'Ajustar imagen',
+      copy: 'Copiar',
+      copyImageUrl: 'Copiar dirección de la imagen',
+      openInNewTab: 'Abrir imagen en nueva pestaña',
+      downloadImage: 'Descargar imagen',
+      removeImage: 'Eliminar imagen destacada',
     },
     presentationsDashboard: {
       yourPresentations: 'Tus Presentaciones',
@@ -1509,5 +1660,21 @@ export const translations: Record<Language, Translations> = {
     home: {
       inputPlaceholder: 'Escribe lo que te gustaría crear...',
     },
+    credits: {
+      accountBalance: 'Saldo de la cuenta',
+      unlimitedCredits: 'Créditos ilimitados',
+      creditsAllowAI: 'Los créditos te permiten crear y editar con IA.',
+      howManyCosts: '¿Cuántos créditos cuesta usar la IA?',
+      createPresentation: 'Crear presentación completa:',
+      generateImage: 'Generar/regenerar imagen:',
+      editImage: 'Editar imagen:',
+      generateSlide: 'Generar diapositiva con IA:',
+      regenerateTopic: 'Regenerar tema:',
+      generateCard: 'Generar nueva tarjeta:',
+      howToGetMore: '¿Cómo puedo obtener más créditos?',
+      unlimitedWithPlan: 'Puedes obtener créditos ilimitados suscribiéndote a un plan de pago.',
+      viewPlans: 'Ver planes y precios',
+      error: 'Error',
+    },
   } as const,
-}; 
+};

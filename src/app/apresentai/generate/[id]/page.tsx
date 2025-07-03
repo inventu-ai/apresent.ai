@@ -255,14 +255,14 @@ export default function ApresentAIGenerateWithIdPage() {
         disabled={isGeneratingPresentation}
       >
         <Wand2 className="h-5 w-5" />
-        {isGeneratingPresentation ? t.presentation.generating : "Gerar apresentação"}
+        {isGeneratingPresentation ? t.presentation.generating : t.presentation.generateButton}
       </Button>
     </div>
 
     {/* Total de cartões (direita) - posicionado próximo ao botão */}
     <div className="flex-1 flex justify-end items-center pl-4">
       <LayoutGrid className="h-4 w-4 text-muted-foreground mr-1" />
-      <span className="text-base font-medium">{outline?.length || 0} cartões no total</span>
+      <span className="text-base font-medium">{outline?.length || 0} {t.presentation.cardsTotal}</span>
     </div>
   </div>
 </div>

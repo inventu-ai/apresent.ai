@@ -14,7 +14,7 @@ export async function updateUserAvatar(userId: string, imageUrl: string) {
   try {
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ image: imageUrl, updatedAt: new Date().toISOString() })
+      .update({ image: imageUrl, updated_at: new Date().toISOString() })
       .eq('id', userId);
 
     if (error) {
@@ -48,7 +48,7 @@ export async function updateUserProfile(userId: string, data: {
   try {
     const updateData = {
       ...data,
-      updatedAt: new Date().toISOString()
+      updated_at: new Date().toISOString()
     };
 
     const { error } = await supabaseAdmin
@@ -116,7 +116,7 @@ export async function updateNotificationSettings(userId: string, settings: {
       .from('users')
       .update({ 
         bio: JSON.stringify(bioData),
-        updatedAt: new Date().toISOString()
+        updated_at: new Date().toISOString()
       })
       .eq('id', userId);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ZoomIn, ZoomOut, Maximize, RotateCcw, Check } from "lucide-react";
@@ -30,6 +31,7 @@ export function ImageDirectEditor({
 }: ImageDirectEditorProps) {
   // Estado para controlar a posição e escala da imagem
   const [position, setPosition] = useState<ImagePosition>(initialPosition);
+  const { t } = useTranslation();
   
   // Referências para o contêiner e a imagem
   const containerRef = useRef<HTMLDivElement>(null);
@@ -220,14 +222,14 @@ export function ImageDirectEditor({
             {/* Sobreposição com instruções */}
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10" style={{ zIndex: layoutType === "vertical" ? 202 : 52 }}>
               <div className="rounded-md bg-black/50 p-2 text-center text-white">
-                <p>Arraste para ajustar a posição</p>
+                <p>{t.presentation.imageTools.dragToAdjust}</p>
               </div>
             </div>
             
           </>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">Nenhuma imagem disponível</p>
+            <p className="text-muted-foreground">{t.presentation.imageTools.noImageAvailable}</p>
           </div>
         )}
       </div>
@@ -242,7 +244,7 @@ export function ImageDirectEditor({
           size="icon"
           className="h-8 w-8 rounded-full text-white hover:bg-white/20"
           onClick={handleZoomOut}
-          title="Diminuir zoom"
+          title={t.presentation.imageTools.zoomOut}
         >
           <ZoomOut className="h-4 w-4" />
         </Button>
@@ -252,7 +254,7 @@ export function ImageDirectEditor({
           size="icon"
           className="h-8 w-8 rounded-full text-white hover:bg-white/20"
           onClick={handleZoomIn}
-          title="Aumentar zoom"
+          title={t.presentation.imageTools.zoomIn}
         >
           <ZoomIn className="h-4 w-4" />
         </Button>
@@ -262,7 +264,7 @@ export function ImageDirectEditor({
           size="icon"
           className="h-8 w-8 rounded-full text-white hover:bg-white/20"
           onClick={handleCenter}
-          title="Centralizar"
+          title={t.presentation.imageTools.center}
         >
           <Maximize className="h-4 w-4" />
         </Button>
@@ -272,7 +274,7 @@ export function ImageDirectEditor({
           size="icon"
           className="h-8 w-8 rounded-full text-white hover:bg-white/20"
           onClick={handleReset}
-          title="Resetar"
+          title={t.presentation.imageTools.reset}
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
@@ -284,7 +286,7 @@ export function ImageDirectEditor({
           size="icon"
           className="h-8 w-8 rounded-full bg-white/20 text-white hover:bg-white/40"
           onClick={handleApply}
-          title="Concluído"
+          title={t.presentation.imageTools.done}
         >
           <Check className="h-4 w-4" />
         </Button>

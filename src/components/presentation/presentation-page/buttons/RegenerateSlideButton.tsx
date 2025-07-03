@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
@@ -94,6 +95,8 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
   
   // Ref para evitar múltiplos cliques
   const isProcessingRef = useRef(false);
+  
+  const { t } = useTranslation();
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
@@ -462,7 +465,7 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40"
         onClick={regenerateSlide}
         disabled={isRegenerating}
-        title="Regenerar slide"
+        title={t.presentation.regenerateSlide}
       >
         <RefreshCw 
           className={`h-4 w-4 text-white ${isRegenerating ? "animate-spin" : ""}`} 
