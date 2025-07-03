@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Wand2, LayoutGrid } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { SimpleCreditDisplay } from "@/components/ui/simple-credit-display";
 import { usePresentationState } from "@/states/presentation-state";
 import {
@@ -31,6 +32,7 @@ export default function ApresentAIGenerateWithIdPage() {
   const params = useParams();
   const id = params.id as string;
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const {
     setCurrentPresentation,
     setPresentationInput,
@@ -216,14 +218,18 @@ export default function ApresentAIGenerateWithIdPage() {
       
       <ThemeBackground>
         <Button
-        variant="ghost"
-        className="absolute left-10 top-16 flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        onClick={() => router.push('/')}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t.presentation.back}
-      </Button>
-        <div className="mx-auto max-w-4xl space-y-8 p-8 pt-6">
+          variant="ghost"
+          className={`flex items-center gap-2 text-muted-foreground hover:text-foreground ${
+            isMobile 
+              ? "mx-auto mt-4 mb-2" 
+              : "absolute left-10 top-16"
+          }`}
+          onClick={() => router.push('/')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t.presentation.back}
+        </Button>
+        <div className={`mx-auto max-w-4xl space-y-8 p-8 ${isMobile ? "pt-2" : "pt-6"}`}>
           {/* Back button positioned correctly below navbar */}
 
           <div className="space-y-8">
@@ -242,7 +248,7 @@ export default function ApresentAIGenerateWithIdPage() {
 <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center border-t bg-background/80 p-4 backdrop-blur-sm z-50">
   <div className="flex items-center w-full max-w-4xl">
     {/* Créditos do usuário (esquerda) - posicionado próximo ao botão */}
-    <div className="flex-1 flex justify-start pr-4">
+    <div className="flex-1 flex justify-start pr-4 text-center md:text-start">
       <SimpleCreditDisplay />
     </div>
     
@@ -262,7 +268,7 @@ export default function ApresentAIGenerateWithIdPage() {
     {/* Total de cartões (direita) - posicionado próximo ao botão */}
     <div className="flex-1 flex justify-end items-center pl-4">
       <LayoutGrid className="h-4 w-4 text-muted-foreground mr-1" />
-      <span className="text-base font-medium">{outline?.length || 0} {t.presentation.cardsTotal}</span>
+      <span className="text-base font-medium text-center md:text-start">{outline?.length || 0} {t.presentation.cardsTotal}</span>
     </div>
   </div>
 </div>

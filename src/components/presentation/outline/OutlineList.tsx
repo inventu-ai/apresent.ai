@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DndContext,
   closestCenter,
@@ -34,6 +35,7 @@ export function OutlineList() {
     isGeneratingOutline,
   } = usePresentationState();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   const [items, setItems] = useState<OutlineItemType[]>(
     initialItems.map((title, index) => ({
@@ -169,7 +171,7 @@ export function OutlineList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className={`flex items-center ${isMobile ? "justify-center" : "justify-between"}`}>
         <h2 className="text-sm text-foreground">{t.presentation.outline}</h2>
         {isGeneratingOutline && (
           <span className="animate-pulse text-xs text-muted-foreground">
@@ -189,7 +191,7 @@ export function OutlineList() {
         {t.presentation.addCard}
       </button>
 
-      <div className="flex justify-between text-sm text-muted-foreground">
+      <div className={`flex ${isMobile ? "justify-center" : "justify-between"} text-sm text-muted-foreground`}>
         <span>{items.length} {t.presentation.cardsTotal}</span>
         <span>
           {items.reduce((acc, item) => acc + item.title.length, 0)}/20000

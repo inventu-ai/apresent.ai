@@ -1,4 +1,5 @@
 import { useState, useEffect, memo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X, Brain, RefreshCw } from "lucide-react";
@@ -38,6 +39,7 @@ export const OutlineItem = memo(function OutlineItem({
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, outline } = usePresentationState();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
@@ -172,18 +174,21 @@ export const OutlineItem = memo(function OutlineItem({
       style={style}
       className={cn(
         "group flex items-center gap-4 rounded-md bg-muted p-4",
-        isDragging && "opacity-50"
+        isDragging && "opacity-50",
+        isMobile && "flex-wrap justify-center"
       )}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="cursor-move text-muted-foreground hover:text-foreground"
-      >
-        <GripVertical size={20} />
+      <div className={`flex items-center gap-2`}>
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-move text-muted-foreground hover:text-foreground"
+        >
+          <GripVertical size={20} />
+        </div>
+        <span className="min-w-[1.5rem] text-indigo-400">{index}</span>
       </div>
-      <span className="min-w-[1.5rem] text-indigo-400">{index}</span>
-      <div className="flex-1">
+      <div className={`flex-1 ${isMobile ? "w-full text-start" : ""}`}>
         <ProseMirrorEditor
           content={editedTitle}
           onChange={handleProseMirrorChange}

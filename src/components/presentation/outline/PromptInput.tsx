@@ -1,5 +1,6 @@
 import { usePresentationState } from "@/states/presentation-state";
 import { AutosizeTextarea } from "@/components/ui/auto-resize-textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function PromptInput() {
   const {
@@ -7,13 +8,16 @@ export function PromptInput() {
     setPresentationInput,
     isGeneratingOutline,
   } = usePresentationState();
+  const isMobile = useIsMobile();
 
   return (
-    <div className="relative">
+    <div className={`relative ${isMobile ? "flex justify-center" : ""}`}>
       <AutosizeTextarea
         value={presentationInput}
         onChange={(e) => setPresentationInput(e.target.value)}
-        className="w-full rounded-md bg-muted px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+        className={`rounded-md bg-muted px-4 py-3 text-foreground outline-none focus:ring-2 focus:ring-indigo-400 resize-none ${
+          isMobile ? "w-[95%]" : "w-full"
+        }`}
         placeholder="Enter your presentation topic..."
         disabled={isGeneratingOutline}
         minHeight={52}
