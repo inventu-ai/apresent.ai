@@ -28,7 +28,6 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       const nodeWithPath = findNode(editor, { match: { id: element.id } });
       if (!nodeWithPath) return;
       const [, path] = nodeWithPath;
-      console.log(element, iconName);
       setNodes<IconElement>(editor, { name: iconName }, { at: path });
     };
 

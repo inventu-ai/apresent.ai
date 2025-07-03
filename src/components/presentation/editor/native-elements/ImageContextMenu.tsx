@@ -61,8 +61,6 @@ export function ImageContextMenu({
           [blob.type]: blob,
         }),
       ]);
-      
-      console.log("Imagem copiada para a área de transferência");
     } catch (error) {
       console.error("Erro ao copiar imagem:", error);
     }
@@ -73,7 +71,6 @@ export function ImageContextMenu({
     try {
       if (!imageUrl) return;
       await navigator.clipboard.writeText(imageUrl);
-      console.log("URL da imagem copiada para a área de transferência");
     } catch (error) {
       console.error("Erro ao copiar URL da imagem:", error);
     }
@@ -108,8 +105,6 @@ export function ImageContextMenu({
       // Limpar
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl); // Liberar a memória
-      
-      console.log("Download da imagem iniciado");
     } catch (error) {
       console.error("Erro ao baixar imagem:", error);
     }

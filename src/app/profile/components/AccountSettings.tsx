@@ -92,10 +92,6 @@ export function AccountSettings({ user }: AccountSettingsProps) {
 
       toast.success(t.profile.settingsSaved);
       
-      // Log for debugging
-      console.log("Profile updated successfully");
-      console.log("New language:", formData.language);
-      
       // O Next.js já recarrega a página automaticamente após a atualização do contexto
       // Não é necessário forçar um reload adicional
     } catch (error) {

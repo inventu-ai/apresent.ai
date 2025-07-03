@@ -26,7 +26,6 @@ function sanitizeTopic(topic: string): string {
   const hasPattern = topic.includes('0:"');
   
   if (hasPattern) {
-    console.log("Detectado padrão problemático no tópico, aplicando sanitização especial");
     
     // Remover o padrão "0:" que aparece antes de cada palavra
     let cleanedTopic = topic.replace(/0:"/g, '');
@@ -40,7 +39,6 @@ function sanitizeTopic(topic: string): string {
     // Normalizar espaços múltiplos
     cleanedTopic = cleanedTopic.replace(/\s+/g, ' ');
     
-    console.log("Tópico sanitizado:", cleanedTopic);
     return cleanedTopic.trim();
   }
   
@@ -54,7 +52,6 @@ function sanitizeTopic(topic: string): string {
  * IMPORTANTE: Preserva as tags XML válidas
  */
 function sanitizeXml(xml: string): string {
-  console.log("Sanitizando XML - versão original:", xml);
   
   // Remover caracteres problemáticos
   let cleanXml = xml
@@ -84,7 +81,6 @@ function sanitizeXml(xml: string): string {
     cleanXml += "</SECTION>";
   }
   
-  console.log("XML sanitizado - versão final:", cleanXml);
   return cleanXml;
 }
 
@@ -153,9 +149,6 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       .replace(/^(fale|me\s+fale|conte|me\s+conte|descreva|explique|falar|contar|descrever|explicar)\s+(mais\s+)?(sobre|a\s+respeito\s+de|acerca\s+de)?\s+/i, '')
       .replace(/^(o\s+que\s+é|quem\s+é|como\s+funciona|por\s+que|quando|onde|qual|quais)\s+/i, '')
       .replace(/^(gostaria\s+de\s+saber|quero\s+saber|preciso\s+saber|pode\s+me\s+dizer)\s+(mais\s+)?(sobre|a\s+respeito\s+de)?\s+/i, '');
-
-    console.log("Texto original:", text);
-    console.log("Texto limpo:", cleanedText);
 
     return cleanedText;
   }, [slides, slideIndex]);
@@ -226,7 +219,6 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         .filter(text => text.length > 0);
       
       // ETAPA 1: Gerar um tópico detalhado com bullet points
-      console.log("Etapa 1: Gerando tópico detalhado para:", cardText);
       
       // Extrair títulos dos outros slides para contexto
       const existingTopics = slides
@@ -267,20 +259,15 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       
       // Obter o tópico detalhado
       const rawDetailedTopic = await topicResponse.text();
-      console.log("Tópico detalhado bruto:", rawDetailedTopic);
       
       // Sanitizar o tópico detalhado antes de usá-lo
       const detailedTopic = sanitizeTopic(rawDetailedTopic);
-      console.log("Tópico detalhado sanitizado:", detailedTopic);
       
       // ETAPA 2: Usar o tópico detalhado para gerar o slide
-      console.log("Etapa 2: Gerando slide a partir do tópico detalhado");
       
       // Obter nome do usuário exatamente como é feito na geração completa
       const userName = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("userName")) || "User";
       
-      // Log para depuração
-      console.log("Obtendo nome do usuário:", userName);
       
       // Chamar a API para gerar o slide com o tópico detalhado
       const response = await fetch('/api/presentation/generate-slide', {
@@ -309,8 +296,6 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       try {
         // Sanitizar o XML antes de processá-lo
         const sanitizedXml = sanitizeXml(xmlContent);
-        console.log("XML original:", xmlContent);
-        console.log("XML sanitizado:", sanitizedXml);
         
         // Processar o XML para obter o slide
         const parser = new SlideParser();

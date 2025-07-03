@@ -74,9 +74,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     // Update the language state
     setLanguageState(lang);
     
-    // Log for debugging
-    console.log(`Language changed to: ${lang}`);
-    
     // If user is logged in, we'll handle database update in the profile settings component
     // This is just to update the local state immediately
   };

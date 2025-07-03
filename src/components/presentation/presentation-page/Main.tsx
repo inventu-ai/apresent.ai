@@ -89,11 +89,11 @@ export default function PresentationPage() {
   // Create a debounced function to update the theme in the database
   const debouncedThemeUpdate = useCallback(
     debounce((presentationId: string, newTheme: string) => {
-      console.log("Updating theme in database:", newTheme);
+      // Update theme in database
       updatePresentationTheme(presentationId, newTheme)
         .then((result) => {
           if (result.success) {
-            console.log("Theme updated in database");
+            // Theme updated successfully
           } else {
             console.error("Failed to update theme:", result.message);
           }
@@ -113,7 +113,6 @@ export default function PresentationPage() {
     }
 
     if (presentationData) {
-      console.log("Loading complete presentation data:", presentationData);
       setCurrentPresentation(presentationData.id, presentationData.title);
       setPresentationInput(presentationData.title);
 

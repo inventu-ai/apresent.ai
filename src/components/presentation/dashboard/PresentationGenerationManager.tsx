@@ -229,19 +229,10 @@ export function PresentationGenerationManager() {
           usePresentationState.getState();
         const parser = streamingParserRef.current;
         parser.reset();
-        console.log("[ICON DEBUG] XML recebido da IA:", _completion);
         parser.parseChunk(_completion);
         parser.finalize();
         parser.clearAllGeneratingMarks();
         const slides = parser.getAllSlides();
-        // Log all icons found in all slides (debug IA)
-        slides.forEach((slide, idx) => {
-          slide.content.forEach((node) => {
-            if (node.type === "icons" && Array.isArray(node.children)) {
-              console.log(`[ICON PARSER][Slide ${idx + 1}] Icon items:`, node.children.map((iconItem: any) => iconItem.children?.[0]));
-            }
-          });
-        });
         slidesBufferRef.current = slides;
         requestAnimationFrame(updateSlidesWithRAF);
         if (currentPresentationId) {
@@ -277,18 +268,9 @@ export function PresentationGenerationManager() {
     if (presentationCompletion) {
       try {
         streamingParserRef.current.reset();
-        console.log("[ICON DEBUG] XML recebido da IA:", presentationCompletion);
         streamingParserRef.current.parseChunk(presentationCompletion);
         streamingParserRef.current.finalize();
         const allSlides = streamingParserRef.current.getAllSlides();
-        // Log all icons found in all slides (debug IA)
-        allSlides.forEach((slide, idx) => {
-          slide.content.forEach((node) => {
-            if (node.type === "icons" && Array.isArray(node.children)) {
-              console.log(`[ICON PARSER][Slide ${idx + 1}] Icon items:`, node.children.map((iconItem: any) => iconItem.children?.[0]));
-            }
-          });
-        });
         // Store the latest slides in the buffer
         slidesBufferRef.current = allSlides;
         // Only schedule a new frame if one isn't already pending
