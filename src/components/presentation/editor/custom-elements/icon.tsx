@@ -11,8 +11,9 @@ import { setNodes } from "@udecode/plate-common";
 import { ICON_ELEMENT } from "../lib";
 import { IconPicker } from "@/components/ui/icon-picker";
 
+// Modificado para usar string literal "icon" em vez de typeof ICON_ELEMENT
 export interface IconElement extends TElement {
-  type: typeof ICON_ELEMENT;
+  type: "icon";
   query: string;
   name: string;
 }
@@ -28,7 +29,8 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       const nodeWithPath = findNode(editor, { match: { id: element.id } });
       if (!nodeWithPath) return;
       const [, path] = nodeWithPath;
-      setNodes<IconElement>(editor, { name: iconName }, { at: path });
+      // Garantir que iconName é sempre uma string válida
+      setNodes<IconElement>(editor, { name: iconName || "FaQuestion" }, { at: path });
     };
 
     return (

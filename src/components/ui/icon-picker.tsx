@@ -63,6 +63,13 @@ const IconPicker = ({
     }
   }, [isOpen, availableIcons.length]);
 
+  // Carregar mais ícones iniciais quando o componente montar
+  useEffect(() => {
+    if (availableIcons.length === 0) {
+      void loadPopularIcons();
+    }
+  }, []);
+
   // Function to load popular icons when the sheet first opens
   const loadPopularIcons = async () => {
     setIsLoading(true);
@@ -162,8 +169,8 @@ const IconPicker = ({
       
       iconList.push(...giIcons);
 
-      // Limitar a 100 ícones para não sobrecarregar a interface
-      const limitedIconList = iconList.slice(0, 100);
+      // Aumentar o limite para 200 ícones para mostrar mais opções
+      const limitedIconList = iconList.slice(0, 200);
 
       setAvailableIcons(limitedIconList);
       setFilteredIcons(limitedIconList);
