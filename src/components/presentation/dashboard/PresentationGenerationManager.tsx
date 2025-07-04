@@ -9,7 +9,7 @@ import { extractSlideCount } from "@/lib/utils/prompt-parser";
 import { detectLanguage, mapToSystemLanguage, getLanguageDisplayName } from "@/lib/language-detection";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 
 export function PresentationGenerationManager() {
   const {
@@ -30,6 +30,9 @@ export function PresentationGenerationManager() {
     setLanguage,
     isLanguageManuallySet,
   } = usePresentationState();
+
+  // Obter a função refetchCredits do contexto de créditos
+  const { refetchCredits } = useCredits();
 
   // Credit validation hooks
   // const { checkCredits, userId, currentPlan } = useCreditValidation();
@@ -108,6 +111,9 @@ export function PresentationGenerationManager() {
             theme,
           });
         }
+        // Atualizar os créditos no header após geração bem-sucedida
+        void refetchCredits();
+        
         // Cancel any pending outline animation frame
         if (outlineRafIdRef.current !== null) {
           cancelAnimationFrame(outlineRafIdRef.current);
@@ -244,6 +250,9 @@ export function PresentationGenerationManager() {
             language, // Save the detected language to the presentation
           });
         }
+        // Atualizar os créditos no header após geração bem-sucedida
+        void refetchCredits();
+        
         setIsGeneratingPresentation(false);
         setShouldStartPresentationGeneration(false);
         // Cancel any pending animation frame

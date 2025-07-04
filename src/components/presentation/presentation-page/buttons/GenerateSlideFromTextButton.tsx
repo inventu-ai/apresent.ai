@@ -9,7 +9,7 @@ import { SlideParser, type PlateSlide } from "@/components/presentation/utils/pa
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 import debounce from "lodash.debounce";
 import { Brain } from "lucide-react";
 
@@ -91,7 +91,8 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
   
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -322,6 +323,9 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
           
           // Atualizar no banco de dados
           await updatePresentationInDB(updatedSlides);
+          
+          // Atualizar os créditos no header
+          await refetchCredits();
           
           toast.success("Slide gerado com sucesso!");
         } else {

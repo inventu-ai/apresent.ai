@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useUserCredits } from "@/hooks/useUserCredits";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,13 +11,15 @@ import { useTranslation } from "@/contexts/LanguageContext";
 import { useSession } from "next-auth/react";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { PricingModal } from "@/app/profile/components/PricingModal";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface CreditDisplayProps {
   className?: string;
 }
 
 export function CreditDisplay({ className = "" }: CreditDisplayProps) {
-  const { current, limit, isUnlimited, remaining, percentage, loading, error } = useUserCredits();
+  const { credits } = useCredits();
+  const { current, limit, isUnlimited, remaining, percentage, loading, error } = credits;
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);

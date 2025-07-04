@@ -4,6 +4,7 @@ import NextAuthProvider from "@/provider/NextAuthProvider";
 import { ThemeProvider } from "@/provider/theme-provider";
 import TanStackQueryProvider from "@/provider/TanstackProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { CreditsProvider } from "@/contexts/CreditsContext";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,10 +27,12 @@ export default function RootLayout({
         <NextAuthProvider>
           <LanguageProvider>
             <TanStackQueryProvider>
-              <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                <SaveUserNameToLocalStorage />
-                {children}
-              </ThemeProvider>
+              <CreditsProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                  <SaveUserNameToLocalStorage />
+                  {children}
+                </ThemeProvider>
+              </CreditsProvider>
             </TanStackQueryProvider>
           </LanguageProvider>
         </NextAuthProvider>

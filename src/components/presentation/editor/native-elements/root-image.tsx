@@ -17,7 +17,7 @@ import { ImageContextMenu } from "./ImageContextMenu";
 import { ImageDirectEditor } from "./ImageDirectEditor";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface ImagePosition {
   x: number;
@@ -60,7 +60,8 @@ export default function RootImage({
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -118,6 +119,9 @@ export default function RootImage({
           // Force an immediate save to ensure the image URL is persisted
           void saveImmediately();
         }, 100);
+
+        // Atualizar os créditos no header após geração bem-sucedida
+        await refetchCredits();
 
         // Ensure the generating state is properly reset
         setIsGenerating(false);
@@ -188,6 +192,9 @@ export default function RootImage({
           // Force an immediate save to ensure the image URL is persisted
           void saveImmediately();
         }, 100);
+
+        // Atualizar os créditos no header após geração bem-sucedida
+        await refetchCredits();
 
         // Ensure the generating state is properly reset
         setIsGenerating(false);

@@ -14,7 +14,7 @@ import { type ImageModelList } from "@/app/_actions/image/generate";
 import { toast } from "sonner";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface ImageEditDialogProps {
   isOpen: boolean;
@@ -35,7 +35,8 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -70,6 +71,9 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
 
       if (result.success && result.image) {
         onImageEdited(result.image.url);
+        // Atualizar os créditos no header após edição bem-sucedida
+        await refetchCredits();
+        
         toast.success(t.presentation.imageEdited, {
           description: `Modelo: ${result.image.model}${result.creditsUsed ? ` • Créditos usados: ${result.creditsUsed}` : ''}`,
         });

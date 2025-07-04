@@ -12,7 +12,7 @@ import debounce from "lodash.debounce";
 import { nanoid } from "nanoid";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 
 /**
  * Função para sanitizar o tópico detalhado antes de enviá-lo para a geração do slide
@@ -96,7 +96,8 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -352,6 +353,9 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           // Atualizar no banco de dados
           await updatePresentationInDB(updatedSlides);
           
+          // Atualizar os créditos no header
+          await refetchCredits();
+          
           if (usingOutlineTopic) {
             toast.success("Slide regenerado com sucesso a partir do outline!");
           } else {
@@ -397,6 +401,9 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           
           // Atualizar no banco de dados
           await updatePresentationInDB(updatedSlides);
+          
+          // Atualizar os créditos no header
+          await refetchCredits();
           
           toast.warning("Slide regenerado com formato básico. Você pode editá-lo manualmente.");
         }
