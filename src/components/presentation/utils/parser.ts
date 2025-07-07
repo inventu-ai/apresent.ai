@@ -1,6 +1,7 @@
 import type { TDescendant, TElement, TText } from "@udecode/plate-common";
 import { ColumnItemPlugin, ColumnPlugin } from "@udecode/plate-layout/react";
 import { nanoid } from "nanoid"; // Import nanoid for unique ID generation
+import { getRandomFallbackIcon } from "@/components/ui/icon-picker"; // Import the random fallback icon function
 
 // Define a text node with generating property
 export interface GeneratingText extends TText {
@@ -1190,14 +1191,14 @@ export class SlideParser {
 
         // Add icon element if found - map query to icon name for default icon selection
         if (query) {
-          // Função simplificada que sempre retorna uma string válida
+          // Função que mapeia a consulta para um nome de ícone ou retorna um ícone aleatório
           function mapQueryToIconName(q: string): string {
-            // Valor padrão para retorno em caso de erro ou query inválida
-            const defaultIcon = "FaQuestion";
+            // Definir um ícone padrão para fallback (não será usado na maioria dos casos)
+            const defaultIcon = "FaLightbulb";
             
-            // Se query for undefined ou vazia, retornar ícone padrão
+            // Se query for undefined ou vazia, retornar um ícone aleatório
             if (!q || typeof q !== 'string') {
-              return defaultIcon;
+              return getRandomFallbackIcon();
             }
             
             let result = defaultIcon;
@@ -1335,12 +1336,12 @@ export class SlideParser {
               if (lower.includes("money") || lower.includes("economy")) { result = "FaMoneyBillWave"; return result; }
             } catch (error) {
               console.error("Erro ao mapear ícone:", error);
-              // Em caso de erro, garantir que retornamos o ícone padrão
-              result = defaultIcon;
+              // Em caso de erro, retornar um ícone aleatório
+              return getRandomFallbackIcon();
             }
             
-            // Garantir que sempre retornamos uma string válida
-            return result || defaultIcon;
+            // Se não encontrou correspondência, retornar um ícone aleatório
+            return result || getRandomFallbackIcon();
           }
           // Garantir que o nome do ícone seja sempre uma string válida
           const mappedIconName: string = mapQueryToIconName(query);

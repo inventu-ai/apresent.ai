@@ -21,6 +21,46 @@ interface IconItem {
 
 type IconModule = Record<string, IconType>;
 
+// Lista de ícones de fallback alternativos
+const FALLBACK_ICONS = [
+  // Ícones gerais/conceituais
+  "FaLightbulb", "FaInfo", "FaBookOpen", "FaCompass", "FaGem", 
+  "FaCube", "FaPuzzlePiece", "FaThumbsUp", "FaStar", "FaCheckCircle",
+  // Ícones para tópicos de negócios
+  "FaChartLine", "FaBriefcase", "FaHandshake", "FaMoneyBillWave", 
+  "FaBuilding", "FaFileContract", "FaCalculator", "FaChartPie", 
+  // Ícones para tópicos de tecnologia
+  "FaMicrochip", "FaDatabase", "FaServer", "FaCode", "FaCogs",
+  "FaNetworkWired", "FaMobile", "FaCloudUploadAlt", 
+  // Ícones para tópicos de educação/acadêmicos
+  "FaGraduationCap", "FaBook", "FaUniversity", "FaAtom", "FaFlask", 
+  "FaChalkboardTeacher", "FaPencilAlt", "FaSchool", 
+  // Ícones para tópicos de saúde/medicina
+  "FaHeartbeat", "FaMedkit", "FaHospital", "FaStethoscope", "FaPills", 
+  "FaUserMd", "FaDna", "FaBrain", 
+  // Ícones para tópicos de meio ambiente/sustentabilidade
+  "FaLeaf", "FaSeedling", "FaTree", "FaSun", "FaWater", 
+  "FaWind", "FaRecycle", "FaMountain", 
+  // Ícones para tópicos de comunicação/mídia
+  "FaComments", "FaEnvelope", "FaMicrophone", "FaPhone", "FaVideo", 
+  "FaBullhorn", "FaNewspaper", "FaRss", 
+  // Ícones para tópicos de transporte/logística
+  "FaCar", "FaTruck", "FaShip", "FaPlane", "FaTrain", 
+  "FaBus", "FaMotorcycle", "FaBicycle", 
+  // Ícones para tópicos de segurança/proteção
+  "FaShieldAlt", "FaLock", "FaUserShield", "FaFingerprint", "FaKey", 
+  "FaEye", "FaUserSecret", "FaIdCard", 
+  // Ícones para tópicos de arte/design
+  "FaPaintBrush", "FaMusic", "FaCamera", "FaFilm", "FaTheaterMasks", 
+  "FaGuitar", "FaPalette", "FaPhotoVideo"
+];
+
+// Função simples para obter um ícone de fallback aleatório
+export const getRandomFallbackIcon = (): string => {
+  const randomIndex = Math.floor(Math.random() * FALLBACK_ICONS.length);
+  return FALLBACK_ICONS[randomIndex] || "FaLightbulb"; // Garantir que sempre retorne uma string
+};
+
 // Define the prop types
 interface IconPickerProps {
   onIconSelect?: (iconName: string, iconComponent: ReactNode) => void;
@@ -529,9 +569,25 @@ const IconPicker = ({
               onIconSelect(matchingIconName, component);
             }
           } else {
-            // If no matches, fall back to default icon
-            const component = await loadIconComponent(defaultIcon);
+            // Se não encontrou correspondência, usar um ícone de fallback aleatório
+            // em vez de sempre usar o ícone padrão
+            const fallbackIconName = getRandomFallbackIcon();
+            setIcon(fallbackIconName);
+            const component = await loadIconComponent(fallbackIconName);
             setIconComponent(component);
+            
+            // Notificar o componente pai
+            if (onIconSelect && component) {
+              onIconSelect(fallbackIconName, component);
+            }
+            
+            // Armazenar no localStorage para persistência
+            try {
+              const storageKey = `selected-icon-${contextId}-${defaultIcon}`;
+              localStorage.setItem(storageKey, fallbackIconName);
+            } catch (error) {
+              console.error("Error saving fallback icon to localStorage:", error);
+            }
           }
         } catch (error) {
           console.error("Error initializing from search term:", error);
