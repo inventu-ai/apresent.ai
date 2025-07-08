@@ -15,6 +15,48 @@ import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-m
 import { useCredits } from "@/contexts/CreditsContext";
 
 /**
+ * Função para limpar e formatar títulos
+ * Remove marcadores de lista, caracteres especiais e limita o comprimento
+ */
+function cleanTitle(title: string): string {
+  // Remover caracteres # que podem estar no início (markdown) ou em qualquer lugar do título
+  // Mais agressivo para pegar múltiplos # e variações com espaços
+  let cleanedTitle = title.replace(/^#+\s*/, '').replace(/\s*#\s*/g, ' ').replace(/#/g, '');
+  
+  // Remover marcadores de lista (hifens, asteriscos, números seguidos de ponto no início de linhas)
+  cleanedTitle = cleanedTitle.replace(/^[-*#]\s+/gm, '')
+                          .replace(/^\d+\.\s+/gm, '')
+                          .replace(/^[•○●]\s+/gm, '');
+  
+  // Remover frases introdutórias comuns que não devem estar no título
+  cleanedTitle = cleanedTitle.replace(/^(aspectos|pontos|elementos|fatores|considerações)\s+(importantes|principais|essenciais|fundamentais|críticos|relevantes|chave)\s+(sobre|de|da|do|para|acerca)\s+/i, '');
+  cleanedTitle = cleanedTitle.replace(/^(o que (é|são)|como funciona|por que|quando|onde|qual|quais)\s+/i, '');
+  cleanedTitle = cleanedTitle.replace(/^(entenda|compreenda|conheça|descubra|explore|analise)\s+/i, '');
+  
+  // Remover quebras de linha e substituir por espaços
+  cleanedTitle = cleanedTitle.replace(/\n/g, ' ');
+  
+  // Remover pontuação excessiva no final
+  cleanedTitle = cleanedTitle.replace(/[.,:;]+$/, '');
+  
+  // Remover espaços extras
+  cleanedTitle = cleanedTitle.replace(/\s+/g, ' ').trim();
+  
+  // Limitar a 6 palavras (mais restritivo que antes)
+  const words = cleanedTitle.split(/\s+/);
+  if (words.length > 6) {
+    cleanedTitle = words.slice(0, 6).join(' ');
+    
+    // Adicionar reticências se o título foi truncado
+    if (!cleanedTitle.endsWith('.') && !cleanedTitle.endsWith('!') && !cleanedTitle.endsWith('?')) {
+      cleanedTitle += '...';
+    }
+  }
+  
+  return cleanedTitle;
+}
+
+/**
  * Função para sanitizar o tópico detalhado antes de enviá-lo para a geração do slide
  * Remove o padrão "0:" que aparece antes de cada palavra e outros problemas de formatação
  */
@@ -48,7 +90,7 @@ function sanitizeTopic(topic: string): string {
  * Remove caracteres problemáticos e formata corretamente
  * IMPORTANTE: Preserva as tags XML válidas
  */
-function sanitizeXml(xml: string): string {
+function sanitizeXml(xml: string, topic: string, presentationTitle: string): string {
   
   // Remover caracteres problemáticos
   let cleanXml = xml
@@ -62,6 +104,17 @@ function sanitizeXml(xml: string): string {
     .replace(/O" /g, '')
     // Remover padrão 0:" que pode aparecer no XML
     .replace(/0:"/g, '')
+    // Remover caracteres # em qualquer lugar nos títulos
+    .replace(/<H1>([^<]*?)#([^<]*?)<\/H1>/g, '<H1>$1$2</H1>')
+    .replace(/<H2>([^<]*?)#([^<]*?)<\/H2>/g, '<H2>$1$2</H2>')
+    .replace(/<H3>([^<]*?)#([^<]*?)<\/H3>/g, '<H3>$1$2</H3>')
+    // Também remover # no início de títulos (caso anterior não pegue)
+    .replace(/<H1>\s*#\s*/g, '<H1>')
+    .replace(/<H2>\s*#\s*/g, '<H2>')
+    .replace(/<H3>\s*#\s*/g, '<H3>')
+    // Remover marcadores de lista no início de parágrafos
+    .replace(/<P>\s*[-*•○●]\s*/g, '<P>')
+    .replace(/<P>\s*\d+\.\s*/g, '<P>')
     // Normalizar quebras de linha
     .replace(/\r?\n/g, ' ')
     // Normalizar espaços múltiplos
@@ -76,6 +129,45 @@ function sanitizeXml(xml: string): string {
   // Verificar se há tags SECTION e fechar se necessário
   if (cleanXml.includes("<SECTION") && !cleanXml.includes("</SECTION>")) {
     cleanXml += "</SECTION>";
+  }
+  
+  // Gerar um título significativo baseado no tópico ou título da apresentação
+  const generateMeaningfulTitle = (): string => {
+    // Usar o tópico como primeira opção
+    if (topic && topic.trim().length > 0) {
+      // Limitar o tópico a 6 palavras para o título
+      const words = topic.trim().split(/\s+/);
+      if (words.length > 6) {
+        return words.slice(0, 6).join(' ');
+      }
+      return topic.trim();
+    }
+    
+    // Usar o título da apresentação como segunda opção
+    if (presentationTitle && presentationTitle.trim().length > 0) {
+      // Extrair uma parte significativa do título da apresentação
+      const words = presentationTitle.trim().split(/\s+/);
+      if (words.length > 3) {
+        return words.slice(0, 3).join(' ');
+      }
+      return presentationTitle.trim();
+    }
+    
+    // Fallback para um título genérico mais descritivo
+    return "Novo Slide";
+  };
+  
+  // Verificar se há tags H1 e adicionar se não existir
+  if (!cleanXml.includes("<H1>") && cleanXml.includes("<SECTION")) {
+    // Inserir um H1 com título significativo após a tag SECTION
+    const meaningfulTitle = generateMeaningfulTitle();
+    cleanXml = cleanXml.replace(/<SECTION[^>]*>/, `$&<H1>${meaningfulTitle}</H1>`);
+  }
+  
+  // Verificar se há tags P e adicionar se não existir
+  if (!cleanXml.includes("<P>") && cleanXml.includes("<H1>")) {
+    // Inserir um P com conteúdo mais descritivo após a tag H1
+    cleanXml = cleanXml.replace(/<\/H1>/, `$&<P>Informações sobre ${topic || "este tópico"}.</P>`);
   }
   
   return cleanXml;
@@ -142,7 +234,26 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
     const slide = slides[slideIndex];
     if (!slide) return "";
     
-    // Extrair o texto de todos os elementos do slide
+    // Extrair o título do slide (h1) como prioridade
+    let title = "";
+    for (const node of slide.content) {
+      if (node.type === 'h1' && node.children) {
+        for (const child of node.children) {
+          if ('text' in child && typeof child.text === 'string') {
+            title += child.text + " ";
+          }
+        }
+        break; // Parar após encontrar o primeiro h1
+      }
+    }
+    
+    // Se encontramos um título, usá-lo como base
+    if (title.trim()) {
+      // Limpar o título
+      return cleanTitle(title.trim());
+    }
+    
+    // Se não encontramos um título, extrair todo o texto do slide
     let text = "";
     for (const node of slide.content) {
       if (node.children) {
@@ -156,10 +267,24 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
     
     // Limpar o texto removendo frases de instrução comuns
     const cleanedText = text.trim()
+      // Remover frases introdutórias
       .replace(/^(fale|me\s+fale|conte|me\s+conte|descreva|explique|falar|contar|descrever|explicar)\s+(mais\s+)?(sobre|a\s+respeito\s+de|acerca\s+de)?\s+/i, '')
       .replace(/^(o\s+que\s+é|quem\s+é|como\s+funciona|por\s+que|quando|onde|qual|quais)\s+/i, '')
       .replace(/^(gostaria\s+de\s+saber|quero\s+saber|preciso\s+saber|pode\s+me\s+dizer)\s+(mais\s+)?(sobre|a\s+respeito\s+de)?\s+/i, '')
-      .replace(/aspectos\s+importantes\s+a\s+serem\s+considerados\s+sobre\s+/i, '');
+      // Remover frases de aspectos e considerações
+      .replace(/^(aspectos|pontos|elementos|fatores|considerações)\s+(importantes|principais|essenciais|fundamentais|críticos|relevantes|chave)\s+(sobre|de|da|do|para|acerca)\s+/i, '')
+      .replace(/aspectos\s+importantes\s+a\s+serem\s+considerados\s+sobre\s+/i, '')
+      // Remover frases de entendimento e compreensão
+      .replace(/^(entenda|compreenda|conheça|descubra|explore|analise)\s+/i, '')
+      // Remover caracteres especiais no início
+      .replace(/^[#*•○●-]\s+/i, '')
+      .replace(/^\d+\.\s+/i, '');
+    
+    // Limitar a um número razoável de palavras (máximo 15)
+    const words = cleanedText.split(/\s+/);
+    if (words.length > 15) {
+      return words.slice(0, 15).join(' ');
+    }
     
     return cleanedText;
   }, [slides, slideIndex]);
@@ -281,8 +406,14 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           // Obter o tópico detalhado bruto
           const rawDetailedTopic = await topicResponse.text();
           
-          // Sanitizar o tópico detalhado antes de usá-lo
-          detailedTopic = sanitizeTopic(rawDetailedTopic);
+          // Sanitizar o tópico detalhado antes de usá-lo e remover caracteres "#"
+          let detailedTopic = sanitizeTopic(rawDetailedTopic);
+          
+          // Remover explicitamente qualquer caractere "#" do tópico
+          detailedTopic = detailedTopic.replace(/^#\s*/g, '').replace(/#/g, '');
+          
+          // Log para debug
+          console.log('Tópico detalhado após limpeza:', detailedTopic);
           } else {
             console.warn("Falha ao gerar tópico detalhado, usando tópico original");
           }
@@ -328,7 +459,11 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
       const rawXmlContent = await response.text();
       
       // Sanitizar o XML antes de processá-lo
-      const xmlContent = sanitizeXml(rawXmlContent);
+      const xmlContent = sanitizeXml(
+        rawXmlContent, 
+        detailedTopic, 
+        presentationInput || currentPresentationTitle || ""
+      );
       
       try {
         // Processar o XML para obter o slide

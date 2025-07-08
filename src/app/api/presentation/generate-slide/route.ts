@@ -26,6 +26,21 @@ You are an expert presentation designer. Your task is to create the introduction
 
 - The first slide must always be an introduction to the topic.
 - It must contain a large, bold title (H1) with the main subject of the presentation.
+- EXTREMELY IMPORTANT: The title must be VERY SHORT and CONCISE - MAXIMUM 6 WORDS
+  - Titles must be brief, impactful, and focused
+  - DO NOT use complete sentences as titles
+  - DO NOT include phrases like "Aspects of" or "Introduction to" in titles
+  - DO NOT use special characters like #, *, •, etc. in titles
+  - NEVER start titles with "#" or include "#" anywhere in the title
+  - REMOVE ALL "#" characters from titles completely
+  - DO NOT start titles with "O que é", "Como funciona", etc.
+  - BAD TITLE EXAMPLE: "# O Front Europeu - A luta entre os Aliados e o Eixo na Europa - Impacto da guerra na população civil e na economia"
+  - GOOD TITLE EXAMPLE: "O Front Europeu"
+  - GOOD TITLE EXAMPLE: "Segunda Guerra Mundial"
+  - GOOD TITLE EXAMPLE: "Revolução Industrial"
+  - GOOD TITLE EXAMPLE: "Inteligência Artificial"
+  - GOOD TITLE EXAMPLE: "Mudanças Climáticas"
+  - REMEMBER: The title should be a short phrase, not a complete sentence or paragraph
 - Below the title, write a short introduction (1 or 2 paragraphs):
   - If there are two paragraphs, each must have a maximum of 3 lines (short, objective sentences).
   - If there is only one paragraph, it can have up to 7 lines.
@@ -289,7 +304,16 @@ For the slide topic:
 4. Include at least one detailed image query in the slide
 5. Use appropriate heading hierarchy
 6. Vary the SECTION layout attribute (left/right/vertical)
-7. IMPORTANT: Keep (H1) titles SHORT and CONCISE - max 6-8 words
+7. EXTREMELY IMPORTANT: Keep (H1) titles VERY SHORT and CONCISE - MAXIMUM 6 WORDS
+   - Titles must be brief, impactful, and focused
+   - DO NOT use complete sentences as titles
+   - DO NOT include phrases like "Aspects of" or "Introduction to" in titles
+   - DO NOT use special characters like #, *, •, etc. in titles
+   - NEVER start titles with "#" or include "#" anywhere in the title
+   - REMOVE ALL "#" characters from titles completely
+   - DO NOT start titles with "O que é", "Como funciona", etc.
+   - BAD TITLE EXAMPLE: "# O Front Europeu - A luta entre os Aliados e o Eixo na Europa - Impacto da guerra na população civil e na economia"
+   - GOOD TITLE EXAMPLE: "O Front Europeu"
 8. Use subtitles (H2, H3) and paragraphs (P) for detailed content, not in the main title
 9. NEVER include phrases like "Important aspects about [topic]" or "Tell me more about [topic]" in the content
 10. NEVER repeat the original topic with introductory phrases like "Aspects to consider", "Considerations about", etc.
@@ -932,6 +956,8 @@ export async function POST(req: Request) {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    
+    console.log("=== DEBUG: Iniciando geração de slide ===");
 
     // Verificar se o usuário tem créditos suficientes para geração de slide (5 créditos)
     const creditCheck = await canExecuteAction(session.user.id, 'SLIDE_GENERATION');

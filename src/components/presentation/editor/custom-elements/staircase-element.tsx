@@ -12,6 +12,12 @@ import { STAIR_ITEM_ELEMENT, STAIRCASE_ELEMENT } from "../lib";
 
 export interface StaircaseElement extends TElement {
   type: typeof STAIRCASE_ELEMENT;
+  hasLongText?: boolean; // Propriedade para indicar que tem texto longo
+}
+
+export interface StairItemElement extends TElement {
+  type: typeof STAIR_ITEM_ELEMENT;
+  spacer?: boolean; // Propriedade para identificar que é um espaçador
 }
 
 // Main staircase component with withRef pattern
@@ -19,7 +25,13 @@ export const StaircaseElement = withRef<typeof PlateElement>(
   ({ element, children, className, ...props }, ref) => {
     const childrenArray = React.Children.toArray(children as ReactNode);
     const items = element.children;
-    const totalItems = items.length;
+    
+    // Filtrar itens que são espaçadores para calcular o número real de itens
+    const realItems = items.filter(item => !(item as StairItemElement).spacer);
+    const totalItems = realItems.length;
+    
+    // Manter um contador para a numeração correta, ignorando espaçadores
+    let realIndex = 0;
 
     return (
       <PlateElement
@@ -29,16 +41,23 @@ export const StaircaseElement = withRef<typeof PlateElement>(
         {...props}
       >
         <div>
-          {childrenArray.map((child, index) => (
-            <StairItem
-              key={index}
-              index={index}
-              totalItems={totalItems}
-              element={items[index] as TElement}
-            >
-              {child}
-            </StairItem>
-          ))}
+          {childrenArray.map((child, index) => {
+            const isItemSpacer = (items[index] as StairItemElement).spacer === true;
+            
+            // Só incrementar o índice real se não for um espaçador
+            const currentRealIndex = isItemSpacer ? -1 : realIndex++;
+            
+            return (
+              <StairItem
+                key={index}
+                index={currentRealIndex}
+                totalItems={totalItems}
+                element={items[index] as TElement}
+              >
+                {child}
+              </StairItem>
+            );
+          })}
         </div>
       </PlateElement>
     );

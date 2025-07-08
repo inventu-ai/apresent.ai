@@ -44,6 +44,8 @@ export function SlideContainer({
     currentSlideIndex,
     setCurrentSlideIndex,
     setIsPresenting,
+    currentPresentationTitle,
+    presentationInput,
   } = usePresentationState();
 
   const currentSlide = slides[index];
@@ -110,11 +112,37 @@ export function SlideContainer({
   }, [isPresenting, index, currentSlideIndex, handleKeyDown]);
 
   const addNewSlide = (position: "before" | "after") => {
+    // Gerar um título mais descritivo baseado no contexto da apresentação
+    const generateMeaningfulTitle = (): string => {
+      // Usar o título da apresentação como primeira opção
+      if (currentPresentationTitle) {
+        // Verificar se o título da apresentação parece ser uma instrução ou comando
+        const lowerTitle = currentPresentationTitle.toLowerCase().trim();
+        if (lowerTitle.startsWith("faça") || 
+            lowerTitle.startsWith("crie") || 
+            lowerTitle.startsWith("gere") || 
+            lowerTitle.startsWith("make") || 
+            lowerTitle.startsWith("create")) {
+          return "Novo Slide";
+        }
+        
+        // Extrair uma parte significativa do título da apresentação
+        const words = currentPresentationTitle.trim().split(/\s+/);
+        if (words.length > 2) {
+          return words.slice(0, 2).join(' ');
+        }
+        return currentPresentationTitle.trim();
+      }
+      
+      // Se não tiver título da apresentação, usar um título genérico mais descritivo
+      return "Novo Slide";
+    };
+
     const newSlide: PlateSlide = {
       content: [
         {
           type: "h1",
-          children: [{ text: "New Slide" }],
+          children: [{ text: generateMeaningfulTitle() }],
         },
       ],
       id: nanoid(),
