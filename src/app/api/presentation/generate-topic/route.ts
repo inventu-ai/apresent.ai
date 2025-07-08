@@ -149,10 +149,9 @@ export async function POST(req: Request) {
       language,
     });
 
-    // Adicionar um log para verificar o conteúdo gerado
+    // Processar a regeneração do tópico
     if (isRegeneration) {
-      console.log('Regenerando tópico com sugestão:', suggestion);
-      console.log('Usando template sem caracteres "#"');
+      // Lógica específica para regeneração
     }
 
     // Consumir créditos após geração bem-sucedida

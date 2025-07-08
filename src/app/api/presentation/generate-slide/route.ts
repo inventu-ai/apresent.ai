@@ -957,7 +957,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    console.log("=== DEBUG: Iniciando geração de slide ===");
+
 
     // Verificar se o usuário tem créditos suficientes para geração de slide (5 créditos)
     const creditCheck = await canExecuteAction(session.user.id, 'SLIDE_GENERATION');

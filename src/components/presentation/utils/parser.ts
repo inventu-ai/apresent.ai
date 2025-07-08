@@ -439,15 +439,6 @@ export class SlideParser {
    * Modified to extract root-level images and layout type
    */
   private convertSectionToPlate = (sectionString: string): PlateSlide => {
-    // Log para debug - XML bruto recebido
-    console.log('XML bruto recebido pelo parser:', sectionString);
-    
-    // Verificar se há caracteres "#" no XML
-    if (sectionString.includes('#')) {
-      console.log('ALERTA: Caractere "#" detectado no XML bruto:', 
-        sectionString.substring(sectionString.indexOf('#') - 20, sectionString.indexOf('#') + 20));
-    }
-    
     // Parse XML string into a structured XMLNode tree
     const rootNode = this.parseXML(sectionString);
 
