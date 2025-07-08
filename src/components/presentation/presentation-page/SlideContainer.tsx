@@ -119,6 +119,7 @@ export function SlideContainer({
       ],
       id: nanoid(),
       alignment: "center",
+      isNew: true, // Flag para identificar slide novo
     };
 
     const updatedSlides = [...slides];

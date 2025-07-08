@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
@@ -11,7 +12,74 @@ import debounce from "lodash.debounce";
 import { nanoid } from "nanoid";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
+
+/**
+ * Função para sanitizar o tópico detalhado antes de enviá-lo para a geração do slide
+ * Remove o padrão "0:" que aparece antes de cada palavra e outros problemas de formatação
+ */
+function sanitizeTopic(topic: string): string {
+  // Verificar se o tópico tem o padrão problemático (0:" no início de cada palavra)
+  const hasPattern = topic.includes('0:"');
+  
+  if (hasPattern) {
+    
+    // Remover o padrão "0:" que aparece antes de cada palavra
+    let cleanedTopic = topic.replace(/0:"/g, '');
+    
+    // Remover aspas desnecessárias no final das palavras
+    cleanedTopic = cleanedTopic.replace(/"/g, '');
+    
+    // Remover quebras de linha e substituir por espaços
+    cleanedTopic = cleanedTopic.replace(/\r?\n/g, ' ');
+    
+    // Normalizar espaços múltiplos
+    cleanedTopic = cleanedTopic.replace(/\s+/g, ' ');
+    
+    return cleanedTopic.trim();
+  }
+  
+  // Se não tiver o padrão problemático, retornar o tópico original
+  return topic;
+}
+
+/**
+ * Função para sanitizar o XML antes de processá-lo
+ * Remove caracteres problemáticos e formata corretamente
+ * IMPORTANTE: Preserva as tags XML válidas
+ */
+function sanitizeXml(xml: string): string {
+  
+  // Remover caracteres problemáticos
+  let cleanXml = xml
+    // Substituir aspas curvas por aspas retas
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    // Substituir traços longos por hífens
+    .replace(/[\u2013\u2014]/g, '-')
+    // Remover caracteres O" no início de palavras (problema comum)
+    .replace(/O"([a-zA-Z])/g, '$1')
+    .replace(/O" /g, '')
+    // Remover padrão 0:" que pode aparecer no XML
+    .replace(/0:"/g, '')
+    // Normalizar quebras de linha
+    .replace(/\r?\n/g, ' ')
+    // Normalizar espaços múltiplos
+    .replace(/\s+/g, ' ')
+    // Garantir que tags XML estejam corretamente formatadas
+    .replace(/< /g, '<')
+    .replace(/ >/g, '>');
+    
+  // NÃO escapar os caracteres < e > em todo o XML
+  // Isso preserva as tags XML válidas
+  
+  // Verificar se há tags SECTION e fechar se necessário
+  if (cleanXml.includes("<SECTION") && !cleanXml.includes("</SECTION>")) {
+    cleanXml += "</SECTION>";
+  }
+  
+  return cleanXml;
+}
 
 interface RegenerateSlideButtonProps {
   slideIndex: number;
@@ -23,10 +91,13 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
   
   // Ref para evitar múltiplos cliques
   const isProcessingRef = useRef(false);
+  
+  const { t } = useTranslation();
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -90,9 +161,6 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
       .replace(/^(gostaria\s+de\s+saber|quero\s+saber|preciso\s+saber|pode\s+me\s+dizer)\s+(mais\s+)?(sobre|a\s+respeito\s+de)?\s+/i, '')
       .replace(/aspectos\s+importantes\s+a\s+serem\s+considerados\s+sobre\s+/i, '');
     
-    console.log("Texto original:", text);
-    console.log("Texto limpo:", cleanedText);
-    
     return cleanedText;
   }, [slides, slideIndex]);
   
@@ -136,14 +204,12 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         if (outlineTopic) {
           topic = outlineTopic;
           usingOutlineTopic = true;
-          console.log("Regenerando slide usando tópico do outline:", topic);
         }
       }
       
       // Se não temos um tópico do outline, extrair do slide atual
       if (!topic) {
         topic = getSlideText();
-        console.log("Regenerando slide usando texto extraído do slide:", topic);
         
         if (!topic) {
           toast.error("Não foi possível extrair texto do slide para regeneração.");
@@ -176,7 +242,6 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
       
       if (!usingOutlineTopic) {
         // ETAPA 1: Gerar um tópico detalhado com bullet points
-        console.log("Etapa 1: Gerando tópico detalhado para:", topic);
         
         // Extrair títulos dos outros slides para contexto
         const existingTopics = slides
@@ -213,9 +278,11 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           });
           
           if (topicResponse.ok) {
-            // Obter o tópico detalhado
-            detailedTopic = await topicResponse.text();
-            console.log("Tópico detalhado gerado:", detailedTopic);
+          // Obter o tópico detalhado bruto
+          const rawDetailedTopic = await topicResponse.text();
+          
+          // Sanitizar o tópico detalhado antes de usá-lo
+          detailedTopic = sanitizeTopic(rawDetailedTopic);
           } else {
             console.warn("Falha ao gerar tópico detalhado, usando tópico original");
           }
@@ -226,9 +293,15 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
       }
       
       // ETAPA 2: Usar o tópico para gerar o slide
-      console.log("Etapa 2: Gerando slide a partir do tópico");
+      
+      // Obter nome do usuário do localStorage
+      const userName = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("userName")) || "User";
+      
       
       // Chamar a API para gerar o slide
+      // Adicionar flag explícita para indicar se é um slide de introdução
+      const isIntroSlide = slideIndex === 0;
+      
       const response = await fetch('/api/presentation/generate-slide', {
         method: 'POST',
         headers: {
@@ -237,10 +310,13 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         body: JSON.stringify({
           title: presentationInput || currentPresentationTitle || "",
           topic: detailedTopic, // Usar o tópico detalhado ou o original
-          slideIndex,
+          slideIndex: isIntroSlide ? 0 : slideIndex, // Garantir que o slideIndex seja exatamente 0 para o slide de introdução
           language,
           tone: presentationStyle,
-          context: otherSlides // Adicionar contexto dos outros slides
+          context: otherSlides, // Adicionar contexto dos outros slides
+          userName, // Incluir o nome do usuário
+          isIntroSlide, // Flag explícita para indicar que é um slide de introdução
+          forceVariability: true // Forçar variabilidade para gerar um slide significativamente diferente
         }),
       });
       
@@ -249,10 +325,10 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
       }
       
       // Obter o XML do slide regenerado
-      const xmlContent = await response.text();
+      const rawXmlContent = await response.text();
       
-      // Log para depuração
-      console.log('XML recebido da API:', xmlContent);
+      // Sanitizar o XML antes de processá-lo
+      const xmlContent = sanitizeXml(rawXmlContent);
       
       try {
         // Processar o XML para obter o slide
@@ -263,7 +339,6 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         parser.clearAllGeneratingMarks();
         
         const parsedSlides = parser.getAllSlides();
-        console.log('Slides processados:', parsedSlides);
         
         if (parsedSlides.length > 0 && parsedSlides[0]) {
           // Criar uma nova cópia do array de slides
@@ -277,6 +352,9 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           
           // Atualizar no banco de dados
           await updatePresentationInDB(updatedSlides);
+          
+          // Atualizar os créditos no header
+          await refetchCredits();
           
           if (usingOutlineTopic) {
             toast.success("Slide regenerado com sucesso a partir do outline!");
@@ -324,6 +402,9 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
           // Atualizar no banco de dados
           await updatePresentationInDB(updatedSlides);
           
+          // Atualizar os créditos no header
+          await refetchCredits();
+          
           toast.warning("Slide regenerado com formato básico. Você pode editá-lo manualmente.");
         }
       } catch (parsingError) {
@@ -370,7 +451,7 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         className="!size-8 rounded-full bg-black/20 shadow-sm hover:bg-black/40"
         onClick={regenerateSlide}
         disabled={isRegenerating}
-        title="Regenerar slide"
+        title={t.presentation.regenerateSlide}
       >
         <RefreshCw 
           className={`h-4 w-4 text-white ${isRegenerating ? "animate-spin" : ""}`} 

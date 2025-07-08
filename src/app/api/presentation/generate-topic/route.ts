@@ -21,24 +21,35 @@ User suggestion: {suggestion}
 Existing outline topics:
 {existingTopics}
 
-Generate a single topic that would fit well within the existing presentation structure. The topic should be based on the user's suggestion.
-Format the response as markdown content, with the topic as a heading followed by 2-3 bullet points.
+Generate a single comprehensive topic that would fit well within the existing presentation structure. The topic should be based on the user's suggestion.
+Format the response as PLAIN TEXT markdown content, with the topic as a heading followed by 2-3 bullet points.
 
 Example format:
 # Topic Title That Matches User Suggestion
-- Key point about this topic
-- Another important aspect
-- Brief conclusion or impact
+- Key point about this topic with specific data or example
+- Another important aspect with practical application
+- Brief conclusion or impact statement
+
+CRITICAL FORMATTING RULES:
+1. Return ONLY plain text without any special formatting, tokens, or markers
+2. DO NOT include any tokens like "0:", line numbers, or any other non-content markers
+3. DO NOT split words across multiple lines - keep all content on continuous lines
+4. DO NOT add any JSON formatting, quotes around the content, or escape characters
+5. NEVER return the content in a tokenized or stream format
 
 Make sure the topic:
-1. Addresses the user's suggestion directly
-2. Fits well with the existing topics
-3. Is clear and concise
-4. Is engaging for the audience
+1. Addresses the user's suggestion directly and comprehensively
+2. Fits well with the existing topics and overall presentation flow
+3. Is clear, concise, and professionally structured
+4. Is engaging and visually adaptable for presentation slides
 5. ALWAYS use bullet points (not paragraphs) and format each point as "- point text"
-6. Do not use bold, italic or underline
+6. Do not use bold, italic or underline formatting
 7. Keep each bullet point brief - just one sentence per point
-8. Include exactly 2-3 bullet points (not more, not less)`;
+8. Include exactly 2-3 bullet points (not more, not less)
+9. AVOID using any special characters or symbols that might interfere with XML parsing
+10. Use only standard ASCII characters when possible (avoid curly quotes, em dashes, etc.)
+11. Keep all text on a single line without manual line breaks
+12. Each bullet point should be substantial enough to support a visual element`;
 
 const regenerationTemplate = `You are improving an existing presentation topic. Take the current topic and make it better while keeping the same general theme.
 The improved topic should be in {language}.
@@ -54,13 +65,20 @@ Improve the current topic by making it:
 - More detailed and informative
 - Better aligned with the overall presentation flow
 
-Format the response as markdown content, with the topic as a heading followed by 2-3 bullet points.
+Format the response as PLAIN TEXT markdown content, with the topic as a heading followed by 2-3 bullet points.
 
 Example format:
 # Improved Topic Title
-- Enhanced key point about this topic
-- More detailed important aspect
-- Stronger conclusion or impact
+- Enhanced key point about this topic with specific data or example
+- More detailed important aspect with practical application
+- Stronger conclusion or impact statement
+
+CRITICAL FORMATTING RULES:
+1. Return ONLY plain text without any special formatting, tokens, or markers
+2. DO NOT include any tokens like "0:", line numbers, or any other non-content markers
+3. DO NOT split words across multiple lines - keep all content on continuous lines
+4. DO NOT add any JSON formatting, quotes around the content, or escape characters
+5. NEVER return the content in a tokenized or stream format
 
 Make sure the improved topic:
 1. Maintains the core theme of the original topic
@@ -68,9 +86,13 @@ Make sure the improved topic:
 3. Fits well with the existing topics
 4. Is clear and concise
 5. ALWAYS use bullet points (not paragraphs) and format each point as "- point text"
-6. Do not use bold, italic or underline
+6. Do not use bold, italic or underline formatting
 7. Keep each bullet point brief - just one sentence per point
-8. Include exactly 2-3 bullet points (not more, not less)`;
+8. Include exactly 2-3 bullet points (not more, not less)
+9. AVOID using any special characters or symbols that might interfere with XML parsing
+10. Use only standard ASCII characters when possible (avoid curly quotes, em dashes, etc.)
+11. Keep all text on a single line without manual line breaks
+12. Each bullet point should be substantial enough to support a visual element`;
 
 const createTopicChain = (isRegeneration: boolean) => RunnableSequence.from([
   PromptTemplate.fromTemplate(isRegeneration ? regenerationTemplate : topicTemplate),

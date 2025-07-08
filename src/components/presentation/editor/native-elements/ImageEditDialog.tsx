@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +14,7 @@ import { type ImageModelList } from "@/app/_actions/image/generate";
 import { toast } from "sonner";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface ImageEditDialogProps {
   isOpen: boolean;
@@ -27,13 +28,15 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
   const [editPrompt, setEditPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
   
   // Sempre usar GPT Image 1 para edições
   const selectedModel: ImageModelList = 'gpt-image-1';
 
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -43,7 +46,7 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
 
   const handleEditImage = useCallback(async () => {
     if (!editPrompt.trim()) {
-      setError("Por favor, descreva o que você gostaria de modificar na imagem");
+      setError(t.images.editDescription);
       return;
     }
 
@@ -68,21 +71,24 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
 
       if (result.success && result.image) {
         onImageEdited(result.image.url);
-        toast.success("Imagem editada com sucesso!", {
+        // Atualizar os créditos no header após edição bem-sucedida
+        await refetchCredits();
+        
+        toast.success(t.presentation.imageEdited, {
           description: `Modelo: ${result.image.model}${result.creditsUsed ? ` • Créditos usados: ${result.creditsUsed}` : ''}`,
         });
         onClose();
         setEditPrompt("");
       } else {
-        setError(result.error || "Erro ao editar imagem");
-        toast.error("Erro ao editar imagem", {
-          description: result.error || "Tente novamente",
+        setError(result.error || t.errors.generic);
+        toast.error(t.errors.generic, {
+          description: result.error || t.common.tryAgain,
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erro interno";
+      const errorMessage = error instanceof Error ? error.message : t.errors.serverError;
       setError(errorMessage);
-      toast.error("Erro ao editar imagem", {
+      toast.error(t.errors.generic, {
         description: errorMessage,
       });
     } finally {
@@ -113,14 +119,14 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-purple-500" />
-            Peça à IA para editar a imagem
+            {t.images.editingWithAI}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Preview da imagem original */}
           <div className="space-y-2">
-            <Label>Imagem atual</Label>
+            <Label>{t.common.currentImage}</Label>
             <div className="relative max-w-xs mx-auto">
               <img
                 src={imageUrl}
@@ -135,11 +141,11 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
           {/* Campo de prompt */}
           <div className="space-y-2">
             <Label htmlFor="edit-prompt">
-              Descreva o que você gostaria de modificar na imagem
+              {t.images.editDescription}
             </Label>
             <Textarea
               id="edit-prompt"
-              placeholder="Por exemplo: Adicione um chapéu azul na pessoa, remova o fundo e substitua por uma paisagem montanhosa, mude a cor da camisa para verde..."
+              placeholder={t.images.editPromptPlaceholder}
               value={editPrompt}
               onChange={(e) => setEditPrompt(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -148,7 +154,7 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
             />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Info className="h-4 w-4" />
-              <span>Pressione Cmd/Ctrl + Enter para editar rapidamente</span>
+              <span>{t.common.cmdEnterToSubmit}</span>
             </div>
           </div>
 
@@ -156,7 +162,7 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              A IA irá editar sua imagem preservando a composição original e aplicando apenas as modificações solicitadas. Custo: 20 créditos por edição.
+              {t.images.aiWillEdit}. {t.images.costPerEdit}: 20 {t.userMenu.credits}.
             </AlertDescription>
           </Alert>
 
@@ -174,7 +180,7 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
             onClick={handleClose}
             disabled={isLoading}
           >
-            Cancelar
+            {t.common.cancel}
           </Button>
           <Button
             onClick={handleEditImage}
@@ -184,12 +190,12 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Editando...
+                {t.presentation.editingImage}
               </>
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Editar Imagem
+                {t.presentation.editImage}
               </>
             )}
           </Button>
@@ -211,4 +217,4 @@ export function ImageEditDialog({ isOpen, onClose, imageUrl, onImageEdited, orig
       </DialogContent>
     </Dialog>
   );
-} 
+}

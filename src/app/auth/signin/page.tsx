@@ -69,12 +69,6 @@ export default function SignIn() {
 
   return (
     <AnimatedBackground showTitle={false}>
-      <div className="absolute top-32 left-1/2 transform -translate-x-1/2 z-50">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl text-white text-center font-serif italic">
-          Login
-        </h1>
-      </div>
-      
       <div className="flex min-h-screen items-center justify-center px-4">
         <Card className="w-full max-w-md shadow-xl bg-white/95 backdrop-blur-sm border-white/20">
           <CardHeader className="space-y-1 text-center">
@@ -168,7 +162,7 @@ export default function SignIn() {
                 <div className="flex flex-col space-y-4">
                   <Button
                     variant="outline"
-                    className="flex items-center justify-center gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="flex items-center justify-center gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => handleSignIn("google")}
                   >
                     <FaGoogle className="h-4 w-4" />

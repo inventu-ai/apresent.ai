@@ -87,4 +87,36 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Corrigir cor de fundo dos inputs com preenchimento automático */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  
+  /* Para Firefox e outros navegadores */
+  input:autofill,
+  input:autofill:hover,
+  input:autofill:focus {
+    box-shadow: 0 0 0px 1000px white inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+  
+  /* Versão para modo escuro */
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover, 
+  .dark input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+  
+  .dark input:autofill,
+  .dark input:autofill:hover,
+  .dark input:autofill:focus {
+    box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
 }

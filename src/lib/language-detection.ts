@@ -10,10 +10,23 @@ const languagePatterns = {
       'estratégia', 'mercado', 'vendas', 'marketing', 'educação', 'treinamento',
       'inovação', 'sustentabilidade', 'digital', 'transformação', 'futuro',
       'história', 'cultura', 'sociedade', 'economia', 'política', 'ciência',
-      'saúde', 'medicina', 'pesquisa', 'estudo', 'universidade', 'escola'
+      'saúde', 'medicina', 'pesquisa', 'estudo', 'universidade', 'escola',
+      // Palavras exclusivamente portuguesas ou mais comuns em português que em espanhol
+      'você', 'isso', 'muito', 'também', 'obrigado', 'coisa', 'então', 'assim',
+      'aqui', 'hoje', 'agora', 'já', 'ainda', 'sempre', 'nunca', 'talvez',
+      'apenas', 'depois', 'antes', 'durante', 'através', 'enquanto', 'porque',
+      'quando', 'onde', 'quem', 'qual', 'quanto', 'cujo', 'cuja', 'nosso', 'nossa',
+      'vosso', 'vossa', 'este', 'esta', 'isto', 'esse', 'essa', 'aquele', 'aquela',
+      'faça', 'seja', 'tenha', 'esteja', 'vá', 'diga', 'fique', 'venha', 'queira'
     ],
-    commonWords: ['o', 'a', 'de', 'do', 'da', 'em', 'no', 'na', 'com', 'por', 'para', 'que', 'se', 'é', 'um', 'uma'],
-    patterns: [/ção$/, /mente$/, /ão$/, /ões$/, /ncia$/, /dade$/, /ismo$/]
+    commonWords: [
+      'o', 'a', 'de', 'do', 'da', 'em', 'no', 'na', 'com', 'por', 'para', 'que', 'se', 'é', 'um', 'uma',
+      // Mais palavras comuns em português
+      'ao', 'aos', 'à', 'às', 'pelo', 'pela', 'pelos', 'pelas', 'num', 'numa', 'nuns', 'numas',
+      'eu', 'tu', 'ele', 'ela', 'nós', 'vós', 'eles', 'elas', 'meu', 'minha', 'teu', 'tua',
+      'seu', 'sua', 'seus', 'suas', 'este', 'esta', 'estes', 'estas', 'esse', 'essa', 'esses', 'essas'
+    ],
+    patterns: [/ção$/, /mente$/, /ão$/, /ões$/, /ncia$/, /dade$/, /ismo$/, /ável$/, /ível$/, /oso$/, /osa$/]
   },
   'en-US': {
     keywords: [
@@ -220,6 +233,12 @@ export function detectLanguage(text: string): SupportedLanguage {
   if (hasKoreanChars) scores.ko += 10;
   if (hasDevanagariChars) scores.hi += 10;
 
+  // Verificações adicionais para português vs espanhol
+  // Caracteres específicos do português
+  if (/[ãõç]/.test(normalizedText)) {
+    scores['pt-BR'] += 8; // Peso alto para caracteres exclusivos do português
+  }
+
   // If no non-Latin characters, boost Latin-based languages
   if (hasLatinChars && !hasCyrillicChars && !hasArabicChars && !hasChineseChars && !hasJapaneseChars && !hasKoreanChars && !hasDevanagariChars) {
     // Additional scoring for Latin-based languages
@@ -244,6 +263,16 @@ export function detectLanguage(text: string): SupportedLanguage {
     if (/\b(il|di|che|e|la|per|un|in|con|del|da|a|al|le|si|dei)\b/.test(normalizedText)) {
       scores.it += 5;
     }
+    
+    // Palavras exclusivamente portuguesas
+    if (/\b(você|isso|muito|também|obrigado|coisa|então|assim|já|ainda)\b/.test(normalizedText)) {
+      scores['pt-BR'] += 7;
+    }
+    
+    // Palavras exclusivamente espanholas
+    if (/\b(usted|esto|muy|también|gracias|cosa|entonces|así|ya|todavía)\b/.test(normalizedText)) {
+      scores['es-ES'] += 7;
+    }
   }
 
   // Find the language with the highest score
@@ -257,10 +286,23 @@ export function detectLanguage(text: string): SupportedLanguage {
     }
   }
 
+  // Desempate em caso de pontuações próximas entre português e espanhol
+  if (detectedLanguage === 'es-ES' && scores['pt-BR'] >= scores['es-ES'] * 0.8) {
+    // Se o texto contém caracteres específicos do português, priorize português
+    if (/[ãõç]/.test(normalizedText)) {
+      detectedLanguage = 'pt-BR';
+    }
+    
+    // Se o texto contém palavras exclusivamente portuguesas, priorize português
+    if (/\b(você|isso|muito|também|obrigado|coisa|então|assim|já|ainda)\b/.test(normalizedText)) {
+      detectedLanguage = 'pt-BR';
+    }
+  }
+
   // If no clear winner, use some heuristics
   if (maxScore === 0) {
     // Check for Portuguese-specific patterns
-    if (/ção|mente|ão|ões|ncia|dade|ismo/.test(normalizedText)) {
+    if (/ção|mente|ão|ões|ncia|dade|ismo|você|isso|muito|também|obrigado/.test(normalizedText)) {
       return 'pt-BR';
     }
     // Check for English-specific patterns
@@ -270,6 +312,11 @@ export function detectLanguage(text: string): SupportedLanguage {
     // Check for Spanish-specific patterns
     if (/ción|mente|dad|ismo|anza|ería/.test(normalizedText)) {
       return 'es-ES';
+    }
+    
+    // Verificação adicional para caracteres específicos do português
+    if (/[ãõç]/.test(normalizedText)) {
+      return 'pt-BR';
     }
     
     // Default to English if no patterns match
@@ -321,4 +368,4 @@ export function getLanguageDisplayName(langCode: string): string {
   };
 
   return displayNames[langCode] || 'English (US)';
-} 
+}

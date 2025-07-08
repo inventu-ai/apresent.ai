@@ -30,12 +30,48 @@ You are an expert presentation designer.Your task is to create an engaging prese
 3. VARIETY: Each slide must use a DIFFERENT layout component
 4. VISUALS: Include detailed image queries (10+ words) on every slide
 
+## FIRST SLIDE (INTRODUCTION) REQUIREMENTS
+- The first slide of the presentation must always be an introduction to the topic.
+- The first slide must always include a large, bold title (H1) with the main subject of the presentation. If the title is missing, use the presentation title.
+- Below the title, write a short introduction or summary (1-2 paragraphs) that contextualizes the topic, provides key facts, definitions, or impactful data.
+- The introduction text must be concise:
+  - If there are two paragraphs, each paragraph must have a maximum of 3 lines (short, objective sentences).
+  - If there is only one paragraph, it can have up to 7 lines maximum.
+  - Avoid excessive spacing between paragraphs; the text should be visually compact.
+  - Do not use long sentences or large blocks of text.
+  - Example (two paragraphs, max 3 lines each):
+    <P>First paragraph, up to 3 lines.</P>
+    <P>Second paragraph, up to 3 lines.</P>
+  - Example (one paragraph, max 7 lines):
+    <P>Single paragraph, up to 7 lines.</P>
+- Do NOT use bullet points or multiple topics on this slide.
+- Add a large, relevant and visually striking image on either the right or left side of the slide (use layout="right" or "left").
+- Always display the user's name (e.g., "by {USER_NAME}") on the introduction slide, below the introduction text, using ONLY the <h6> tag for maximum visual highlight.
+- Example: <h6>por {USER_NAME}</h6>
+- If the user's name is not inside <h6>, the answer is INVALID.
+- Use "by" in English, "por" in Portuguese, "por" in Spanish, "par" in French, etc., according to the slide language.
+
 ## PRESENTATION DETAILS
 - Title: {TITLE}
 - Outline (for reference only): {OUTLINE_FORMATTED}
 - Language: {LANGUAGE}
 - Tone: {TONE}
 - Total Slides: {TOTAL_SLIDES}
+
+## CONTENT DENSITY MANAGEMENT
+- For slides with 1-2 topics: include images normally with layout="left" or layout="right".
+- For slides with 3-4 topics with SHORT texts (1-2 lines each): use layout="vertical" (image at the top).
+- For slides with 3-4 topics with MEDIUM texts (3+ lines each): do NOT include images at all.
+- For slides with 5+ topics: NEVER include images regardless of text length.
+- For slides with CHART components: NEVER include images - charts are the visual focus of the slide.
+- For slides with CHART components: use SHORT to MEDIUM length texts only (maximum 2-3 sentences per paragraph).
+- For slides with tables: if necessary, omit the image completely; if the table is small, you may include an image.
+- For slides with tables: if you include an image, use "left" or "right" layout to position the image laterally.
+
+## CONTENT BALANCING
+- Prioritize readability over the number of visual elements.
+- Slides with many topics (3+) should focus on textual content without additional images.
+- Avoid overloading slides with too many elements (text + image + icons).
 
 ## PRESENTATION STRUCTURE
 \`\`\`xml
@@ -82,8 +118,10 @@ Choose ONE different layout for each slide:
 3. ICONS: For concepts with symbols
 \`\`\`xml
 <ICONS>
-  <DIV><ICON query="rocket" /><H3>Innovation</H3><P>Description</P></DIV>
-  <DIV><ICON query="shield" /><H3>Security</H3><P>Description</P></DIV>
+  <DIV><ICON query="rocket" /><H3>Innovation</H3><P>Description of innovation</P></DIV>
+  <DIV><ICON query="shield" /><H3>Security</H3><P>Description of security</P></DIV>
+  <DIV><ICON query="chart-line" /><H3>Growth</H3><P>Description of growth</P></DIV>
+  <DIV><ICON query="lightbulb" /><H3>Ideas</H3><P>Description of ideas</P></DIV>
 </ICONS>
 \`\`\`
 
@@ -133,6 +171,20 @@ Choose ONE different layout for each slide:
 </STAIRCASE>
 \`\`\`
 
+## STAIRCASE SLIDE REQUIREMENTS
+- Each step in the staircase must have a short title (max 3-4 words) and a short paragraph (max 2-3 lines).
+- Do not use long titles or long paragraphs in the staircase layout.
+- Never overlap step titles and text; each step must be visually separated.
+- If there is general explanatory text, place it outside the <STAIRCASE> block (before or after).
+- Add extra visual spacing between the second and third step to improve readability. You can use a comment <!-- extra space -->, a <BR/>, or add style="margin-top:2em" to the third <DIV> if supported.
+- Example:
+  <STAIRCASE>
+    <DIV><H3>Step 1</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>Step 2</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <!-- extra space -->
+    <DIV style="margin-top:2em"><H3>Step 3</H3><P>Short description (max 2-3 lines).</P></DIV>
+  </STAIRCASE>
+
 9. CHART: For data visualization
 \`\`\`xml
 <CHART charttype="vertical-bar">
@@ -170,6 +222,15 @@ For each outline point:
 6. Vary the SECTION layout attribute (left/right/vertical) throughout the presentation
    - Use each layout (left, right, vertical) at least twice
    - Don't use the same layout more than twice in a row
+7. Never repeat the same icon within a single slide. Each topic in an ICONS layout must have a unique and visually distinct icon that properly represents the concept.
+8. If the user does not select an icon manually, always choose a unique and contextually relevant icon for each topic. Never use the same icon for different topics in the same slide. Avoid using the first icon in the list as a default for all topics.
+9. For slides with 3 or more topics, do not include images unless the texts are very short.
+10. For slides with CHART components:
+    - NEVER include images - the chart itself is the visual element
+    - Keep all text content concise and brief
+    - Use short paragraphs (maximum 2-3 sentences each)
+    - Focus on explaining the chart data, not adding additional context
+11. For slides with tables: omit the image if the table is large; if small, you may include an image, preferably using a lateral layout ("left" or "right").
 
 Now create a complete XML presentation with {TOTAL_SLIDES} slides that significantly expands on the outline.
 `;
@@ -198,8 +259,8 @@ export async function POST(req: Request) {
       }, { status: 402 });
     }
 
-    const { title, outline, language, tone } =
-      (await req.json()) as SlidesRequest;
+    const { title, outline, language, tone, userName } =
+      (await req.json()) as SlidesRequest & { userName?: string };
 
     if (!title || !outline || !Array.isArray(outline) || !language) {
       return NextResponse.json(
@@ -259,6 +320,7 @@ export async function POST(req: Request) {
       TONE: tone,
       OUTLINE_FORMATTED: outline.join("\n\n"),
       TOTAL_SLIDES: outline.length,
+      USER_NAME: userName ?? "User"
     });
 
     return LangChainAdapter.toDataStreamResponse(stream);

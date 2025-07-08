@@ -9,10 +9,11 @@ import { useEditorRef } from "@udecode/plate-common/react";
 import { setNodes } from "@udecode/plate-common";
 
 import { ICON_ELEMENT } from "../lib";
-import { IconPicker } from "@/components/ui/icon-picker";
+import { IconPicker, getRandomFallbackIcon } from "@/components/ui/icon-picker";
 
+// Modificado para usar string literal "icon" em vez de typeof ICON_ELEMENT
 export interface IconElement extends TElement {
-  type: typeof ICON_ELEMENT;
+  type: "icon";
   query: string;
   name: string;
 }
@@ -28,8 +29,8 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       const nodeWithPath = findNode(editor, { match: { id: element.id } });
       if (!nodeWithPath) return;
       const [, path] = nodeWithPath;
-      console.log(element, iconName);
-      setNodes<IconElement>(editor, { name: iconName }, { at: path });
+      // Usar um ícone de fallback aleatório em vez de sempre usar FaQuestion
+      setNodes<IconElement>(editor, { name: iconName || getRandomFallbackIcon() }, { at: path });
     };
 
     return (
@@ -44,11 +45,13 @@ export const IconElementComponent = withRef<typeof PlateElement>(
             <IconPicker
               defaultIcon={name}
               onIconSelect={(iconName) => handleIconSelect(iconName)}
+              contextId={element.id as string} // Usar o ID do elemento como contextId
             />
           ) : (
             <IconPicker
               searchTerm={query}
               onIconSelect={(iconName) => handleIconSelect(iconName)}
+              contextId={element.id as string} // Usar o ID do elemento como contextId
             />
           )}
         </div>

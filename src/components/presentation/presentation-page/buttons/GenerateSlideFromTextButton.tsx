@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { usePresentationState } from "@/states/presentation-state";
 import { toast } from "sonner";
@@ -8,7 +9,7 @@ import { SlideParser, type PlateSlide } from "@/components/presentation/utils/pa
 import { updatePresentation } from "@/app/_actions/presentation/presentationActions";
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
-import { useUserCredits } from "@/hooks/useUserCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 import debounce from "lodash.debounce";
 import { Brain } from "lucide-react";
 
@@ -16,13 +17,82 @@ interface GenerateSlideFromTextButtonProps {
   slideIndex: number;
 }
 
+/**
+ * Função para sanitizar o tópico detalhado antes de enviá-lo para a geração do slide
+ * Remove o padrão "0:" que aparece antes de cada palavra e outros problemas de formatação
+ */
+function sanitizeTopic(topic: string): string {
+  // Verificar se o tópico tem o padrão problemático (0:" no início de cada palavra)
+  const hasPattern = topic.includes('0:"');
+  
+  if (hasPattern) {
+    
+    // Remover o padrão "0:" que aparece antes de cada palavra
+    let cleanedTopic = topic.replace(/0:"/g, '');
+    
+    // Remover aspas desnecessárias no final das palavras
+    cleanedTopic = cleanedTopic.replace(/"/g, '');
+    
+    // Remover quebras de linha e substituir por espaços
+    cleanedTopic = cleanedTopic.replace(/\r?\n/g, ' ');
+    
+    // Normalizar espaços múltiplos
+    cleanedTopic = cleanedTopic.replace(/\s+/g, ' ');
+    
+    return cleanedTopic.trim();
+  }
+  
+  // Se não tiver o padrão problemático, retornar o tópico original
+  return topic;
+}
+
+/**
+ * Função para sanitizar o XML antes de processá-lo
+ * Remove caracteres problemáticos e formata corretamente
+ * IMPORTANTE: Preserva as tags XML válidas
+ */
+function sanitizeXml(xml: string): string {
+  
+  // Remover caracteres problemáticos
+  let cleanXml = xml
+    // Substituir aspas curvas por aspas retas
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    // Substituir traços longos por hífens
+    .replace(/[\u2013\u2014]/g, '-')
+    // Remover caracteres O" no início de palavras (problema comum)
+    .replace(/O"([a-zA-Z])/g, '$1')
+    .replace(/O" /g, '')
+    // Remover padrão 0:" que pode aparecer no XML
+    .replace(/0:"/g, '')
+    // Normalizar quebras de linha
+    .replace(/\r?\n/g, ' ')
+    // Normalizar espaços múltiplos
+    .replace(/\s+/g, ' ')
+    // Garantir que tags XML estejam corretamente formatadas
+    .replace(/< /g, '<')
+    .replace(/ >/g, '>');
+    
+  // NÃO escapar os caracteres < e > em todo o XML
+  // Isso preserva as tags XML válidas
+  
+  // Verificar se há tags SECTION e fechar se necessário
+  if (cleanXml.includes("<SECTION") && !cleanXml.includes("</SECTION>")) {
+    cleanXml += "</SECTION>";
+  }
+  
+  return cleanXml;
+}
+
 export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTextButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const isProcessingRef = useRef(false);
+  const { t } = useTranslation();
   
   // Credit validation
   const { checkCredits, userId, currentPlan } = useCreditValidation();
-  const { nextReset } = useUserCredits();
+  const { credits, refetchCredits } = useCredits();
+  const { nextReset } = credits;
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
   const [creditError, setCreditError] = useState<{
     creditsNeeded: number;
@@ -40,27 +110,21 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     currentPresentationId
   } = usePresentationState();
   
-  // Verificar se é um novo card
-  const isNewCard = useCallback(() => {
+  // Mostrar o botão sempre que houver qualquer texto não vazio em qualquer bloco
+  const isEligibleForGeneration = useCallback(() => {
     const slide = slides[slideIndex];
     if (!slide) return false;
-    
-    // Verificar se o slide tem apenas um título e nenhum outro conteúdo significativo
-    if (slide.content.length <= 1) {
-      // Verificar se o conteúdo é um título (h1)
-      if (slide.content[0]?.type === "h1" && 
-          slide.content[0]?.children && 
-          slide.content[0]?.children.length > 0 &&
-          slide.content[0]?.children[0]) {
-        
-        // Verificar se é o texto exato "New Slide" ou qualquer outro texto em um título
-        if ('text' in slide.content[0].children[0]) {
-          console.log("Novo slide detectado no índice:", slideIndex, "com texto:", slide.content[0].children[0].text);
-          return true;
+
+    // Procurar por qualquer texto não vazio em qualquer bloco
+    for (const node of slide.content) {
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          if ('text' in child && typeof child.text === 'string' && child.text.trim().length > 0) {
+            return true;
+          }
         }
       }
     }
-    
     return false;
   }, [slides, slideIndex]);
   
@@ -68,11 +132,11 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
   const getCardText = useCallback(() => {
     const slide = slides[slideIndex];
     if (!slide) return "";
-    
-    // Extrair o texto do título
+
+    // Extrair texto de qualquer bloco do slide
     let text = "";
     for (const node of slide.content) {
-      if (node.type.startsWith('h') && node.children && node.children.length > 0) {
+      if (node.children && node.children.length > 0) {
         for (const child of node.children) {
           if ('text' in child && typeof child.text === 'string') {
             text += child.text + " ";
@@ -80,16 +144,13 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         }
       }
     }
-    
+
     // Limpar o texto removendo frases de instrução comuns
     const cleanedText = text.trim()
       .replace(/^(fale|me\s+fale|conte|me\s+conte|descreva|explique|falar|contar|descrever|explicar)\s+(mais\s+)?(sobre|a\s+respeito\s+de|acerca\s+de)?\s+/i, '')
       .replace(/^(o\s+que\s+é|quem\s+é|como\s+funciona|por\s+que|quando|onde|qual|quais)\s+/i, '')
       .replace(/^(gostaria\s+de\s+saber|quero\s+saber|preciso\s+saber|pode\s+me\s+dizer)\s+(mais\s+)?(sobre|a\s+respeito\s+de)?\s+/i, '');
-    
-    console.log("Texto original:", text);
-    console.log("Texto limpo:", cleanedText);
-    
+
     return cleanedText;
   }, [slides, slideIndex]);
   
@@ -159,7 +220,6 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         .filter(text => text.length > 0);
       
       // ETAPA 1: Gerar um tópico detalhado com bullet points
-      console.log("Etapa 1: Gerando tópico detalhado para:", cardText);
       
       // Extrair títulos dos outros slides para contexto
       const existingTopics = slides
@@ -199,11 +259,16 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       }
       
       // Obter o tópico detalhado
-      const detailedTopic = await topicResponse.text();
-      console.log("Tópico detalhado gerado:", detailedTopic);
+      const rawDetailedTopic = await topicResponse.text();
+      
+      // Sanitizar o tópico detalhado antes de usá-lo
+      const detailedTopic = sanitizeTopic(rawDetailedTopic);
       
       // ETAPA 2: Usar o tópico detalhado para gerar o slide
-      console.log("Etapa 2: Gerando slide a partir do tópico detalhado");
+      
+      // Obter nome do usuário exatamente como é feito na geração completa
+      const userName = (typeof window !== "undefined" && window.localStorage && window.localStorage.getItem("userName")) || "User";
+      
       
       // Chamar a API para gerar o slide com o tópico detalhado
       const response = await fetch('/api/presentation/generate-slide', {
@@ -217,7 +282,8 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
           slideIndex,
           language,
           tone: presentationStyle,
-          context: otherSlides // Adicionar contexto dos outros slides
+          context: otherSlides, // Adicionar contexto dos outros slides
+          userName // Exatamente como é feito na geração completa
         }),
       });
       
@@ -229,10 +295,13 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       const xmlContent = await response.text();
       
       try {
+        // Sanitizar o XML antes de processá-lo
+        const sanitizedXml = sanitizeXml(xmlContent);
+        
         // Processar o XML para obter o slide
         const parser = new SlideParser();
         parser.reset();
-        parser.parseChunk(xmlContent);
+        parser.parseChunk(sanitizedXml);
         parser.finalize();
         parser.clearAllGeneratingMarks();
         
@@ -242,14 +311,21 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
           // Criar uma nova cópia do array de slides
           const updatedSlides = [...slides];
           
-          // Substituir o slide no índice especificado
-          updatedSlides[slideIndex] = parsedSlides[0];
+          // Substituir o slide no índice especificado, garantindo id estável
+          updatedSlides[slideIndex] = {
+            ...parsedSlides[0],
+            id: parsedSlides[0].id || (slides[slideIndex]?.id) || require("nanoid").nanoid(),
+            isNew: false, // Remove a flag após gerar
+          };
           
           // Atualizar o estado global com os novos slides
           setSlides(updatedSlides);
           
           // Atualizar no banco de dados
           await updatePresentationInDB(updatedSlides);
+          
+          // Atualizar os créditos no header
+          await refetchCredits();
           
           toast.success("Slide gerado com sucesso!");
         } else {
@@ -289,8 +365,9 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
     [handleGenerateSlide]
   );
 
-  // Se não for um novo card, não renderizar o botão
-  if (!isNewCard()) {
+  // Só mostrar o botão se o slide for novo e elegível
+  const slide = slides[slideIndex];
+  if (!slide?.isNew || !isEligibleForGeneration()) {
     return null;
   }
 
@@ -302,7 +379,7 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
         className={`!size-10 rounded-full absolute right-2 top-2 z-[200] text-indigo-400 hover:text-indigo-600 shadow-md ${isGenerating ? "animate-pulse" : ""}`}
         onClick={generateSlide}
         disabled={isGenerating}
-        title="Gerar slide com IA"
+        title={t.presentation.generateSlideWithAI}
       >
         <Brain 
           size={20}

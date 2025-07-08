@@ -73,25 +73,27 @@ export default function PresentationPage() {
     const updatedSlides = [...slides];
     // Make sure we have the slide at that index
     if (updatedSlides[slideIndex]) {
-      // Update the content of the slide
-      updatedSlides[slideIndex] = {
-        ...updatedSlides[slideIndex],
-        content: value as PlateNode[],
-      };
-
-      // Update the global state
-      setSlides(updatedSlides);
+      // Só atualiza se o conteúdo realmente mudou
+      const oldContent = JSON.stringify(updatedSlides[slideIndex].content);
+      const newContent = JSON.stringify(value);
+      if (oldContent !== newContent) {
+        updatedSlides[slideIndex] = {
+          ...updatedSlides[slideIndex],
+          content: value as PlateNode[],
+        };
+        setSlides(updatedSlides);
+      }
     }
   }, []);
 
   // Create a debounced function to update the theme in the database
   const debouncedThemeUpdate = useCallback(
     debounce((presentationId: string, newTheme: string) => {
-      console.log("Updating theme in database:", newTheme);
+      // Update theme in database
       updatePresentationTheme(presentationId, newTheme)
         .then((result) => {
           if (result.success) {
-            console.log("Theme updated in database");
+            // Theme updated successfully
           } else {
             console.error("Failed to update theme:", result.message);
           }
@@ -111,7 +113,6 @@ export default function PresentationPage() {
     }
 
     if (presentationData) {
-      console.log("Loading complete presentation data:", presentationData);
       setCurrentPresentation(presentationData.id, presentationData.title);
       setPresentationInput(presentationData.title);
 

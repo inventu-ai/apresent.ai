@@ -14,14 +14,14 @@ import { useMemo, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import { LoginModal } from "@/components/auth/LoginModal"
-// import { useTranslation } from "@/contexts/LanguageContext"
+import { useTranslation } from "@/contexts/LanguageContext"
 
 function ApresentAI() {
   const router = useRouter();
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const {
     presentationInput,
     setPresentationInput,
@@ -151,14 +151,14 @@ function ApresentAI() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full z-0 bg-black">
+    <div className="fixed inset-0 w-full h-full z-0 bg-background">
       <PresentationHeader title="ApresentAI" />
       <PresentationsSidebar />
       <div className="w-full h-[calc(100vh-3rem)] min-h-[500px] flex flex-col relative">
-        <div className="pt-32 text-6xl sm:text-7xl md:text-8xl text-white w-full text-center font-normal">
+        <div className="pt-32 text-6xl sm:text-7xl md:text-8xl text-foreground w-full text-center font-normal">
           Create
         </div>
-        <p className="pt-1 text-3xl sm:text-4xl md:text-5xl text-white w-full text-center font-serif italic">
+        <p className="pt-1 text-3xl sm:text-4xl md:text-5xl text-foreground w-full text-center font-serif italic">
           presentations with AI
         </p>
         <Gravity gravity={{ x: 0, y: 1 }} className="w-full h-full" resetOnResize={false}>
@@ -301,20 +301,20 @@ function ApresentAI() {
               value={presentationInput}
               onChange={(e) => setPresentationInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={session ? "What would you like to create a presentation about?" : "What would you like to create a presentation about?"}
-              className="w-full h-28 pr-16 pl-4 py-5 rounded-xl border border-white/10 bg-black/10 backdrop-blur-sm text-white placeholder-white/50 focus:outline-none focus:border-white/30 focus:bg-black/20 resize-none transition-all duration-200"
+              placeholder={t.home.inputPlaceholder}
+              className="w-full h-28 pr-16 pl-4 py-5 rounded-xl border border-input bg-background/80 backdrop-blur-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-ring focus:bg-background/90 resize-none transition-all duration-200"
               rows={2}
             />
             <Button
               onClick={handleGenerate}
               disabled={!presentationInput.trim() || isGeneratingOutline}
-              className="absolute right-4 top-[65%] transform -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white/100 border-0 p-0 transition-all duration-200"
+              className="absolute right-4 top-[65%] transform -translate-y-1/2 h-10 w-10 rounded-full bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 border-0 p-0 transition-all duration-200"
               size="sm"
             >
               {isGeneratingOutline ? (
-                <Loader2 className="h-5 w-5 animate-spin text-gray-800" />
+                <Loader2 className="h-5 w-5 animate-spin text-white dark:text-black" />
               ) : (
-                <ArrowUp className="h-5 w-5 text-gray-800" />
+                <ArrowUp className="h-5 w-5 text-white dark:text-black" />
               )}
             </Button>
           </div>

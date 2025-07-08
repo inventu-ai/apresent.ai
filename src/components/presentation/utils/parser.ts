@@ -1,6 +1,7 @@
 import type { TDescendant, TElement, TText } from "@udecode/plate-common";
 import { ColumnItemPlugin, ColumnPlugin } from "@udecode/plate-layout/react";
 import { nanoid } from "nanoid"; // Import nanoid for unique ID generation
+import { getRandomFallbackIcon } from "@/components/ui/icon-picker"; // Import the random fallback icon function
 
 // Define a text node with generating property
 export interface GeneratingText extends TText {
@@ -85,6 +86,7 @@ export type PlateSlide = {
   textColor?: string;
   headingFont?: string;
   textFont?: string;
+  isNew?: boolean; // Flag para identificar slide novo
 };
 
 // Simple XML node interface for our parser
@@ -500,7 +502,7 @@ export class SlideParser {
       if (child.tag.toUpperCase() === "IMG") {
         // Only process if we have the complete original tag content
         if (child.originalTagContent) {
-          const url = child.attributes.url ?? child.attributes.src ?? "";
+          const url = child.attributes.url || child.attributes.src || "";
 
           // Check for complete quotes in the query attribute
           const queryStart = child.originalTagContent.indexOf("query=");
@@ -1013,7 +1015,7 @@ export class SlideParser {
       return null;
     }
 
-    const url = node.attributes.url ?? node.attributes.src ?? "";
+    const url = node.attributes.url !== undefined ? node.attributes.url : (node.attributes.src !== undefined ? node.attributes.src : "");
 
     // Check for complete quotes in the query attribute
     const queryStart = node.originalTagContent.indexOf("query=");
@@ -1051,7 +1053,7 @@ export class SlideParser {
     // Query is valid and complete, create the image element
     return {
       type: "img",
-      url: url,
+      url: String(url),
       query: query,
       children: [{ text: "" } as TText],
     } as ImageElement;
@@ -1187,13 +1189,169 @@ export class SlideParser {
           }
         }
 
-        // Add icon element if found - with empty name property
+        // Add icon element if found - map query to icon name for default icon selection
         if (query) {
-          children.unshift({
+          // Função que mapeia a consulta para um nome de ícone ou retorna um ícone aleatório
+          function mapQueryToIconName(q: string): string {
+            // Definir um ícone padrão para fallback (não será usado na maioria dos casos)
+            const defaultIcon = "FaLightbulb";
+            
+            // Se query for undefined ou vazia, retornar um ícone aleatório
+            if (!q || typeof q !== 'string') {
+              return getRandomFallbackIcon();
+            }
+            
+            let result = defaultIcon;
+            
+            try {
+              // Converter para minúsculas para comparação case-insensitive
+              const lower = q.toLowerCase();
+              
+              // Mapeamento de termos para ícones
+              const iconMap: Record<string, string> = {
+                // História e guerra
+                "tank": "FaFighterJet",
+                "battle": "FaFighterJet",
+                "soldier": "FaUser",
+                "commander": "FaUserTie",
+                "general": "FaUserTie",
+                "naval": "FaShip",
+                "ship": "FaShip",
+                "aircraft": "FaPlane",
+                "plane": "FaPlane",
+                "bomb": "FaBomb",
+                "war": "FaBomb",
+                "strategy": "FaChess",
+                "blitzkrieg": "FaBolt",
+                "military": "FaFighterJet",
+                "logistics": "FaTruck",
+                "intelligence": "FaBrain",
+                "radar": "FaBroadcastTower",
+                "map": "FaMap",
+                "front": "FaMapMarkedAlt",
+                "allies": "FaGlobeAmericas",
+                "axis": "FaGlobeEurope",
+                "leader": "FaUserTie",
+                "meeting": "FaUsers",
+                "agreement": "FaHandshake",
+                "diplomacy": "FaHandshake",
+                "peace": "FaPeace",
+                "resistance": "FaFistRaised",
+                "memory": "FaBrain",
+                "genocide": "FaSkullCrossbones",
+                "holocaust": "FaSkullCrossbones",
+                "concentration camp": "FaSkullCrossbones",
+                "justice": "FaBalanceScale",
+                "law": "FaGavel",
+                "court": "FaGavel",
+                "scales": "FaBalanceScale",
+                "document": "FaFileAlt",
+                "book": "FaBook",
+                "folder": "FaFolder",
+                "calendar": "FaCalendar",
+                "timeline": "FaRegClock",
+                "chart": "FaChartBar",
+                "growth": "FaChartLine",
+                "innovation": "FaLightbulb",
+                "idea": "FaLightbulb",
+                "technology": "FaMicrochip",
+                "science": "FaMicroscope",
+                "factory": "FaIndustry",
+                "city": "FaCity",
+                "building": "FaBuilding",
+                "money": "FaMoneyBillWave",
+                "economy": "FaMoneyBillWave",
+                "award": "FaAward",
+                "medal": "FaMedal",
+                "star": "FaStar",
+                "heart": "FaHeart",
+                "rocket": "FaRocket",
+                "shield": "FaShieldAlt",
+                "flag": "FaFlag",
+                "globe": "FaGlobe",
+                "nuclear": "FaRadiation",
+                "team": "FaUsers",
+                "user": "FaUser",
+                "envelope": "FaEnvelope",
+                "mail": "FaEnvelope",
+                "camera": "FaCamera",
+                "photo": "FaCamera",
+                "video": "FaVideo",
+                "music": "FaMusic",
+                "lock": "FaLock",
+                "phone": "FaPhone",
+                "beach": "FaUmbrellaBeach"
+              };
+              
+              // Verificar correspondências no mapa de ícones
+              for (const key in iconMap) {
+                if (lower.includes(key) && iconMap[key]) {
+                  result = iconMap[key] || defaultIcon;
+                  return result;
+                }
+              }
+              
+              // Fallbacks por contexto
+              if (lower.includes("camp")) { result = "FaSkullCrossbones"; return result; }
+              if (lower.includes("justice")) { result = "FaBalanceScale"; return result; }
+              if (lower.includes("memorial") || lower.includes("memory")) { result = "FaBrain"; return result; }
+              if (lower.includes("law") || lower.includes("legal")) { result = "FaGavel"; return result; }
+              if (lower.includes("peace")) { result = "FaPeace"; return result; }
+              if (lower.includes("strategy")) { result = "FaChess"; return result; }
+              if (lower.includes("military")) { result = "FaFighterJet"; return result; }
+              if (lower.includes("diplomacy")) { result = "FaHandshake"; return result; }
+              if (lower.includes("leader")) { result = "FaUserTie"; return result; }
+              if (lower.includes("resistance")) { result = "FaFistRaised"; return result; }
+              if (lower.includes("innovation")) { result = "FaLightbulb"; return result; }
+              if (lower.includes("technology")) { result = "FaMicrochip"; return result; }
+              if (lower.includes("growth")) { result = "FaChartLine"; return result; }
+              if (lower.includes("award")) { result = "FaAward"; return result; }
+              if (lower.includes("medal")) { result = "FaMedal"; return result; }
+              if (lower.includes("star")) { result = "FaStar"; return result; }
+              if (lower.includes("heart")) { result = "FaHeart"; return result; }
+              if (lower.includes("rocket")) { result = "FaRocket"; return result; }
+              if (lower.includes("shield")) { result = "FaShieldAlt"; return result; }
+              if (lower.includes("flag")) { result = "FaFlag"; return result; }
+              if (lower.includes("globe")) { result = "FaGlobe"; return result; }
+              if (lower.includes("nuclear")) { result = "FaRadiation"; return result; }
+              if (lower.includes("user")) { result = "FaUser"; return result; }
+              if (lower.includes("team")) { result = "FaUsers"; return result; }
+              if (lower.includes("envelope") || lower.includes("mail")) { result = "FaEnvelope"; return result; }
+              if (lower.includes("camera") || lower.includes("photo")) { result = "FaCamera"; return result; }
+              if (lower.includes("video")) { result = "FaVideo"; return result; }
+              if (lower.includes("music")) { result = "FaMusic"; return result; }
+              if (lower.includes("lock")) { result = "FaLock"; return result; }
+              if (lower.includes("phone")) { result = "FaPhone"; return result; }
+              if (lower.includes("beach")) { result = "FaUmbrellaBeach"; return result; }
+              if (lower.includes("calendar")) { result = "FaCalendar"; return result; }
+              if (lower.includes("book")) { result = "FaBook"; return result; }
+              if (lower.includes("document")) { result = "FaFileAlt"; return result; }
+              if (lower.includes("folder")) { result = "FaFolder"; return result; }
+              if (lower.includes("timeline")) { result = "FaRegClock"; return result; }
+              if (lower.includes("chart")) { result = "FaChartBar"; return result; }
+              if (lower.includes("science")) { result = "FaMicroscope"; return result; }
+              if (lower.includes("factory")) { result = "FaIndustry"; return result; }
+              if (lower.includes("city")) { result = "FaCity"; return result; }
+              if (lower.includes("building")) { result = "FaBuilding"; return result; }
+              if (lower.includes("money") || lower.includes("economy")) { result = "FaMoneyBillWave"; return result; }
+            } catch (error) {
+              console.error("Erro ao mapear ícone:", error);
+              // Em caso de erro, retornar um ícone aleatório
+              return getRandomFallbackIcon();
+            }
+            
+            // Se não encontrou correspondência, retornar um ícone aleatório
+            return result || getRandomFallbackIcon();
+          }
+          // Garantir que o nome do ícone seja sempre uma string válida
+          const mappedIconName: string = mapQueryToIconName(query);
+          const iconElement: IconElement = {
             type: "icon",
             query: query,
+            name: mappedIconName, // Já garantimos que é uma string válida
             children: [{ text: "" } as TText],
-          } as IconElement);
+          };
+          children.unshift(iconElement);
         }
 
         const iconItem: IconItemElement = {
@@ -1585,6 +1743,14 @@ export class SlideParser {
 export function parseSlideXml(xmlData: string): PlateSlide[] {
   const parser = new SlideParser();
   parser.parseChunk(xmlData);
-  parser.finalize();
+  const slides = parser.finalize();
+  // Log all icons found in all slides
+  slides.forEach((slide, idx) => {
+    slide.content.forEach((node) => {
+      if (node.type === "icons" && Array.isArray(node.children)) {
+        console.log(`[ICON PARSER][Slide ${idx + 1}] Icon items:`, node.children.map((iconItem: any) => iconItem.children?.[0]));
+      }
+    });
+  });
   return parser.getAllSlides();
 }

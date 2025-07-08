@@ -29,7 +29,6 @@ export function SlidePreview({
                 : "border-muted",
             )}
             onClick={() => {
-              console.log("clicked", index);
               onSlideClick(index);
             }}
           >

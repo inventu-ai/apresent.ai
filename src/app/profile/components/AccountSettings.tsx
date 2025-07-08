@@ -92,10 +92,8 @@ export function AccountSettings({ user }: AccountSettingsProps) {
 
       toast.success(t.profile.settingsSaved);
       
-      // Force page reload to ensure all components reflect the changes
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // O Next.js já recarrega a página automaticamente após a atualização do contexto
+      // Não é necessário forçar um reload adicional
     } catch (error) {
       console.error("Error saving profile:", error);
       toast.error(t.profile.settingsError);
@@ -107,7 +105,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-[#1e3a8a]">
+        <CardTitle className="flex items-center gap-2 text-[#3b82f6]">
           <Settings className="h-5 w-5" />
           {t.profile.accountSettings}
         </CardTitle>
@@ -180,7 +178,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             <Button
               onClick={handleSave}
               disabled={isLoading}
-              className="bg-[#1e3a8a] hover:bg-[#1e40af]"
+              className="bg-[#3b82f6] hover:bg-[#2563eb] text-white"
             >
               {isLoading ? t.common.loading : t.common.save}
             </Button>

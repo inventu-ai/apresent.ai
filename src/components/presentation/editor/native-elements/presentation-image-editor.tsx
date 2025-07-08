@@ -139,8 +139,6 @@ export const PresentationImageEditor = ({
       // Limpar
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl); // Liberar a memória
-      
-      console.log("Download da imagem iniciado");
     } catch (error) {
       console.error("Erro ao baixar imagem:", error);
     }
