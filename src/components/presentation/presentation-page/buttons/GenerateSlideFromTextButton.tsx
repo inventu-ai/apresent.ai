@@ -51,7 +51,7 @@ function sanitizeTopic(topic: string): string {
  * Remove caracteres problemáticos e formata corretamente
  * IMPORTANTE: Preserva as tags XML válidas
  */
-function sanitizeXml(xml: string): string {
+function sanitizeXml(xml: string, topic: string, presentationTitle: string): string {
   
   // Remover caracteres problemáticos
   let cleanXml = xml
@@ -65,6 +65,17 @@ function sanitizeXml(xml: string): string {
     .replace(/O" /g, '')
     // Remover padrão 0:" que pode aparecer no XML
     .replace(/0:"/g, '')
+    // Remover caracteres # em qualquer lugar nos títulos
+    .replace(/<H1>([^<]*?)#([^<]*?)<\/H1>/g, '<H1>$1$2</H1>')
+    .replace(/<H2>([^<]*?)#([^<]*?)<\/H2>/g, '<H2>$1$2</H2>')
+    .replace(/<H3>([^<]*?)#([^<]*?)<\/H3>/g, '<H3>$1$2</H3>')
+    // Também remover # no início de títulos (caso anterior não pegue)
+    .replace(/<H1>\s*#\s*/g, '<H1>')
+    .replace(/<H2>\s*#\s*/g, '<H2>')
+    .replace(/<H3>\s*#\s*/g, '<H3>')
+    // Remover marcadores de lista no início de parágrafos
+    .replace(/<P>\s*[-*•○●]\s*/g, '<P>')
+    .replace(/<P>\s*\d+\.\s*/g, '<P>')
     // Normalizar quebras de linha
     .replace(/\r?\n/g, ' ')
     // Normalizar espaços múltiplos
@@ -79,6 +90,45 @@ function sanitizeXml(xml: string): string {
   // Verificar se há tags SECTION e fechar se necessário
   if (cleanXml.includes("<SECTION") && !cleanXml.includes("</SECTION>")) {
     cleanXml += "</SECTION>";
+  }
+  
+  // Gerar um título significativo baseado no tópico ou título da apresentação
+  const generateMeaningfulTitle = (): string => {
+    // Usar o tópico como primeira opção
+    if (topic && topic.trim().length > 0) {
+      // Limitar o tópico a 6 palavras para o título
+      const words = topic.trim().split(/\s+/);
+      if (words.length > 6) {
+        return words.slice(0, 6).join(' ');
+      }
+      return topic.trim();
+    }
+    
+    // Usar o título da apresentação como segunda opção
+    if (presentationTitle && presentationTitle.trim().length > 0) {
+      // Extrair uma parte significativa do título da apresentação
+      const words = presentationTitle.trim().split(/\s+/);
+      if (words.length > 3) {
+        return words.slice(0, 3).join(' ');
+      }
+      return presentationTitle.trim();
+    }
+    
+    // Fallback para um título genérico mais descritivo
+    return "Novo Slide";
+  };
+  
+  // Verificar se há tags H1 e adicionar se não existir
+  if (!cleanXml.includes("<H1>") && cleanXml.includes("<SECTION")) {
+    // Inserir um H1 com título significativo após a tag SECTION
+    const meaningfulTitle = generateMeaningfulTitle();
+    cleanXml = cleanXml.replace(/<SECTION[^>]*>/, `$&<H1>${meaningfulTitle}</H1>`);
+  }
+  
+  // Verificar se há tags P e adicionar se não existir
+  if (!cleanXml.includes("<P>") && cleanXml.includes("<H1>")) {
+    // Inserir um P com conteúdo mais descritivo após a tag H1
+    cleanXml = cleanXml.replace(/<\/H1>/, `$&<P>Informações sobre ${topic || "este tópico"}.</P>`);
   }
   
   return cleanXml;
@@ -261,8 +311,14 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       // Obter o tópico detalhado
       const rawDetailedTopic = await topicResponse.text();
       
-      // Sanitizar o tópico detalhado antes de usá-lo
-      const detailedTopic = sanitizeTopic(rawDetailedTopic);
+      // Sanitizar o tópico detalhado antes de usá-lo e remover caracteres "#"
+      let detailedTopic = sanitizeTopic(rawDetailedTopic);
+      
+      // Remover explicitamente qualquer caractere "#" do tópico
+      detailedTopic = detailedTopic.replace(/^#\s*/g, '').replace(/#/g, '');
+      
+      // Log para debug
+      console.log('Tópico detalhado após limpeza:', detailedTopic);
       
       // ETAPA 2: Usar o tópico detalhado para gerar o slide
       
@@ -295,8 +351,12 @@ export function GenerateSlideFromTextButton({ slideIndex }: GenerateSlideFromTex
       const xmlContent = await response.text();
       
       try {
-        // Sanitizar o XML antes de processá-lo
-        const sanitizedXml = sanitizeXml(xmlContent);
+        // Sanitizar o XML antes de processá-lo e remover caracteres # dos títulos
+        const sanitizedXml = sanitizeXml(
+          xmlContent,
+          detailedTopic,
+          presentationInput || currentPresentationTitle || ""
+        );
         
         // Processar o XML para obter o slide
         const parser = new SlideParser();

@@ -1393,13 +1393,27 @@ export class SlideParser {
 
   /**
    * Create a staircase layout element
+   * Improved to add extra spacing for items with longer text
    */
   private createStaircase(node: XMLNode): StaircaseElement {
     const stairItems: StairItemElement[] = [];
+    let hasLongText = false;
 
     // Process DIV children as stair items
     for (const child of node.children) {
       if (child.tag.toUpperCase() === "DIV") {
+        // Analisar o conteúdo para verificar se tem texto longo
+        const textContent = this.getTextContent(child);
+        const lines = textContent.split(/[.!?]/).length;
+        const words = textContent.split(/\s+/).length;
+        
+        // Considerar texto longo se tiver 3 ou mais linhas ou mais de 30 palavras
+        const isLongText = lines >= 3 || words > 30;
+        
+        if (isLongText) {
+          hasLongText = true;
+        }
+        
         const stairItem: StairItemElement = {
           type: "stair-item",
           children: this.processNodes(child.children) as TDescendant[],
@@ -1408,9 +1422,32 @@ export class SlideParser {
       }
     }
 
+    // Verificar se há comentários de espaçamento extra
+    const hasExtraSpaceComment = node.children.some(child => 
+      child.tag.toUpperCase() === "!--" && 
+      child.content.includes("extra space")
+    );
+
+    // Se tiver texto longo e não tiver comentário de espaçamento extra, adicionar
+    if (hasLongText && !hasExtraSpaceComment && stairItems.length > 2) {
+      // Adicionar um espaçamento extra após o segundo item
+      // Isso é feito adicionando um item vazio que será interpretado como espaço
+      const spacerItem: StairItemElement = {
+        type: "stair-item",
+        children: [{ text: "" } as TText],
+        // Adicionar uma propriedade para identificar que é um espaçador
+        spacer: true,
+      } as StairItemElement;
+      
+      // Inserir o espaçador após o segundo item
+      stairItems.splice(2, 0, spacerItem);
+    }
+
     return {
       type: "staircase",
       children: stairItems,
+      // Adicionar uma propriedade para indicar que tem texto longo
+      hasLongText: hasLongText,
     } as StaircaseElement;
   }
 

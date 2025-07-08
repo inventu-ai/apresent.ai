@@ -25,7 +25,7 @@ Generate a single comprehensive topic that would fit well within the existing pr
 Format the response as PLAIN TEXT markdown content, with the topic as a heading followed by 2-3 bullet points.
 
 Example format:
-# Topic Title That Matches User Suggestion
+Topic Title That Matches User Suggestion
 - Key point about this topic with specific data or example
 - Another important aspect with practical application
 - Brief conclusion or impact statement
@@ -36,6 +36,8 @@ CRITICAL FORMATTING RULES:
 3. DO NOT split words across multiple lines - keep all content on continuous lines
 4. DO NOT add any JSON formatting, quotes around the content, or escape characters
 5. NEVER return the content in a tokenized or stream format
+6. DO NOT use '#' character anywhere in the title or content
+7. Format the title without any special characters or markdown symbols
 
 Make sure the topic:
 1. Addresses the user's suggestion directly and comprehensively
@@ -65,10 +67,10 @@ Improve the current topic by making it:
 - More detailed and informative
 - Better aligned with the overall presentation flow
 
-Format the response as PLAIN TEXT markdown content, with the topic as a heading followed by 2-3 bullet points.
+Format the response as PLAIN TEXT content, with the topic as a heading followed by 2-3 bullet points.
 
 Example format:
-# Improved Topic Title
+Improved Topic Title
 - Enhanced key point about this topic with specific data or example
 - More detailed important aspect with practical application
 - Stronger conclusion or impact statement
@@ -79,6 +81,8 @@ CRITICAL FORMATTING RULES:
 3. DO NOT split words across multiple lines - keep all content on continuous lines
 4. DO NOT add any JSON formatting, quotes around the content, or escape characters
 5. NEVER return the content in a tokenized or stream format
+6. DO NOT use '#' character anywhere in the title or content
+7. Format the title without any special characters or markdown symbols
 
 Make sure the improved topic:
 1. Maintains the core theme of the original topic
@@ -137,11 +141,18 @@ export async function POST(req: Request) {
       .join('\n');
 
     const topicChain = createTopicChain(isRegeneration);
+    
+    // Obter o stream do modelo
     const stream = await topicChain.stream({
       suggestion,
       existingTopics: formattedTopics,
       language,
     });
+
+    // Processar a regeneração do tópico
+    if (isRegeneration) {
+      // Lógica específica para regeneração
+    }
 
     // Consumir créditos após geração bem-sucedida
     const consumeResult = await consumeTopicRegenerationCredits(session.user.id);

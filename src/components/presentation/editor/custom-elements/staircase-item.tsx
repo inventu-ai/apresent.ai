@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/text-editor/plate-ui/tooltip";
 import { STAIR_ITEM_ELEMENT } from "../lib";
+import { StairItemElement } from "./staircase-element";
 
 // StairItem component for individual items in the staircase
 export const StairItem = ({
@@ -30,6 +31,8 @@ export const StairItem = ({
   element: TElement;
   children: React.ReactNode;
 }) => {
+  // Verificar se este item é um espaçador
+  const isSpacer = (element as StairItemElement).spacer === true;
   const readOnly = useReadOnly();
   const { useOption } = useEditorPlugin(BlockSelectionPlugin);
   const isSelectionAreaVisible = useOption("isSelectionAreaVisible");
@@ -68,7 +71,9 @@ export const StairItem = ({
     <div
       ref={previewRef}
       className={cn(
-        "group/stair-item relative mb-2 w-full",
+        "group/stair-item relative w-full",
+        // Adicionar espaçamento maior quando for um espaçador
+        isSpacer ? "mb-8 py-4" : "mb-2",
         isDragging && "opacity-50",
         dropLine && "drop-target",
       )}
@@ -99,23 +104,28 @@ export const StairItem = ({
       )}
 
       {/* The stair item layout */}
-      <div className="flex gap-4">
-        {/* Square block with increasing width but fixed height */}
-        <div
-          style={{
-            width: `${getWidth()}px`,
-            minHeight: "70px",
-            backgroundColor: "var(--presentation-primary)",
-            color: "var(--presentation-background)",
-          }}
-          className="flex flex-shrink-0 items-center justify-center rounded-md text-2xl font-bold"
-        >
-          {index + 1}
-        </div>
+      {!isSpacer ? (
+        <div className="flex gap-4">
+          {/* Square block with increasing width but fixed height */}
+          <div
+            style={{
+              width: `${getWidth()}px`,
+              minHeight: "70px",
+              backgroundColor: "var(--presentation-primary)",
+              color: "var(--presentation-background)",
+            }}
+            className="flex flex-shrink-0 items-center justify-center rounded-md text-2xl font-bold"
+          >
+            {index + 1}
+          </div>
 
-        {/* Content area */}
-        <div className="flex flex-1 items-center">{children}</div>
-      </div>
+          {/* Content area */}
+          <div className="flex flex-1 items-center">{children}</div>
+        </div>
+      ) : (
+        // Espaçador - apenas um espaço em branco
+        <div className="h-8"></div>
+      )}
     </div>
   );
 };
