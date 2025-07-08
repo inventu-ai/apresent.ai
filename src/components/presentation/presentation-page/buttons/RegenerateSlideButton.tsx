@@ -363,7 +363,7 @@ export function RegenerateSlideButton({ slideIndex }: RegenerateSlideButtonProps
         .filter(text => text.length > 0);
       
       // Se não estamos usando um tópico do outline, gerar um tópico detalhado primeiro
-      let detailedTopic = topic;
+      const detailedTopic = topic;
       
       if (!usingOutlineTopic) {
         // ETAPA 1: Gerar um tópico detalhado com bullet points
