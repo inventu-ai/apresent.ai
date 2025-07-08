@@ -120,7 +120,7 @@ async function generateWithAPIFrame(prompt: string, model: string, aspectRatio: 
   const generateResult = await generateResponse.json();
   console.log(`APIFrame: Generation result:`, generateResult);
   
-  const taskId = generateResult.id;
+  const taskId = generateResult.taskId || generateResult.id || generateResult.task_id;
 
   if (!taskId) {
     console.error(`APIFrame: No task ID in response:`, generateResult);
@@ -133,37 +133,52 @@ async function generateWithAPIFrame(prompt: string, model: string, aspectRatio: 
   let attempts = 0;
   const maxAttempts = 60; // 5 minutes with 5-second intervals
   
+  // Use the fetch endpoint with taskId in the request body
+  const statusEndpoint = "https://api.apiframe.pro/fetch";
+  
   while (attempts < maxAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds as per documentation
     
     console.log(`APIFrame: Polling attempt ${attempts + 1}/${maxAttempts} for task ${taskId}`);
     
-    const statusResponse = await fetch(`https://api.apiframe.pro/imagine/${taskId}`, {
-      headers: {
-        "Authorization": `Bearer ${env.APIFRAME_API_KEY}`,
-      },
-    });
-
-    if (!statusResponse.ok) {
-      console.error(`APIFrame: Status check failed with status ${statusResponse.status}`);
-      throw new Error(`APIFrame status check failed: ${statusResponse.statusText}`);
-    }
-
-    const statusResult = await statusResponse.json();
-    console.log(`APIFrame: Status result:`, statusResult);
+    try {
+      console.log(`APIFrame: Checking status at: ${statusEndpoint}`);
+      
+      const statusResponse = await fetch(statusEndpoint, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.APIFRAME_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ task_id: taskId }),
+      });
+      
+      if (!statusResponse.ok) {
+        console.error(`APIFrame: Status check failed with status ${statusResponse.status}`);
+        throw new Error(`APIFrame status check failed: ${statusResponse.statusText}`);
+      }
+      
+      const statusResult = await statusResponse.json();
+      console.log(`APIFrame: Status result:`, statusResult);
+      
+      if (statusResult.status === "finished" && (statusResult.image_urls?.[0] || statusResult.original_image_url)) {
+        const imageUrl = statusResult.image_urls?.[0] || statusResult.original_image_url;
+        console.log(`APIFrame: Generation completed successfully. Image URL: ${imageUrl}`);
+        return imageUrl;
+      }
     
-    if (statusResult.status === "completed" && statusResult.result?.image_url) {
-      console.log(`APIFrame: Generation completed successfully. Image URL: ${statusResult.result.image_url}`);
-      return statusResult.result.image_url;
+      if (statusResult.status === "failed") {
+        console.error(`APIFrame: Generation failed:`, statusResult);
+        throw new Error(`APIFrame generation failed: ${statusResult.error || statusResult.message || "Unknown error"}`);
+      }
+      
+      // Log current status for debugging
+      console.log(`APIFrame: Current status: ${statusResult.status || "pending"}, waiting...`);
+      
+    } catch (error) {
+      console.error(`APIFrame: Error checking status:`, error);
+      // Continue polling despite errors - don't throw here to make the process more resilient
     }
-    
-    if (statusResult.status === "failed") {
-      console.error(`APIFrame: Generation failed:`, statusResult);
-      throw new Error(`APIFrame generation failed: ${statusResult.error || statusResult.message || "Unknown error"}`);
-    }
-    
-    // Log current status for debugging
-    console.log(`APIFrame: Current status: ${statusResult.status}, waiting...`);
     
     attempts++;
   }
