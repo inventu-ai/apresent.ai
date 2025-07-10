@@ -24,6 +24,8 @@ export const useDebouncedSave = (options: UseDebouncedSaveOptions = {}) => {
   const debouncedSave = useRef(
     debounce(
       async () => {
+        console.log(`[SAVE_DEBOUNCE] Iniciando salvamento debounced...`);
+        
         // Get the latest state directly from the store
         const {
           slides,
@@ -36,12 +38,33 @@ export const useDebouncedSave = (options: UseDebouncedSaveOptions = {}) => {
           language,
         } = usePresentationState.getState();
 
+        console.log(`[SAVE_DEBOUNCE] Estado obtido: ID=${currentPresentationId}, Título=${currentPresentationTitle}, Total de slides=${slides.length}`);
+
         // Don't save if we're generating content or if there's no presentation
-        if (!currentPresentationId || slides.length === 0) return;
+        if (!currentPresentationId || slides.length === 0) {
+          console.log(`[SAVE_DEBOUNCE] Salvamento cancelado: ${!currentPresentationId ? 'Sem ID de apresentação' : 'Sem slides'}`);
+          return;
+        }
+        
         try {
           setSavingStatus("saving");
+          console.log(`[SAVE_DEBOUNCE] Status de salvamento definido como "saving"`);
+          
+          // Log para verificar se há ícones nos slides antes de salvar
+          const iconsInSlides = slides.flatMap(slide => 
+            slide.content?.filter(child => 
+              child.type === "icon"
+            ) || []
+          );
+          
+          if (iconsInSlides.length > 0) {
+            console.log(`[SAVE_DEBOUNCE] Enviando ${iconsInSlides.length} ícones para o banco de dados:`, 
+              iconsInSlides.map(icon => ({ id: icon.id, name: (icon as any).name }))
+            );
+          }
 
-          await updatePresentation({
+          console.log(`[SAVE_DEBOUNCE] Chamando updatePresentation para ID=${currentPresentationId}`);
+          const result = await updatePresentation({
             id: currentPresentationId,
             content: {
               slides,
@@ -53,14 +76,19 @@ export const useDebouncedSave = (options: UseDebouncedSaveOptions = {}) => {
             presentationStyle,
             language,
           });
+          
+          console.log(`[SAVE_DEBOUNCE] Resultado do salvamento:`, result);
 
           setSavingStatus("saved");
+          console.log(`[SAVE_DEBOUNCE] Status de salvamento definido como "saved"`);
+          
           // Reset to idle after 2 seconds
           setTimeout(() => {
             setSavingStatus("idle");
+            console.log(`[SAVE_DEBOUNCE] Status de salvamento redefinido para "idle"`);
           }, 2000);
         } catch (error) {
-          console.error("Failed to save presentation:", error);
+          console.error("[SAVE_DEBOUNCE] Erro ao salvar apresentação:", error);
           setSavingStatus("idle");
         }
       },
@@ -78,7 +106,9 @@ export const useDebouncedSave = (options: UseDebouncedSaveOptions = {}) => {
 
   // Save slides immediately (useful for manual saves)
   const saveImmediately = useCallback(async () => {
+    console.log(`[SAVE_IMMEDIATE] Iniciando salvamento imediato...`);
     debouncedSave.cancel();
+    console.log(`[SAVE_IMMEDIATE] Salvamento debounced cancelado`);
 
     // Get the latest state directly from the store
     const {
@@ -92,13 +122,33 @@ export const useDebouncedSave = (options: UseDebouncedSaveOptions = {}) => {
       language,
     } = usePresentationState.getState();
 
+    console.log(`[SAVE_IMMEDIATE] Estado obtido: ID=${currentPresentationId}, Título=${currentPresentationTitle}, Total de slides=${slides.length}`);
+
     // Don't save if there's no presentation
-    if (!currentPresentationId || slides.length === 0) return;
+    if (!currentPresentationId || slides.length === 0) {
+      console.log(`[SAVE_IMMEDIATE] Salvamento cancelado: ${!currentPresentationId ? 'Sem ID de apresentação' : 'Sem slides'}`);
+      return;
+    }
 
     try {
       setSavingStatus("saving");
+      console.log(`[SAVE_IMMEDIATE] Status de salvamento definido como "saving"`);
+      
+      // Log para verificar se há ícones nos slides antes de salvar
+      const iconsInSlides = slides.flatMap(slide => 
+        slide.content?.filter(child => 
+          child.type === "icon"
+        ) || []
+      );
+      
+      if (iconsInSlides.length > 0) {
+        console.log(`[SAVE_IMMEDIATE] Enviando ${iconsInSlides.length} ícones para o banco de dados:`, 
+          iconsInSlides.map(icon => ({ id: icon.id, name: (icon as any).name }))
+        );
+      }
 
-      await updatePresentation({
+      console.log(`[SAVE_IMMEDIATE] Chamando updatePresentation para ID=${currentPresentationId}`);
+      const result = await updatePresentation({
         id: currentPresentationId,
         content: {
           slides,
@@ -110,14 +160,19 @@ export const useDebouncedSave = (options: UseDebouncedSaveOptions = {}) => {
         presentationStyle,
         theme,
       });
+      
+      console.log(`[SAVE_IMMEDIATE] Resultado do salvamento:`, result);
 
       setSavingStatus("saved");
+      console.log(`[SAVE_IMMEDIATE] Status de salvamento definido como "saved"`);
+      
       // Reset to idle after 2 seconds
       setTimeout(() => {
         setSavingStatus("idle");
+        console.log(`[SAVE_IMMEDIATE] Status de salvamento redefinido para "idle"`);
       }, 2000);
     } catch (error) {
-      console.error("Failed to save presentation:", error);
+      console.error("[SAVE_IMMEDIATE] Erro ao salvar apresentação:", error);
       setSavingStatus("idle");
     }
   }, [debouncedSave, setSavingStatus]);

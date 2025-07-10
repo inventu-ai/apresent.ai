@@ -114,14 +114,21 @@ export async function updatePresentation({
   presentationStyle?: string;
   language?: string;
 }) {
+  console.log(`[DB_UPDATE] Iniciando atualização da apresentação ID=${id}`);
+  
   const session = await auth();
   if (!session?.user) {
+    console.error(`[DB_UPDATE] Erro de autenticação: Usuário não autenticado`);
     throw new Error("Unauthorized");
   }
+  
+  console.log(`[DB_UPDATE] Usuário autenticado: ${session.user.id}`);
 
   try {
     // Update BaseDocument if title is provided
     if (title !== undefined) {
+      console.log(`[DB_UPDATE] Atualizando título do BaseDocument para: "${title}"`);
+      
       const { error: baseError } = await supabaseAdmin
         .from('BaseDocument')
         .update({
@@ -132,21 +139,66 @@ export async function updatePresentation({
         .eq('userId', session.user.id);
 
       if (baseError) {
-        console.error('Error updating BaseDocument:', baseError);
+        console.error(`[DB_UPDATE] Erro ao atualizar BaseDocument:`, baseError);
         throw baseError;
       }
+      
+      console.log(`[DB_UPDATE] BaseDocument atualizado com sucesso`);
     }
 
     // Update Presentation
     const updateData: any = {};
 
-    if (content !== undefined) updateData.content = content;
-    if (theme !== undefined) updateData.theme = theme;
-    if (outline !== undefined) updateData.outline = outline;
-    if (imageModel !== undefined) updateData.imageModel = imageModel;
-    if (presentationStyle !== undefined) updateData.presentationStyle = presentationStyle;
-    if (language !== undefined) updateData.language = language;
+    if (content !== undefined) {
+      updateData.content = content;
+      
+      // Log para verificar se há ícones nos slides
+      if (content.slides && Array.isArray(content.slides)) {
+        console.log(`[DB_UPDATE] Atualizando conteúdo com ${content.slides.length} slides`);
+        
+        const iconsInSlides = content.slides.flatMap(slide => 
+          slide.content?.filter(child => 
+            child.type === "icon"
+          ) || []
+        );
+        
+        if (iconsInSlides.length > 0) {
+          console.log(`[DB_UPDATE] Encontrados ${iconsInSlides.length} ícones nos slides:`, 
+            iconsInSlides.map(icon => ({ id: icon.id, name: (icon as any).name }))
+          );
+        } else {
+          console.log(`[DB_UPDATE] Nenhum ícone encontrado nos slides.`);
+        }
+      }
+    }
+    
+    if (theme !== undefined) {
+      updateData.theme = theme;
+      console.log(`[DB_UPDATE] Atualizando tema para: ${theme}`);
+    }
+    
+    if (outline !== undefined) {
+      updateData.outline = outline;
+      console.log(`[DB_UPDATE] Atualizando outline com ${outline.length} itens`);
+    }
+    
+    if (imageModel !== undefined) {
+      updateData.imageModel = imageModel;
+      console.log(`[DB_UPDATE] Atualizando modelo de imagem para: ${imageModel}`);
+    }
+    
+    if (presentationStyle !== undefined) {
+      updateData.presentationStyle = presentationStyle;
+      console.log(`[DB_UPDATE] Atualizando estilo de apresentação para: ${presentationStyle}`);
+    }
+    
+    if (language !== undefined) {
+      updateData.language = language;
+      console.log(`[DB_UPDATE] Atualizando idioma para: ${language}`);
+    }
 
+    console.log(`[DB_UPDATE] Enviando atualização para o banco de dados...`);
+    
     const { data: presentation, error: presentationError } = await supabaseAdmin
       .from('Presentation')
       .update(updateData)
@@ -155,11 +207,15 @@ export async function updatePresentation({
       .single();
 
     if (presentationError) {
-      console.error('Error updating Presentation:', presentationError);
+      console.error(`[DB_UPDATE] Erro ao atualizar Presentation:`, presentationError);
       throw presentationError;
     }
+    
+    console.log(`[DB_UPDATE] Presentation atualizada com sucesso`);
 
     // Get the updated BaseDocument
+    console.log(`[DB_UPDATE] Buscando BaseDocument atualizado...`);
+    
     const { data: baseDocument, error: baseDocError } = await supabaseAdmin
       .from('BaseDocument')
       .select('*')
@@ -167,9 +223,12 @@ export async function updatePresentation({
       .single();
 
     if (baseDocError) {
-      console.error('Error fetching BaseDocument:', baseDocError);
+      console.error(`[DB_UPDATE] Erro ao buscar BaseDocument:`, baseDocError);
       throw baseDocError;
     }
+    
+    console.log(`[DB_UPDATE] BaseDocument recuperado com sucesso`);
+    console.log(`[DB_UPDATE] Atualização da apresentação concluída com sucesso`);
 
     return {
       success: true,

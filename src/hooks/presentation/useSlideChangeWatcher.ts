@@ -23,9 +23,30 @@ export const useSlideChangeWatcher = (
 
   // Watch for changes to the slides array and trigger save
   useEffect(() => {
+    console.log(`[SLIDE_CHANGE] Detectada mudança nos slides. Total de slides: ${slides.length}`);
+    
     // Only save if we have slides and we're not generating
     if (slides.length > 0) {
+      console.log(`[SLIDE_CHANGE] Iniciando processo de salvamento...`);
+      
+      // Log para verificar se há ícones nos slides
+      const iconsInSlides = slides.flatMap(slide => 
+        slide.content?.filter(child => 
+          child.type === "icon"
+        ) || []
+      );
+      
+      if (iconsInSlides.length > 0) {
+        console.log(`[SLIDE_CHANGE] Encontrados ${iconsInSlides.length} ícones nos slides:`, 
+          iconsInSlides.map(icon => ({ id: icon.id, name: (icon as any).name }))
+        );
+      } else {
+        console.log(`[SLIDE_CHANGE] Nenhum ícone encontrado nos slides.`);
+      }
+      
       save();
+    } else {
+      console.log(`[SLIDE_CHANGE] Não há slides para salvar ou apresentação está sendo gerada.`);
     }
   }, [slides, save, isGeneratingPresentation]);
 
