@@ -42,10 +42,6 @@ class ImageGenerationQueue {
       return 'google';
     }
     
-    if (['midjourney-imagine', 'flux-pro', 'flux-dev', 'flux-pro-1.1', 'flux-pro-1.1-ultra', 'flux-fast-1.1'].includes(model)) {
-      return 'apiframe';
-    }
-    
     if (['ideogram-v2', 'ideogram-v2-turbo', 'ideogram-v3'].includes(model)) {
       return 'ideogram';
     }

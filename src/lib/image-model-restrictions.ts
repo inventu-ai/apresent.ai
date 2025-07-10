@@ -7,22 +7,17 @@ export const IMAGE_MODELS_BY_PLAN = {
   FREE: [       
     "ideogram-v2",       // Ideogram - Fast/básico
     "google-imagen-3-fast", // Google - Fast/básico  
-    "flux-fast-1.1"  // Black Forest - Fast/básico
   ] as ImageModelList[],
   
   PRO: [
-    "flux-pro",             // Black Forest - Intermediário
-    "flux-dev",             // Black Forest - Desenvolvimento
-    "flux-pro-1.1",         // Black Forest - Pro melhorado
     "ideogram-v2-turbo",    // Ideogram - Turbo/intermediário
     "google-imagen-3",      // Google - Qualidade padrão
   ] as ImageModelList[],
   
   PREMIUM: [
-    "midjourney-imagine",   // Midjourney - Premium
     "dall-e-3",             // OpenAI - Premium
-    "flux-pro-1.1-ultra",   // Black Forest - Ultra/máximo
     "ideogram-v3",          // Ideogram - Mais recente/avançado
+    "google-imagen-4",      // Google - Imagen 4 (mais recente)
     "gpt-image-1",          // OpenAI - GPT Image modelo
   ] as ImageModelList[],
 } as const;
@@ -32,22 +27,17 @@ export const IMAGE_MODELS_BY_PLAN = {
  */
 export const MODEL_CREDIT_MAPPING: Record<ImageModelList, "BASIC_IMAGE" | "ADVANCED_IMAGE" | "PREMIUM_IMAGE"> = {
   // FREE - Modelos básicos (5 créditos)
-  "flux-fast-1.1": "BASIC_IMAGE",
   "google-imagen-3-fast": "BASIC_IMAGE", 
   "ideogram-v2": "BASIC_IMAGE",
   
   // PRO - Modelos intermediários (10 créditos)
-  "flux-pro": "ADVANCED_IMAGE",
-  "flux-dev": "ADVANCED_IMAGE", 
-  "flux-pro-1.1": "ADVANCED_IMAGE",
   "ideogram-v2-turbo": "ADVANCED_IMAGE",
   "google-imagen-3": "ADVANCED_IMAGE",
   
   // PREMIUM - Modelos premium (15 créditos)
-  "midjourney-imagine": "PREMIUM_IMAGE",
   "dall-e-3": "PREMIUM_IMAGE",
-  "flux-pro-1.1-ultra": "PREMIUM_IMAGE", 
   "ideogram-v3": "PREMIUM_IMAGE",
+  "google-imagen-4": "PREMIUM_IMAGE",
   "gpt-image-1": "PREMIUM_IMAGE",
 };
 
@@ -137,4 +127,4 @@ export function getModelRestrictionInfo(model: ImageModelList) {
       PREMIUM: true,
     }
   };
-} 
+}

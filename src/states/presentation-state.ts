@@ -108,7 +108,7 @@ export const usePresentationState = create<PresentationState>((set) => ({
   outline: [],
   theme: "mystique",
   customThemeData: null,
-  imageModel: "flux-dev",
+  imageModel: "ideogram-v2",
   presentationStyle: "professional",
   slides: [], // Now holds the new slide object structure
   savingStatus: "idle",

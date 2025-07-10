@@ -34,18 +34,13 @@ import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
-  "midjourney-imagine": { label: "Midjourney Imagine", provider: "Midjourney", category: 'PREMIUM' },
-  "flux-pro": { label: "Flux Pro", provider: "Black Forest", category: 'PRO' },
-  "flux-dev": { label: "Flux Dev", provider: "Black Forest", category: 'PRO' },
-  "flux-pro-1.1": { label: "Flux Pro 1.1", provider: "Black Forest", category: 'PRO' },
-  "flux-pro-1.1-ultra": { label: "Flux Pro 1.1 Ultra", provider: "Black Forest", category: 'PREMIUM' },
-  "flux-fast-1.1": { label: "Flux Fast 1.1", provider: "Black Forest", category: 'FREE' },
   "ideogram-v2": { label: "Ideogram V2", provider: "Ideogram", category: 'FREE' },
   "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'PRO' },
   "ideogram-v3": { label: "Ideogram V3", provider: "Ideogram", category: 'PREMIUM' },
   "dall-e-3": { label: "DALL-E 3", provider: "OpenAI", category: 'PREMIUM' },
   "google-imagen-3": { label: "Google Imagen 3", provider: "Google", category: 'PRO' },
   "google-imagen-3-fast": { label: "Google Imagen 3 Fast", provider: "Google", category: 'FREE' },
+  "google-imagen-4": { label: "Google Imagen 4", provider: "Google", category: 'PREMIUM' },
   "gpt-image-1": { label: "GPT Image 1", provider: "OpenAI", category: 'PREMIUM' },
 };
 
@@ -78,7 +73,7 @@ export function GenerateImageDialogContent({
 }) {
   const editor = useEditorRef();
   const [prompt, setPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState<ImageModelList>("flux-fast-1.1");
+  const [selectedModel, setSelectedModel] = useState<ImageModelList>("ideogram-v2");
   const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
   const { planName, isLoading: planLoading } = usePlanBadge();
 
@@ -99,7 +94,7 @@ export function GenerateImageDialogContent({
       
       // Se o modelo selecionado não está disponível, selecionar o primeiro disponível
       if (!userModels.includes(selectedModel)) {
-        setSelectedModel(userModels[0] || "flux-fast-1.1");
+        setSelectedModel(userModels[0] || "ideogram-v2");
       }
     }
   }, [planName, planLoading, selectedModel]);

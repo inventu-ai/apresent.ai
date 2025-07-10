@@ -94,25 +94,6 @@ async function detectOriginalModel(imageUrl: string): Promise<ImageModelList> {
     return 'ideogram-v3';
   }
   
-  // Detectar Flux models
-  if (
-    imageUrl.includes('flux') ||
-    imageUrl.includes('fal.ai') ||
-    imageUrl.includes('apiframe')
-  ) {
-    console.log('detectOriginalModel: detected Flux');
-    return 'flux-pro';
-  }
-  
-  // Detectar Midjourney
-  if (
-    imageUrl.includes('midjourney') ||
-    imageUrl.includes('mj-') ||
-    imageUrl.includes('cdn.midjourney')
-  ) {
-    console.log('detectOriginalModel: detected Midjourney');
-    return 'midjourney-imagine';
-  }
   
   // Detectar Google Imagen
   if (
@@ -489,135 +470,6 @@ async function editWithIdeogramRemix(options: ImageEditOptions): Promise<ImageEd
   }
 }
 
-/**
- * Editar imagem usando Flux Models via APIFrame
- */
-async function editWithFlux(options: ImageEditOptions): Promise<ImageEditResult> {
-  try {
-    const formData = new FormData();
-    
-    // Download da imagem original
-    const imageResponse = await fetch(options.imageUrl);
-    const imageBlob = await imageResponse.blob();
-    formData.append('image', imageBlob, 'image.png');
-    
-    formData.append('model', options.model);
-    formData.append('prompt', options.editPrompt);
-    
-    if (options.maskUrl) {
-      const maskResponse = await fetch(options.maskUrl);
-      const maskBlob = await maskResponse.blob();
-      formData.append('mask', maskBlob, 'mask.png');
-    }
-
-    // Determinar endpoint baseado no modelo
-    let endpoint = '';
-    switch (options.model) {
-      case 'flux-fast-1.1':
-        endpoint = 'https://api.apiframe.ai/v1/flux/fast11/edit';
-        break;
-      case 'flux-pro':
-        endpoint = 'https://api.apiframe.ai/v1/flux/pro/edit';
-        break;
-      case 'flux-dev':
-        endpoint = 'https://api.apiframe.ai/v1/flux/pro/edit';
-        break;
-      case 'flux-pro-1.1':
-        endpoint = 'https://api.apiframe.ai/v1/flux/pro11/edit';
-        break;
-      case 'flux-pro-1.1-ultra':
-        endpoint = 'https://api.apiframe.ai/v1/flux/pro11-ultra/edit';
-        break;
-      default:
-        endpoint = 'https://api.apiframe.ai/v1/flux/pro/edit';
-    }
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.APIFRAME_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`APIFrame API error: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    
-    return {
-      success: true,
-      image: {
-        url: result.data[0].url,
-        model: options.model,
-        prompt: options.editPrompt,
-        originalImage: options.imageUrl,
-      },
-    };
-  } catch (error) {
-    console.error('Error editing with Flux:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
-/**
- * Editar imagem usando Midjourney via APIFrame
- */
-async function editWithMidjourney(options: ImageEditOptions): Promise<ImageEditResult> {
-  try {
-    const formData = new FormData();
-    
-    // Download da imagem original
-    const imageResponse = await fetch(options.imageUrl);
-    const imageBlob = await imageResponse.blob();
-    formData.append('image', imageBlob, 'image.png');
-    
-    formData.append('model', 'midjourney-imagine');
-    formData.append('prompt', options.editPrompt);
-    formData.append('n', '1');
-    formData.append('size', '1024x1024');
-    
-    if (options.maskUrl) {
-      const maskResponse = await fetch(options.maskUrl);
-      const maskBlob = await maskResponse.blob();
-      formData.append('mask', maskBlob, 'mask.png');
-    }
-
-    const response = await fetch('https://api.apiframe.ai/v1/midjourney/imagine/edit', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.APIFRAME_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`APIFrame/Midjourney API error: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    
-    return {
-      success: true,
-      image: {
-        url: result.data[0].url,
-        model: options.model,
-        prompt: options.editPrompt,
-        originalImage: options.imageUrl,
-      },
-    };
-  } catch (error) {
-    console.error('Error editing with Midjourney:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
 
 /**
  * Action principal para edição de imagens
@@ -683,4 +535,4 @@ export async function editImageAction(
       error: error instanceof Error ? error.message : "Erro interno do servidor",
     };
   }
-} 
+}

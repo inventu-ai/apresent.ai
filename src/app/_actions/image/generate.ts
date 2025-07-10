@@ -43,152 +43,15 @@ function convertToIdeogramAspectRatio(aspectRatio: string, isV3: boolean = false
 }
 
 export type ImageModelList =
-  | "midjourney-imagine"
-  | "flux-pro"
-  | "flux-dev"
-  | "flux-pro-1.1"
-  | "flux-pro-1.1-ultra"
-  | "flux-fast-1.1"
   | "ideogram-v2"
   | "ideogram-v2-turbo"
   | "ideogram-v3"
   | "dall-e-3"
   | "google-imagen-3"
   | "google-imagen-3-fast"
+  | "google-imagen-4"
   | "gpt-image-1";
 
-// APIFrame implementation for Midjourney and Flux models
-async function generateWithAPIFrame(prompt: string, model: string, aspectRatio: string = "4:3"): Promise<string> {
-  // Validate API key
-  if (!env.APIFRAME_API_KEY) {
-    throw new Error("APIFRAME_API_KEY is not configured");
-  }
-
-  const modelMap: Record<string, string> = {
-    "midjourney-imagine": "midjourney",
-    "flux-pro": "flux-pro",
-    "flux-dev": "flux-dev",
-    "flux-pro-1.1": "flux-pro-1.1",
-    "flux-pro-1.1-ultra": "flux-pro-1.1-ultra",
-    "flux-fast-1.1": "flux-fast-1.1"
-  };
-
-  const apiModel = modelMap[model];
-  if (!apiModel) {
-    throw new Error(`Unsupported APIFrame model: ${model}`);
-  }
-
-  console.log(`APIFrame: Starting generation with model ${apiModel}, prompt: "${prompt.substring(0, 50)}..."`);
-
-  const requestBody = {
-    prompt,
-    model: apiModel,
-    aspect_ratio: aspectRatio
-  };
-
-  console.log(`APIFrame: Request body:`, requestBody);
-
-  // Start generation
-  const generateResponse = await fetch("https://api.apiframe.pro/imagine", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${env.APIFRAME_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  });
-
-  console.log(`APIFrame: Generation response status: ${generateResponse.status}`);
-
-  if (!generateResponse.ok) {
-    const errorText = await generateResponse.text();
-    console.error(`APIFrame: Generation failed with status ${generateResponse.status}:`, errorText);
-    
-    // Parse error for better debugging
-    try {
-      const errorObj = JSON.parse(errorText);
-      if (errorObj.errors && errorObj.errors[0]?.msg) {
-        const errorMsg = errorObj.errors[0].msg;
-        if (errorMsg.includes("内部错误") || errorMsg.includes("Internal error")) {
-          throw new Error(`APIFrame internal error. This may be due to: API key issues, account credits, or temporary service problems. Original error: ${errorText}`);
-        }
-      }
-    } catch (parseError) {
-      // If can't parse, use original error
-    }
-    
-    throw new Error(`APIFrame generation failed: ${errorText}`);
-  }
-
-  const generateResult = await generateResponse.json();
-  console.log(`APIFrame: Generation result:`, generateResult);
-  
-  const taskId = generateResult.taskId || generateResult.id || generateResult.task_id;
-
-  if (!taskId) {
-    console.error(`APIFrame: No task ID in response:`, generateResult);
-    throw new Error("No task ID received from APIFrame");
-  }
-
-  console.log(`APIFrame: Starting polling for task ${taskId}`);
-
-  // Poll for completion
-  let attempts = 0;
-  const maxAttempts = 60; // 5 minutes with 5-second intervals
-  
-  // Use the fetch endpoint with taskId in the request body
-  const statusEndpoint = "https://api.apiframe.pro/fetch";
-  
-  while (attempts < maxAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds as per documentation
-    
-    console.log(`APIFrame: Polling attempt ${attempts + 1}/${maxAttempts} for task ${taskId}`);
-    
-    try {
-      console.log(`APIFrame: Checking status at: ${statusEndpoint}`);
-      
-      const statusResponse = await fetch(statusEndpoint, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${env.APIFRAME_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ task_id: taskId }),
-      });
-      
-      if (!statusResponse.ok) {
-        console.error(`APIFrame: Status check failed with status ${statusResponse.status}`);
-        throw new Error(`APIFrame status check failed: ${statusResponse.statusText}`);
-      }
-      
-      const statusResult = await statusResponse.json();
-      console.log(`APIFrame: Status result:`, statusResult);
-      
-      if (statusResult.status === "finished" && (statusResult.image_urls?.[0] || statusResult.original_image_url)) {
-        const imageUrl = statusResult.image_urls?.[0] || statusResult.original_image_url;
-        console.log(`APIFrame: Generation completed successfully. Image URL: ${imageUrl}`);
-        return imageUrl;
-      }
-    
-      if (statusResult.status === "failed") {
-        console.error(`APIFrame: Generation failed:`, statusResult);
-        throw new Error(`APIFrame generation failed: ${statusResult.error || statusResult.message || "Unknown error"}`);
-      }
-      
-      // Log current status for debugging
-      console.log(`APIFrame: Current status: ${statusResult.status || "pending"}, waiting...`);
-      
-    } catch (error) {
-      console.error(`APIFrame: Error checking status:`, error);
-      // Continue polling despite errors - don't throw here to make the process more resilient
-    }
-    
-    attempts++;
-  }
-  
-  console.error(`APIFrame: Generation timed out after ${maxAttempts} attempts`);
-  throw new Error("APIFrame generation timed out");
-}
 
 // Ideogram implementation
 async function generateWithIdeogram(prompt: string, model: string, aspectRatio: string = "4:3"): Promise<string> {
@@ -476,9 +339,138 @@ async function generateWithGoogleImagen(prompt: string, aspectRatio: string = "1
   }
 }
 
+// Google Cloud Imagen 4 implementation using REST API
+async function generateWithGoogleImagen4(prompt: string, aspectRatio: string = "1:1"): Promise<string> {
+  // Check if Google Cloud credentials are properly configured
+  if (!env.GOOGLE_CLOUD_PROJECT_ID) {
+    throw new Error("Google Imagen 4 indisponível: GOOGLE_CLOUD_PROJECT_ID não configurado");
+  }
+
+  const { getGoogleAccessToken } = await import("@/lib/google-auth");
+
+  // Convert aspect ratio to Imagen format
+  let imagenAspectRatio = "1:1";
+  switch (aspectRatio) {
+    case "4:3":
+      imagenAspectRatio = "4:3";
+      break;
+    case "16:9":
+      imagenAspectRatio = "16:9";
+      break;
+    case "3:4":
+      imagenAspectRatio = "3:4";
+      break;
+    case "9:16":
+      imagenAspectRatio = "9:16";
+      break;
+    default:
+      imagenAspectRatio = "1:1";
+  }
+
+  try {
+    // Get access token using our utility function
+    const accessToken = await getGoogleAccessToken();
+
+    // Prepare the request for Imagen 4
+    const location = "us-central1";
+    const model = "imagen-4.0-generate-preview-06-06";
+    const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${env.GOOGLE_CLOUD_PROJECT_ID}/locations/${location}/publishers/google/models/${model}:predict`;
+
+    const requestBody = {
+      instances: [
+        {
+          prompt: prompt,
+          aspect_ratio: imagenAspectRatio,
+          negative_prompt: "",
+          person_generation: "allow_all",
+          safety_filter_level: "block_few",
+          add_watermark: true,
+        }
+      ],
+      parameters: {
+        number_of_images: 4,
+      }
+    };
+
+    console.log(`Calling Google Imagen 4 REST API: ${endpoint}`);
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Google Imagen 4 API Error: ${response.status} ${response.statusText}`, errorText);
+      
+      if (response.status === 401) {
+        throw new Error("Google Cloud authentication failed. Please check your credentials and permissions.");
+      } else if (response.status === 403) {
+        throw new Error("Google Cloud permission denied. Please ensure the Vertex AI API is enabled and proper IAM roles are assigned.");
+      } else if (response.status === 404) {
+        throw new Error(`Google Imagen 4 model not found. The model "${model}" may not be available in your region or project.`);
+      } else if (response.status === 429) {
+        throw new Error("Google Cloud quota exceeded. Please check your billing and quota limits.");
+      }
+      
+      throw new Error(`Google Imagen 4 API failed: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log("Google Imagen 4 API Response:", JSON.stringify(result, null, 2));
+
+    if (!result.predictions || result.predictions.length === 0) {
+      console.error("Invalid response structure:", result);
+      
+      // Check for error in response
+      if (result.error) {
+        throw new Error(`Google Imagen 4 API error: ${result.error.message || result.error}`);
+      }
+      
+      // Check if response is completely empty
+      if (Object.keys(result).length === 0) {
+        throw new Error("Google Cloud returned empty response. This may indicate insufficient permissions or model access issues.");
+      }
+      
+      throw new Error(`No predictions received from Google Imagen 4. Response: ${JSON.stringify(result)}`);
+    }
+
+    const prediction = result.predictions[0];
+    
+    // Extract base64 image data - Imagen 4 returns multiple images, we'll take the first one
+    let imageData;
+    if (prediction.bytesBase64Encoded) {
+      imageData = prediction.bytesBase64Encoded;
+    } else if (prediction.struct?.fields?.bytesBase64Encoded?.stringValue) {
+      imageData = prediction.struct.fields.bytesBase64Encoded.stringValue;
+    } else {
+      console.error("Prediction structure:", prediction);
+      throw new Error("No image data found in Google Imagen 4 response");
+    }
+
+    return `data:image/png;base64,${imageData}`;
+  } catch (error) {
+    console.error("Google Imagen 4 generation error:", error);
+    
+    if (error instanceof Error) {
+      // Re-throw our custom errors as-is
+      if (error.message.includes("Google Cloud") || error.message.includes("Google Imagen")) {
+        throw error;
+      }
+    }
+    
+    throw new Error(`Google Imagen 4 generation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
 export async function generateImageAction(
   prompt: string,
-  model: ImageModelList = "flux-dev",
+  model: ImageModelList = "ideogram-v2",
   quality: CreditAction = "BASIC_IMAGE", 
   aspectRatio: "4:3" | "16:9" | "1:1" | "3:4" | "9:16" = "4:3",
   shouldConsumeCredits: boolean = true
@@ -539,9 +531,7 @@ export async function generateImageAction(
 
     // Função de geração que será usada pela fila e fallback
     const generateFunction = async (prompt: string, model: string, aspectRatio: string): Promise<string> => {
-      if (["midjourney-imagine", "flux-pro", "flux-dev", "flux-pro-1.1", "flux-pro-1.1-ultra", "flux-fast-1.1"].includes(model)) {
-        return await generateWithAPIFrame(prompt, model, aspectRatio);
-      } else if (["ideogram-v2", "ideogram-v2-turbo", "ideogram-v3"].includes(model)) {
+      if (["ideogram-v2", "ideogram-v2-turbo", "ideogram-v3"].includes(model)) {
         return await generateWithIdeogram(prompt, model, aspectRatio);
       } else if (["dall-e-3", "gpt-image-1"].includes(model)) {
         return await generateWithOpenAI(prompt, model);
@@ -549,6 +539,8 @@ export async function generateImageAction(
         return await generateWithGoogleImagen(prompt, aspectRatio, false);
       } else if (model === "google-imagen-3-fast") {
         return await generateWithGoogleImagen(prompt, aspectRatio, true);
+      } else if (model === "google-imagen-4") {
+        return await generateWithGoogleImagen4(prompt, aspectRatio);
       } else {
         throw new Error(`Unsupported model: ${model}`);
       }
