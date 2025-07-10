@@ -35,7 +35,6 @@ export const IconElementComponent = withRef<typeof PlateElement>(
     // Inicializar o estado local com o initialName na montagem do componente
     useEffect(() => {
       if (initialName && !currentIconName) {
-        console.log(`[ICON_INIT] Inicializando ícone com ${initialName}`);
         setCurrentIconName(initialName);
       }
     }, [initialName, currentIconName]);
@@ -64,11 +63,9 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       if (initialName && initialName !== currentIconName && !isSaving) {
         // Se o usuário selecionou um ícone recentemente, não sobrescrever
         if (lastUserSelectedIcon && lastUserSelectedIcon === currentIconName) {
-          console.log(`[ICON_UPDATE] Ignorando atualização externa porque o usuário selecionou ${lastUserSelectedIcon} recentemente`);
           return;
         }
         
-        console.log(`[ICON_UPDATE] Atualizando ícone de ${currentIconName} para ${initialName} (atualização externa)`);
         setCurrentIconName(initialName);
       }
     }, [initialName, currentIconName, isSaving, ignoreExternalUpdates, lastUserSelectedIcon]);
@@ -79,10 +76,7 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       
       if (nodeWithPath) {
         const [, path] = nodeWithPath;
-        console.log(`[ICON_SELECT] Caminho do nó encontrado:`, path);
-        
         setNodes<IconElement>(editor, { name: iconName }, { at: path });
-        console.log(`[ICON_SELECT] setNodes chamado com sucesso para o ícone: ${iconName}`);
         return true;
       }
       
@@ -150,11 +144,9 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       if (iconUpdated) {
         // Atualizar o estado com os slides modificados
         setSlides(updatedSlides);
-        console.log(`[ICON_SELECT] Ícone atualizado diretamente no estado da apresentação`);
         return true;
       }
       
-      console.error(`[ICON_SELECT] Não foi possível encontrar o ícone nos slides para atualização direta`);
       return false;
     }, [slides, setSlides, element.id]);
 
@@ -166,14 +158,12 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       setTimeout(() => {
         try {
           saveImmediately();
-          console.log(`[ICON_SELECT] Salvamento imediato iniciado com sucesso`);
           
           // Resetar o estado de salvamento após um delay
           setTimeout(() => {
             setIsSaving(false);
           }, 500);
         } catch (error) {
-          console.error(`[ICON_SELECT] Erro ao iniciar salvamento imediato:`, error);
           setIsSaving(false);
         }
       }, 100);
@@ -196,14 +186,11 @@ export const IconElementComponent = withRef<typeof PlateElement>(
       // Atualizar o estado local imediatamente para refletir a mudança na interface
       setCurrentIconName(finalIconName);
       
-      console.log(`[ICON_SELECT] Ícone selecionado: ${finalIconName}, ID do elemento: ${element.id}`);
-      
       // Tentar atualizar o ícone no editor
       let updated = updateIconInEditor(finalIconName);
       
       // Se não conseguir atualizar no editor, tentar atualizar diretamente no estado
       if (!updated) {
-        console.log(`[ICON_SELECT] Nó não encontrado, usando mecanismo de emergência`);
         updated = updateIconInState(finalIconName);
       }
       
@@ -214,7 +201,6 @@ export const IconElementComponent = withRef<typeof PlateElement>(
         // Manter o bloqueio de atualizações externas por um tempo maior
         // para garantir que o salvamento seja concluído
         setTimeout(() => {
-          console.log(`[ICON_SELECT] Desativando bloqueio de atualizações externas após 2 segundos`);
           setIgnoreExternalUpdates(false);
         }, 2000);
       } else {
