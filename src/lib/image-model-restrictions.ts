@@ -5,18 +5,18 @@ import type { ImageModelList } from "@/app/_actions/image/generate";
  */
 export const IMAGE_MODELS_BY_PLAN = {
   FREE: [       
-    "ideogram-v2",       // Ideogram - Fast/básico
+    "ideogram-v2-turbo",    // Ideogram - V2 Turbo/básico
     "google-imagen-3-fast", // Google - Fast/básico  
   ] as ImageModelList[],
   
   PRO: [
-    "ideogram-v2-turbo",    // Ideogram - Turbo/intermediário
+    "ideogram-v3-turbo",    // Ideogram - V3 Turbo/intermediário
     "google-imagen-3",      // Google - Qualidade padrão
   ] as ImageModelList[],
   
   PREMIUM: [
     "dall-e-3",             // OpenAI - Premium
-    "ideogram-v3",          // Ideogram - Mais recente/avançado
+    "ideogram-v3-quality",  // Ideogram - V3 Quality/avançado
     "google-imagen-4",      // Google - Imagen 4 (mais recente)
     "gpt-image-1",          // OpenAI - GPT Image modelo
   ] as ImageModelList[],
@@ -28,15 +28,15 @@ export const IMAGE_MODELS_BY_PLAN = {
 export const MODEL_CREDIT_MAPPING: Record<ImageModelList, "BASIC_IMAGE" | "ADVANCED_IMAGE" | "PREMIUM_IMAGE"> = {
   // FREE - Modelos básicos (5 créditos)
   "google-imagen-3-fast": "BASIC_IMAGE", 
-  "ideogram-v2": "BASIC_IMAGE",
+  "ideogram-v2-turbo": "BASIC_IMAGE",
   
   // PRO - Modelos intermediários (10 créditos)
-  "ideogram-v2-turbo": "ADVANCED_IMAGE",
+  "ideogram-v3-turbo": "ADVANCED_IMAGE",
   "google-imagen-3": "ADVANCED_IMAGE",
   
   // PREMIUM - Modelos premium (15 créditos)
   "dall-e-3": "PREMIUM_IMAGE",
-  "ideogram-v3": "PREMIUM_IMAGE",
+  "ideogram-v3-quality": "PREMIUM_IMAGE",
   "google-imagen-4": "PREMIUM_IMAGE",
   "gpt-image-1": "PREMIUM_IMAGE",
 };

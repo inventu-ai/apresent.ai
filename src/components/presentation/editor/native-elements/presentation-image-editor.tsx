@@ -36,9 +36,9 @@ import { getModelsForPlan, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from 
 import { useTranslation } from "@/contexts/LanguageContext";
 
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
-  "ideogram-v2": { label: "Ideogram V2", provider: "Ideogram", category: 'FREE' },
-  "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'PRO' },
-  "ideogram-v3": { label: "Ideogram V3", provider: "Ideogram", category: 'PREMIUM' },
+  "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'FREE' },
+  "ideogram-v3-turbo": { label: "Ideogram V3 Turbo", provider: "Ideogram", category: 'PRO' },
+  "ideogram-v3-quality": { label: "Ideogram V3 Quality", provider: "Ideogram", category: 'PREMIUM' },
   "dall-e-3": { label: "DALL-E 3", provider: "OpenAI", category: 'PREMIUM' },
   "google-imagen-3": { label: "Google Imagen 3", provider: "Google", category: 'PRO' },
   "google-imagen-3-fast": { label: "Google Imagen 3 Fast", provider: "Google", category: 'FREE' },
@@ -99,7 +99,7 @@ export const PresentationImageEditor = ({
       
       // Se o modelo selecionado não está disponível, selecionar o primeiro disponível
       if (imageModel && !userModels.includes(imageModel)) {
-        setImageModel(userModels[0] || "ideogram-v2");
+        setImageModel(userModels[0] || "ideogram-v2-turbo");
       }
     }
   }, [planName, planLoading, imageModel, setImageModel]);

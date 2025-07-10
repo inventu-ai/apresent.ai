@@ -43,9 +43,9 @@ function convertToIdeogramAspectRatio(aspectRatio: string, isV3: boolean = false
 }
 
 export type ImageModelList =
-  | "ideogram-v2"
   | "ideogram-v2-turbo"
-  | "ideogram-v3"
+  | "ideogram-v3-turbo"
+  | "ideogram-v3-quality"
   | "dall-e-3"
   | "google-imagen-3"
   | "google-imagen-3-fast"
@@ -55,10 +55,10 @@ export type ImageModelList =
 
 // Ideogram implementation
 async function generateWithIdeogram(prompt: string, model: string, aspectRatio: string = "4:3"): Promise<string> {
-  const modelMap: Record<string, { endpoint: string, modelName: string }> = {
-    "ideogram-v2": { endpoint: "generate", modelName: "V_2" },
-    "ideogram-v2-turbo": { endpoint: "generate", modelName: "V_2_TURBO" },
-    "ideogram-v3": { endpoint: "generate", modelName: "V_3" }
+  const modelMap: Record<string, { endpoint: string, modelName: string, renderingSpeed: string }> = {
+    "ideogram-v2-turbo": { endpoint: "generate", modelName: "V_2", renderingSpeed: "TURBO" },
+    "ideogram-v3-turbo": { endpoint: "v1/ideogram-v3/generate", modelName: "V_3", renderingSpeed: "TURBO" },
+    "ideogram-v3-quality": { endpoint: "v1/ideogram-v3/generate", modelName: "V_3", renderingSpeed: "QUALITY" }
   };
 
   const config = modelMap[model];
@@ -67,7 +67,7 @@ async function generateWithIdeogram(prompt: string, model: string, aspectRatio: 
   }
 
   // Convert aspect ratio to Ideogram format
-  const isV3 = model === "ideogram-v3";
+  const isV3 = model.includes("v3");
   const ideogramAspectRatio = convertToIdeogramAspectRatio(aspectRatio, isV3);
   
   if (!env.IDEOGRAM_API_KEY) {
@@ -79,23 +79,25 @@ async function generateWithIdeogram(prompt: string, model: string, aspectRatio: 
     "Api-Key": env.IDEOGRAM_API_KEY,
   };
 
-  if (model === "ideogram-v3") {
-    // V3 uses FormData with improved parameters
+  if (isV3) {
+    // V3 models use FormData with rendering_speed parameter
     const formData = new FormData();
     formData.append("prompt", prompt);
     formData.append("aspect_ratio", ideogramAspectRatio);
+    formData.append("rendering_speed", config.renderingSpeed);
     formData.append("style_type", "AUTO"); // Let Ideogram choose best style
     formData.append("magic_prompt", "AUTO"); // Enhanced prompt processing
     
     requestBody = formData;
   } else {
-    // V2 and V2 Turbo use JSON with improved parameters
+    // V2 Turbo uses JSON with improved parameters
     headers["Content-Type"] = "application/json";
     requestBody = JSON.stringify({
       image_request: {
         prompt,
         model: config.modelName,
         aspect_ratio: ideogramAspectRatio,
+        rendering_speed: config.renderingSpeed,
         magic_prompt_option: "AUTO", // Enhanced prompt processing for better results
         style_type: "AUTO" // Automatic style selection
       }
@@ -103,11 +105,11 @@ async function generateWithIdeogram(prompt: string, model: string, aspectRatio: 
   }
 
   // Use the correct API endpoint based on the model version
-  const apiUrl = model === "ideogram-v3" 
-    ? `https://api.ideogram.ai/v1/ideogram-v3/generate`
-    : `https://api.ideogram.ai/generate`;
+  const apiUrl = isV3 
+    ? `https://api.ideogram.ai/${config.endpoint}`
+    : `https://api.ideogram.ai/${config.endpoint}`;
     
-  console.log(`Making request to Ideogram API: ${apiUrl}`);
+  console.log(`Making request to Ideogram API: ${apiUrl} with model ${model} (${config.renderingSpeed})`);
   
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -470,7 +472,7 @@ async function generateWithGoogleImagen4(prompt: string, aspectRatio: string = "
 
 export async function generateImageAction(
   prompt: string,
-  model: ImageModelList = "ideogram-v2",
+  model: ImageModelList = "ideogram-v2-turbo",
   quality: CreditAction = "BASIC_IMAGE", 
   aspectRatio: "4:3" | "16:9" | "1:1" | "3:4" | "9:16" = "4:3",
   shouldConsumeCredits: boolean = true
@@ -531,7 +533,7 @@ export async function generateImageAction(
 
     // Função de geração que será usada pela fila e fallback
     const generateFunction = async (prompt: string, model: string, aspectRatio: string): Promise<string> => {
-      if (["ideogram-v2", "ideogram-v2-turbo", "ideogram-v3"].includes(model)) {
+      if (["ideogram-v2-turbo", "ideogram-v3-turbo", "ideogram-v3-quality"].includes(model)) {
         return await generateWithIdeogram(prompt, model, aspectRatio);
       } else if (["dall-e-3", "gpt-image-1"].includes(model)) {
         return await generateWithOpenAI(prompt, model);

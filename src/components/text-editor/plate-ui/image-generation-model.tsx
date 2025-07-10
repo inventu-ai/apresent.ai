@@ -34,9 +34,9 @@ import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
 import { useUserCredits } from "@/hooks/useUserCredits";
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
-  "ideogram-v2": { label: "Ideogram V2", provider: "Ideogram", category: 'FREE' },
-  "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'PRO' },
-  "ideogram-v3": { label: "Ideogram V3", provider: "Ideogram", category: 'PREMIUM' },
+  "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'FREE' },
+  "ideogram-v3-turbo": { label: "Ideogram V3 Turbo", provider: "Ideogram", category: 'PRO' },
+  "ideogram-v3-quality": { label: "Ideogram V3 Quality", provider: "Ideogram", category: 'PREMIUM' },
   "dall-e-3": { label: "DALL-E 3", provider: "OpenAI", category: 'PREMIUM' },
   "google-imagen-3": { label: "Google Imagen 3", provider: "Google", category: 'PRO' },
   "google-imagen-3-fast": { label: "Google Imagen 3 Fast", provider: "Google", category: 'FREE' },
@@ -73,7 +73,7 @@ export function GenerateImageDialogContent({
 }) {
   const editor = useEditorRef();
   const [prompt, setPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState<ImageModelList>("ideogram-v2");
+  const [selectedModel, setSelectedModel] = useState<ImageModelList>("ideogram-v2-turbo");
   const [availableModels, setAvailableModels] = useState<ImageModelList[]>([]);
   const { planName, isLoading: planLoading } = usePlanBadge();
 
@@ -94,7 +94,7 @@ export function GenerateImageDialogContent({
       
       // Se o modelo selecionado não está disponível, selecionar o primeiro disponível
       if (!userModels.includes(selectedModel)) {
-        setSelectedModel(userModels[0] || "ideogram-v2");
+        setSelectedModel(userModels[0] || "ideogram-v2-turbo");
       }
     }
   }, [planName, planLoading, selectedModel]);

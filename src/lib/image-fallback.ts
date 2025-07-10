@@ -17,9 +17,9 @@ export interface FallbackConfig {
  */
 export const FALLBACK_MAPPING: Record<string, FallbackConfig> = {
   "google-imagen-3-fast": {
-    fallbackModel: "ideogram-v2",
+    fallbackModel: "ideogram-v2-turbo",
     aspectRatioConverter: convertToIdeogramV2,
-    description: "Google Imagen 3 Fast → Ideogram v2"
+    description: "Google Imagen 3 Fast → Ideogram V2 Turbo"
   },
   "google-imagen-3": {
     fallbackModel: "ideogram-v2-turbo", 

@@ -82,7 +82,7 @@ async function detectOriginalModel(imageUrl: string): Promise<ImageModelList> {
     imageUrl.includes('ideogram')
   ) {
     console.log('detectOriginalModel: detected Ideogram');
-    return 'ideogram-v3';
+    return 'ideogram-v3-quality';
   }
   
   // Para URLs do UploadThing, precisamos usar metadados armazenados
@@ -91,7 +91,7 @@ async function detectOriginalModel(imageUrl: string): Promise<ImageModelList> {
     console.log('detectOriginalModel: UploadThing URL detected, no database match found');
     // Fallback inteligente baseado em contexto recente
     // Por padrão, assumir Ideogram V3 já que é o modelo mais comum atualmente
-    return 'ideogram-v3';
+    return 'ideogram-v3-quality';
   }
   
   
@@ -105,9 +105,9 @@ async function detectOriginalModel(imageUrl: string): Promise<ImageModelList> {
     return 'google-imagen-3';
   }
   
-  console.log('detectOriginalModel: no specific model detected, using Ideogram V3 as fallback');
-  // Fallback para Ideogram V3 (modelo mais popular atualmente)
-  return 'ideogram-v3';
+  console.log('detectOriginalModel: no specific model detected, using Ideogram V3 Quality as fallback');
+  // Fallback para Ideogram V3 Quality (modelo mais popular atualmente)
+  return 'ideogram-v3-quality';
 }
 
 /**
