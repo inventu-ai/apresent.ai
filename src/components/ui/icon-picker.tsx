@@ -86,9 +86,6 @@ export const getRandomFallbackIcon = (contextId = 'global'): string => {
   // Registrar que este ícone foi usado neste contexto
   usedFallbackIcons[contextId]?.add(selectedIcon);
   
-  console.log(`[ICON_FALLBACK] Selecionado ícone de fallback: ${selectedIcon} para contexto: ${contextId}`);
-  console.log(`[ICON_FALLBACK] Ícones já usados neste contexto: ${usedFallbackIcons[contextId]?.size || 0}/${FALLBACK_ICONS.length}`);
-  
   return selectedIcon;
 };
 
@@ -264,11 +261,11 @@ const IconPicker = ({
 
       setAvailableIcons(limitedIconList);
       setFilteredIcons(limitedIconList);
-    } catch (error) {
-      console.error("Error loading popular icons:", error);
-    } finally {
-      setIsLoading(false);
-    }
+        } catch (error) {
+          // Silenciar erro
+        } finally {
+          setIsLoading(false);
+        }
   };
 
   // Function to dynamically load icons based on search
@@ -438,7 +435,7 @@ const IconPicker = ({
       // Aumentar o limite para mostrar mais resultados
       setFilteredIcons(results.slice(0, 100));
     } catch (error) {
-      console.error("Error searching icons:", error);
+      // Silenciar erro
     } finally {
       setIsLoading(false);
     }
@@ -539,7 +536,7 @@ const IconPicker = ({
       const IconComponent = iconModule[iconName];
       return IconComponent ? <IconComponent size={24} /> : null;
     } catch (error) {
-      console.error("Error loading icon:", error);
+      // Silenciar erro
       return null;
     } finally {
       setIsLoading(false);
@@ -608,7 +605,7 @@ const IconPicker = ({
             }
           }
         } catch (error) {
-          console.error("Error initializing from search term:", error);
+          // Silenciar erro
           // Fall back to default icon
           const component = await loadIconComponent(defaultIcon);
           setIconComponent(component);
