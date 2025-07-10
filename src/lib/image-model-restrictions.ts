@@ -4,10 +4,10 @@ import type { ImageModelList } from "@/app/_actions/image/generate";
  * Modelos de IA de geração de imagens disponíveis por plano
  */
 export const IMAGE_MODELS_BY_PLAN = {
-  FREE: [
-    "flux-fast-1.1",        // Black Forest - Fast/básico
+  FREE: [       
+    "ideogram-v2",       // Ideogram - Fast/básico
     "google-imagen-3-fast", // Google - Fast/básico  
-    "ideogram-v2",          // Ideogram - Básico
+    "flux-fast-1.1"  // Black Forest - Fast/básico
   ] as ImageModelList[],
   
   PRO: [

@@ -14,6 +14,8 @@ function generateUUID(): string {
   });
 }
 import { consumeImageGenerationCredits, canExecuteAction, canUseImageQuality, checkAndResetCreditsIfNeeded, canUseImageModel, consumeImageModelCredits, type CreditAction } from "@/lib/credit-system";
+import { queueImageGeneration } from "@/lib/image-queue";
+import { generateWithFallback } from "@/lib/image-fallback";
 
 // Helper function to convert aspect ratio to Ideogram format
 function convertToIdeogramAspectRatio(aspectRatio: string, isV3: boolean = false): string {
@@ -67,7 +69,8 @@ async function generateWithAPIFrame(prompt: string, model: string, aspectRatio: 
     "flux-pro": "flux-pro",
     "flux-dev": "flux-dev",
     "flux-pro-1.1": "flux-pro-1.1",
-    "flux-pro-1.1-ultra": "flux-pro-1.1-ultra"
+    "flux-pro-1.1-ultra": "flux-pro-1.1-ultra",
+    "flux-fast-1.1": "flux-fast-1.1"
   };
 
   const apiModel = modelMap[model];
@@ -534,21 +537,49 @@ export async function generateImageAction(
 
 
 
-    let imageUrl: string;
+    // Função de geração que será usada pela fila e fallback
+    const generateFunction = async (prompt: string, model: string, aspectRatio: string): Promise<string> => {
+      if (["midjourney-imagine", "flux-pro", "flux-dev", "flux-pro-1.1", "flux-pro-1.1-ultra", "flux-fast-1.1"].includes(model)) {
+        return await generateWithAPIFrame(prompt, model, aspectRatio);
+      } else if (["ideogram-v2", "ideogram-v2-turbo", "ideogram-v3"].includes(model)) {
+        return await generateWithIdeogram(prompt, model, aspectRatio);
+      } else if (["dall-e-3", "gpt-image-1"].includes(model)) {
+        return await generateWithOpenAI(prompt, model);
+      } else if (model === "google-imagen-3") {
+        return await generateWithGoogleImagen(prompt, aspectRatio, false);
+      } else if (model === "google-imagen-3-fast") {
+        return await generateWithGoogleImagen(prompt, aspectRatio, true);
+      } else {
+        throw new Error(`Unsupported model: ${model}`);
+      }
+    };
 
-    // Route to appropriate API based on model
-    if (["midjourney-imagine", "flux-pro", "flux-dev", "flux-pro-1.1", "flux-pro-1.1-ultra", "flux-fast-1.1"].includes(model)) {
-      imageUrl = await generateWithAPIFrame(prompt, model, aspectRatio);
-    } else if (["ideogram-v2", "ideogram-v2-turbo", "ideogram-v3"].includes(model)) {
-      imageUrl = await generateWithIdeogram(prompt, model, aspectRatio);
-    } else if (["dall-e-3", "gpt-image-1"].includes(model)) {
-      imageUrl = await generateWithOpenAI(prompt, model);
-    } else if (model === "google-imagen-3") {
-      imageUrl = await generateWithGoogleImagen(prompt, aspectRatio, false);
-    } else if (model === "google-imagen-3-fast") {
-      imageUrl = await generateWithGoogleImagen(prompt, aspectRatio, true);
+    // Usar sistema de fila para modelos Google e fallback automático
+    const generationResult = await generateWithFallback(
+      model,
+      prompt,
+      aspectRatio,
+      async (prompt: string, model: string, aspectRatio: string) => {
+        return await queueImageGeneration(model as ImageModelList, prompt, aspectRatio, generateFunction);
+      }
+    );
+
+    if (!generationResult.success) {
+      throw new Error(generationResult.error || "Falha na geração de imagem");
+    }
+
+    const imageUrl = generationResult.imageUrl!;
+    const modelUsed = generationResult.modelUsed;
+    const aspectRatioUsed = generationResult.aspectRatioUsed;
+    const wasFallback = generationResult.wasFallback;
+
+    // Log informações sobre a geração
+    if (wasFallback) {
+      console.log(`🔄 Fallback executado: ${model} → ${modelUsed}`);
+      console.log(`📐 Aspect ratio convertido: ${aspectRatio} → ${aspectRatioUsed}`);
+      console.log(`💡 Motivo: ${generationResult.fallbackReason}`);
     } else {
-      throw new Error(`Unsupported model: ${model}`);
+      console.log(`✅ Geração bem-sucedida com modelo original: ${modelUsed}`);
     }
 
 
@@ -618,6 +649,10 @@ export async function generateImageAction(
       creditsUsed: creditResult?.creditsUsed || 0,
       remainingCredits: creditResult?.remainingCredits || 0,
       quality,
+      modelUsed,
+      aspectRatioUsed,
+      wasFallback,
+      fallbackReason: wasFallback ? generationResult.fallbackReason : undefined,
     };
   } catch (error) {
     console.error("Error generating image:", error);

@@ -78,7 +78,7 @@ Suporte a **13 modelos diferentes** organizados por qualidade:
 ### 1. Clone o repositório
 ```bash
 git clone https://github.com/seu-usuario/apresent-ai.git
-cd apresent-ai
+cd apresent.ai
 ```
 
 ### 2. Instale as dependências
