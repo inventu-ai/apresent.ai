@@ -181,15 +181,14 @@ class ImageGenerationQueue {
    * Obtém a fila correspondente ao provider
    */
   private getQueue(provider: 'google' | 'apiframe' | 'ideogram'): QueueItem[] {
-    switch (provider) {
-      case 'google':
-        return this.googleQueue;
-      case 'apiframe':
-        return this.apiframeQueue;
-      case 'ideogram':
-        return this.ideogramQueue;
-      default:
-        throw new Error(`Provider desconhecido: ${provider}`);
+    if (provider === 'google') {
+      return this.googleQueue;
+    } else if (provider === 'apiframe') {
+      return this.apiframeQueue;
+    } else if (provider === 'ideogram') {
+      return this.ideogramQueue;
+    } else {
+      throw new Error("Provider desconhecido");
     }
   }
 
