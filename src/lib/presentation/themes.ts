@@ -401,22 +401,22 @@ export const themes: Record<ThemeName, ThemeProperties> = {
     description: "Natural and serene",
     colors: {
       light: {
-        primary: "#059669",
-        secondary: "#047857",
-        accent: "#34D399",
-        background: "#F0FDF4",
-        text: "#1F2937",
-        heading: "#064E3B",
-        muted: "#6B7280",
+        primary: "#2E8B57",     // Verde mais suave (Sea Green)
+        secondary: "#3CB371",   // Verde médio mais suave (Medium Sea Green)
+        accent: "#66CDAA",      // Verde claro suave (Medium Aquamarine)
+        background: "#FAFAFA",  // Quase branco (como outros temas)
+        text: "#1F2937",        // Mantido
+        heading: "#2F4F4F",     // Verde-cinza escuro mais neutro (Dark Slate Gray)
+        muted: "#6B7280",       // Mantido
       },
       dark: {
-        primary: "#34D399",
-        secondary: "#6EE7B7",
-        accent: "#10B981",
-        background: "#064E3B",
-        text: "#E5E7EB",
-        heading: "#ECFDF5",
-        muted: "#9CA3AF",
+        primary: "#66CDAA",     // Verde claro suave (Medium Aquamarine)
+        secondary: "#8FBC8F",   // Verde claro acinzentado (Dark Sea Green)
+        accent: "#3CB371",      // Verde médio mais suave
+        background: "#1A2421",  // Cinza muito escuro com leve tom verde
+        text: "#E5E7EB",        // Mantido
+        heading: "#F0F8FF",     // Branco azulado suave
+        muted: "#9CA3AF",       // Mantido
       },
     },
     fonts: {
@@ -429,12 +429,12 @@ export const themes: Record<ThemeName, ThemeProperties> = {
     },
     shadows: {
       light: {
-        card: "0 4px 12px rgba(5,150,105,0.08)",
-        button: "0 3px 8px rgba(5,150,105,0.15)",
+        card: "0 4px 12px rgba(46,139,87,0.08)",    // Ajustado para o novo verde primário
+        button: "0 3px 8px rgba(46,139,87,0.15)",   // Ajustado para o novo verde primário
       },
       dark: {
-        card: "0 4px 12px rgba(52,211,153,0.15)",
-        button: "0 3px 8px rgba(52,211,153,0.2)",
+        card: "0 4px 12px rgba(102,205,170,0.15)",  // Ajustado para o novo verde primário
+        button: "0 3px 8px rgba(102,205,170,0.2)",  // Ajustado para o novo verde primário
       },
     },
   },

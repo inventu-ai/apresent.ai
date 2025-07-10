@@ -10,6 +10,7 @@ import { detectLanguage, mapToSystemLanguage, getLanguageDisplayName } from "@/l
 import { useCreditValidation } from "@/hooks/useCreditValidation";
 import { InsufficientCreditsModal } from "@/components/ui/insufficient-credits-modal";
 import { useCredits } from "@/contexts/CreditsContext";
+import { useUserPlanLimits } from "@/hooks/useUserCredits";
 
 export function PresentationGenerationManager() {
   const {
@@ -33,6 +34,9 @@ export function PresentationGenerationManager() {
 
   // Obter a função refetchCredits do contexto de créditos
   const { refetchCredits } = useCredits();
+
+  // Obter os limites do plano do usuário
+  const { maxCards } = useUserPlanLimits();
 
   // Credit validation hooks
   // const { checkCredits, userId, currentPlan } = useCreditValidation();
@@ -196,8 +200,8 @@ export function PresentationGenerationManager() {
       
           } else {
             // PRIORITY 2: Only extract from prompt if user hasn't manually set the slide count
-            // Aqui você pode passar algum valor default para maxCards se quiser, ou remover esse argumento do extractSlideCount
-            const extractedSlideCount = extractSlideCount(presentationInput ?? "", undefined);
+            // Usar o maxCards do plano do usuário como limite máximo
+            const extractedSlideCount = extractSlideCount(presentationInput ?? "", maxCards);
             // Update the numSlides state with the extracted count (but don't mark as manual)
             setNumSlides(extractedSlideCount, false);
             finalSlideCount = extractedSlideCount;
@@ -225,7 +229,7 @@ export function PresentationGenerationManager() {
       }
     };
     void startOutlineGeneration();
-  }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet, isLanguageManuallySet]);
+  }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet, isLanguageManuallySet, maxCards]);
 
   const { completion: presentationCompletion, complete: generatePresentation } =
     useCompletion({
