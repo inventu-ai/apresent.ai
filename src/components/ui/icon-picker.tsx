@@ -55,20 +55,53 @@ const FALLBACK_ICONS = [
   "FaGuitar", "FaPalette", "FaPhotoVideo"
 ];
 
-// Função simples para obter um ícone de fallback aleatório
-export const getRandomFallbackIcon = (): string => {
-  const randomIndex = Math.floor(Math.random() * FALLBACK_ICONS.length);
-  return FALLBACK_ICONS[randomIndex] || "FaLightbulb"; // Garantir que sempre retorne uma string
+// Manter um registro dos ícones já usados para evitar repetições
+const usedFallbackIcons: Record<string, Set<string>> = {};
+
+// Função melhorada para obter um ícone de fallback aleatório sem repetições
+export const getRandomFallbackIcon = (contextId = 'global'): string => {
+  // Inicializar o conjunto de ícones usados para este contexto se não existir
+  if (!usedFallbackIcons[contextId]) {
+    usedFallbackIcons[contextId] = new Set<string>();
+  }
+  
+  // Se todos os ícones já foram usados neste contexto, resetar o conjunto
+  if (usedFallbackIcons[contextId]?.size >= FALLBACK_ICONS.length - 5) {
+    usedFallbackIcons[contextId]?.clear();
+  }
+  
+  // Filtrar ícones que ainda não foram usados neste contexto
+  const availableIcons = FALLBACK_ICONS.filter(icon => !usedFallbackIcons[contextId]?.has(icon));
+  
+  // Se não houver ícones disponíveis (caso improvável), usar qualquer um
+  if (availableIcons.length === 0) {
+    const randomIndex = Math.floor(Math.random() * FALLBACK_ICONS.length);
+    return FALLBACK_ICONS[randomIndex] || "FaLightbulb";
+  }
+  
+  // Selecionar um ícone aleatório dos disponíveis
+  const randomIndex = Math.floor(Math.random() * availableIcons.length);
+  const selectedIcon = availableIcons[randomIndex] || "FaLightbulb";
+  
+  // Registrar que este ícone foi usado neste contexto
+  usedFallbackIcons[contextId]?.add(selectedIcon);
+  
+  console.log(`[ICON_FALLBACK] Selecionado ícone de fallback: ${selectedIcon} para contexto: ${contextId}`);
+  console.log(`[ICON_FALLBACK] Ícones já usados neste contexto: ${usedFallbackIcons[contextId]?.size || 0}/${FALLBACK_ICONS.length}`);
+  
+  return selectedIcon;
 };
 
 // Define the prop types
 interface IconPickerProps {
-  onIconSelect?: (iconName: string, iconComponent: ReactNode) => void;
+  onIconSelect?: (iconName: string, iconComponent?: ReactNode) => void;
   defaultIcon?: string;
   searchTerm?: string; // Added prop to automatically search and select the first matching icon
   size?: "sm" | "md" | "lg";
   className?: string;
   contextId?: string; // Identificador único para o contexto onde o ícone está sendo usado
+  isOpen?: boolean; // Propriedade opcional para controlar o estado do modal externamente
+  onOpenChange?: (isOpen: boolean) => void; // Callback opcional para notificar mudanças no estado do modal
 }
 
 // Main Icon Picker Component
@@ -79,6 +112,8 @@ const IconPicker = ({
   size = "md",
   className,
   contextId = "default", // Valor padrão para compatibilidade com código existente
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange
 }: IconPickerProps) => {
   const [icon, setIcon] = useState<string>(defaultIcon);
   const [iconComponent, setIconComponent] = useState<ReactNode>(null);
@@ -86,8 +121,23 @@ const IconPicker = ({
   const [internalSearchTerm, setInternalSearchTerm] = useState<string>("");
   const [filteredIcons, setFilteredIcons] = useState<IconItem[]>([]);
   const [availableIcons, setAvailableIcons] = useState<IconItem[]>([]);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [internalIsOpen, setInternalIsOpen] = useState<boolean>(false);
   const [initialLoadDone, setInitialLoadDone] = useState<boolean>(false);
+  
+  // Determinar se o componente está controlado externamente ou internamente
+  const isControlled = externalIsOpen !== undefined;
+  const isOpen = isControlled ? externalIsOpen : internalIsOpen;
+  
+  // Função para lidar com mudanças no estado do modal
+  const handleOpenChange = (open: boolean) => {
+    // Se o componente estiver sendo controlado externamente, chamar o callback
+    if (isControlled && externalOnOpenChange) {
+      externalOnOpenChange(open);
+    } else {
+      // Caso contrário, atualizar o estado interno
+      setInternalIsOpen(open);
+    }
+  };
 
   // Size mappings for the trigger button
   const sizeClasses = {
@@ -496,34 +546,10 @@ const IconPicker = ({
     }
   };
 
-  // Handle initializing with searchTerm, defaultIcon, or localStorage
+  // Handle initializing with searchTerm or defaultIcon
   useEffect(() => {
     const findAndSelectIcon = async () => {
-      // Primeiro, tentar carregar do localStorage
-      try {
-        const storageKey = `selected-icon-${contextId}-${defaultIcon}`;
-        const savedIcon = localStorage.getItem(storageKey);
-        
-        if (savedIcon) {
-          // Se encontrarmos um ícone salvo, usá-lo em vez do defaultIcon
-          setIcon(savedIcon);
-          const component = await loadIconComponent(savedIcon);
-          setIconComponent(component);
-          
-          // Notificar o componente pai se onIconSelect for fornecido
-          if (onIconSelect) {
-            onIconSelect(savedIcon, component);
-          }
-          
-          setInitialLoadDone(true);
-          return; // Sair da função se carregamos com sucesso do localStorage
-        }
-      } catch (error) {
-        console.error("Error loading icon from localStorage:", error);
-        // Continuar com o fluxo normal se houver erro
-      }
-
-      // Se não encontrarmos no localStorage ou houver erro, continuar com o fluxo normal
+      // Inicializar diretamente com searchTerm ou defaultIcon
       if (searchTerm) {
         // If a searchTerm is provided, search and select the first result
         setIsLoading(true);
@@ -580,14 +606,6 @@ const IconPicker = ({
             if (onIconSelect && component) {
               onIconSelect(fallbackIconName, component);
             }
-            
-            // Armazenar no localStorage para persistência
-            try {
-              const storageKey = `selected-icon-${contextId}-${defaultIcon}`;
-              localStorage.setItem(storageKey, fallbackIconName);
-            } catch (error) {
-              console.error("Error saving fallback icon to localStorage:", error);
-            }
           }
         } catch (error) {
           console.error("Error initializing from search term:", error);
@@ -635,22 +653,12 @@ const IconPicker = ({
       onIconSelect(selectedName, component);
     }
 
-    // Armazenar o ícone selecionado no localStorage para persistência
-    try {
-      // Armazenar o ícone selecionado com um identificador baseado no contextId e defaultIcon
-      // Isso permite que diferentes instâncias do IconPicker mantenham suas próprias seleções
-      const storageKey = `selected-icon-${contextId}-${defaultIcon}`;
-      localStorage.setItem(storageKey, selectedName);
-    } catch (error) {
-      console.error("Error saving icon selection to localStorage:", error);
-    }
-
     // Close the sheet after selection
-    setIsOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button
           variant="outline"
