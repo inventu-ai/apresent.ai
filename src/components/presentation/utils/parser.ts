@@ -1193,15 +1193,14 @@ export class SlideParser {
         if (query) {
           // Função que mapeia a consulta para um nome de ícone ou retorna um ícone aleatório
           function mapQueryToIconName(q: string): string {
-            // Definir um ícone padrão para fallback (não será usado na maioria dos casos)
-            const defaultIcon = "FaLightbulb";
-            
             // Se query for undefined ou vazia, retornar um ícone aleatório
             if (!q || typeof q !== 'string') {
               return getRandomFallbackIcon();
             }
             
-            let result = defaultIcon;
+            // Inicializar result como string vazia para garantir que getRandomFallbackIcon seja chamado
+            // se nenhuma correspondência for encontrada
+            let result = "";
             
             try {
               // Converter para minúsculas para comparação case-insensitive
@@ -1286,7 +1285,7 @@ export class SlideParser {
               // Verificar correspondências no mapa de ícones
               for (const key in iconMap) {
                 if (lower.includes(key) && iconMap[key]) {
-                  result = iconMap[key] || defaultIcon;
+                  result = iconMap[key];
                   return result;
                 }
               }
@@ -1340,8 +1339,12 @@ export class SlideParser {
               return getRandomFallbackIcon();
             }
             
-            // Se não encontrou correspondência, retornar um ícone aleatório
-            return result || getRandomFallbackIcon();
+              // Se não encontrou correspondência, retornar um ícone aleatório
+              // Garantir que sempre retorne um ícone aleatório se result estiver vazio
+              if (result) {
+                return result;
+              }
+              return getRandomFallbackIcon();
           }
           // Garantir que o nome do ícone seja sempre uma string válida
           const mappedIconName: string = mapQueryToIconName(query);
