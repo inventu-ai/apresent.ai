@@ -56,7 +56,7 @@ WHERE email = 'SEU_EMAIL';
 
 ## 🎯 Resultado Final
 - ✅ Apresentações serão salvas corretamente
-- ✅ Sistema de créditos funcionará (500 créditos/mês no plano FREE)
+- ✅ Sistema de créditos funcionará (200 créditos/mês no plano FREE)
 - ✅ Limite de 10 cards por apresentação
 - ✅ Reset automático a cada 30 dias
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserCredits } from "@/hooks/useUserCredits";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +14,7 @@ interface CreditCounterProps {
 
 export function CreditCounter({ className = "", showDetails = true }: CreditCounterProps) {
   const { current, limit, isUnlimited, remaining, percentage, nextReset, daysUntilReset, wasReset, loading, error } = useUserCredits();
+  const { currentPlan } = useUserPlan();
 
   if (loading) {
     return (
@@ -37,7 +39,7 @@ export function CreditCounter({ className = "", showDetails = true }: CreditCoun
       <div className={`flex items-center gap-2 ${className}`}>
         <Zap className="h-4 w-4 text-yellow-500" />
         <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-          Créditos Ilimitados
+          Créditos aumentados!
         </Badge>
       </div>
     );
@@ -45,22 +47,30 @@ export function CreditCounter({ className = "", showDetails = true }: CreditCoun
 
   const isLow = percentage > 80;
   const isCritical = percentage > 95;
+  const isPremium = currentPlan === 'PREMIUM';
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <div className="flex items-center gap-2">
-        <Zap className={`h-4 w-4 ${isCritical ? 'text-red-500' : isLow ? 'text-yellow-500' : 'text-blue-500'}`} />
+        <Zap className={`h-4 w-4 ${
+          isPremium ? 'text-yellow-500' :
+          isCritical ? 'text-red-500' : 
+          isLow ? 'text-yellow-500' : 
+          'text-blue-500'
+        }`} />
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <Progress 
               value={percentage} 
               className={`w-24 h-2 ${
+                isPremium ? '[&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-orange-500' :
                 isCritical ? '[&>div]:bg-red-500' : 
                 isLow ? '[&>div]:bg-yellow-500' : 
                 '[&>div]:bg-blue-500'
               }`}
             />
             <span className={`text-sm font-medium ${
+              isPremium ? 'text-yellow-600 font-semibold' :
               isCritical ? 'text-red-600' : 
               isLow ? 'text-yellow-600' : 
               'text-gray-600'

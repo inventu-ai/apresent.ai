@@ -46,7 +46,7 @@ const PLANS: Record<'PRO' | 'PREMIUM', Plan> = {
     buttonText: 'Atualize para o Pro',
     buttonVariant: 'default',
     features: [
-      { text: 'Criação de IA ilimitada', included: true },
+      { text: 'Criação de IA aumentada!', included: true },
       { text: 'Geração de imagens com IA premium', included: true },
       { text: 'Operações avançadas de edição de IA', included: true },
       { text: 'Gere até 20 cartões', included: true },
@@ -63,20 +63,20 @@ const PLANS: Record<'PRO' | 'PREMIUM', Plan> = {
     id: 'PREMIUM',
     name: 'Premium',
     price: 59.99,
-    description: 'IA ilimitada e marca personalizada para elevar seu fluxo de trabalho',
+    description: 'IA eficiente e marca personalizada para elevar seu fluxo de trabalho',
     badge: 'Mais poderoso',
     badgeColor: 'bg-orange-500',
     icon: <Crown className="h-5 w-5" />,
     buttonText: 'Atualize para o Premium',
     buttonVariant: 'outline',
     features: [
-      { text: 'Criação de IA ilimitada', included: true },
+      { text: 'Criação de IA aumentada!', included: true },
       { text: 'Geração de imagens com IA premium', included: true },
       { text: 'Operações avançadas de edição de IA', included: true },
       { text: 'Gere até 30 cartões', included: true },
     ],
     includes: [
-      { text: 'Créditos de IA ilimitados', included: true },
+      { text: 'Créditos de IA aumentados!', included: true },
       { text: 'Todos os temas + criação personalizada', included: true },
       { text: 'Suporte prioritário', included: true },
     ]

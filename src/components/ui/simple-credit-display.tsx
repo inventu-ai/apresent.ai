@@ -44,13 +44,24 @@ export function SimpleCreditDisplay({ className = "" }: SimpleCreditDisplayProps
 
   const isLow = percentage > 80;
   const isCritical = percentage > 95;
+  const isPremium = currentPlan === 'PREMIUM';
 
-  // Determine a cor do texto com base na quantidade de créditos
-  const textColorClass = isCritical 
-    ? 'text-red-500' 
-    : isLow 
-      ? 'text-yellow-500' 
-      : 'text-blue-500';
+  // Determine a cor do texto com base no plano e quantidade de créditos
+  const textColorClass = isPremium
+    ? 'text-yellow-600 font-semibold'
+    : isCritical 
+      ? 'text-red-500' 
+      : isLow 
+        ? 'text-yellow-500' 
+        : 'text-blue-500';
+
+  const iconColorClass = isPremium
+    ? 'text-yellow-500'
+    : isCritical 
+      ? 'text-red-500' 
+      : isLow 
+        ? 'text-yellow-500' 
+        : 'text-blue-500';
 
   return (
     <>
@@ -59,7 +70,7 @@ export function SimpleCreditDisplay({ className = "" }: SimpleCreditDisplayProps
           <div 
             className={`flex items-center gap-2 px-3 py-1 rounded-md cursor-pointer transition-colors duration-200 hover:bg-accent/50 ${className}`}
           >
-            <Zap className={`h-4 w-4 ${textColorClass}`} />
+            <Zap className={`h-4 w-4 ${iconColorClass}`} />
             <span className={`text-base font-medium ${textColorClass}`}>
               {isUnlimited ? "∞" : remaining} {t.userMenu.credits}
             </span>
@@ -71,6 +82,7 @@ export function SimpleCreditDisplay({ className = "" }: SimpleCreditDisplayProps
             limit={limit} 
             percentage={percentage}
             isUnlimited={isUnlimited}
+            currentPlan={currentPlan}
             onOpenPricing={() => setShowPricingModal(true)}
           />
         </PopoverContent>
@@ -94,18 +106,20 @@ interface CreditInfoContentProps {
   limit?: number;
   percentage?: number;
   isUnlimited: boolean;
+  currentPlan?: 'FREE' | 'PRO' | 'PREMIUM';
   onOpenPricing?: () => void;
 }
 
-function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPricing }: CreditInfoContentProps) {
+function CreditInfoContent({ remaining, limit, percentage, isUnlimited, currentPlan, onOpenPricing }: CreditInfoContentProps) {
   const { t } = useTranslation();
+  const isPremium = currentPlan === 'PREMIUM';
 
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-blue-500" />
+          <Zap className={`h-5 w-5 ${isPremium ? 'text-yellow-500' : 'text-blue-500'}`} />
           <h4 className="font-semibold">{t.credits.accountBalance}</h4>
         </div>
         
@@ -116,7 +130,11 @@ function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPr
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-blue-600">{remaining} {t.userMenu.credits}</div>
+            <div className={`text-2xl font-bold ${
+              isPremium ? 'text-yellow-600' : 'text-blue-600'
+            }`}>
+              {remaining} {t.userMenu.credits}
+            </div>
             <p className="text-sm text-muted-foreground">
               {t.credits.creditsAllowAI}
             </p>

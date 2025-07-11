@@ -82,8 +82,12 @@ export function CreditSection({ userId, currentPlan = 'FREE' }: CreditSectionPro
 
               {/* Credits Info */}
               <div className="flex items-center gap-2 text-sm">
-                <Zap className="h-4 w-4 text-blue-500" />
-                <span className="font-medium">{remaining} {t.profile.creditsRemaining}</span>
+                <Zap className={`h-4 w-4 ${currentPlan === 'PREMIUM' ? 'text-yellow-500' : 'text-blue-500'}`} />
+                <span className={`font-medium ${
+                  currentPlan === 'PREMIUM' ? 'text-yellow-600 font-semibold' : ''
+                }`}>
+                  {remaining} {t.profile.creditsRemaining}
+                </span>
               </div>
 
               {/* Reset Info */}

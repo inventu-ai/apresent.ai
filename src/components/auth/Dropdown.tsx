@@ -77,8 +77,10 @@ export function UserDetail() {
               </Badge>
             ) : (
               <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-blue-600" />
-                <span className="text-xs font-medium text-blue-600">
+                <Zap className={`h-3 w-3 ${planName === 'PREMIUM' ? 'text-yellow-500' : 'text-blue-600'}`} />
+                <span className={`text-xs font-medium ${
+                  planName === 'PREMIUM' ? 'text-yellow-600 font-semibold' : 'text-blue-600'
+                }`}>
                   {remaining} {t.userMenu.credits}
                 </span>
               </div>

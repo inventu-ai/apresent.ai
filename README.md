@@ -23,7 +23,7 @@
 - **Pré-visualização em tempo real**
 
 ### 💎 **Sistema de Planos e Créditos**
-- **3 planos**: FREE (500 créditos), PRO (2000 créditos), PREMIUM (ilimitado)
+- **3 planos**: FREE (200 créditos), PRO (800 créditos), PREMIUM (3000 créditos)
 - **Reset automático** de créditos a cada 30 dias
 - **Limitação inteligente** de cards por plano (10/20/30)
 - **Badges visuais** de plano em toda interface
@@ -281,9 +281,9 @@ pnpm convert-google-credentials  # Converter credenciais Google
 ### Planos de Uso
 | Plano | Créditos/mês | Cards máx | Modelos | Preço |
 |-------|-------------|-----------|---------|-------|
-| FREE | 500 | 10 | 3 básicos | Grátis |
-| PRO | 2000 | 20 | 8 modelos | R$29.99 |
-| PREMIUM | Ilimitado | 30 | 13 modelos | R$59.99 |
+| FREE | 200 | 10 | 3 básicos | Grátis |
+| PRO | 800 | 20 | 8 modelos | R$29.99 |
+| PREMIUM | 3000 | 30 | 13 modelos | R$59.99 |
 
 ### Custos por Ação
 - **Apresentação completa**: 40 créditos

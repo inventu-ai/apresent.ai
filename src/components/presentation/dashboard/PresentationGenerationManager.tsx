@@ -55,6 +55,9 @@ export function PresentationGenerationManager() {
   const slidesRafIdRef = useRef<number | null>(null);
   const outlineRafIdRef = useRef<number | null>(null);
 
+  // 🔥 FIX: Add ref to prevent duplicate outline generation
+  const isOutlineGenerationExecuting = useRef(false);
+
   // Create buffer refs to store the latest content
   // Note: The types should match what setOutline and setSlides expect
   const slidesBufferRef = useRef<ReturnType<
@@ -98,9 +101,11 @@ export function PresentationGenerationManager() {
         language,
       },
       onFinish: () => {
+        console.log("✅ Outline generation completed successfully");
         setIsGeneratingOutline(false);
         setShouldStartOutlineGeneration(false);
         setShouldStartPresentationGeneration(false);
+        isOutlineGenerationExecuting.current = false; // 🔥 FIX: Reset execution flag
         const {
           currentPresentationId,
           outline,
@@ -125,8 +130,10 @@ export function PresentationGenerationManager() {
         }
       },
       onError: (error) => {
+        console.error("❌ Outline generation failed:", error);
         toast.error("Failed to generate outline: " + error.message);
         resetGeneration();
+        isOutlineGenerationExecuting.current = false; // 🔥 FIX: Reset execution flag
         // Cancel any pending outline animation frame
         if (outlineRafIdRef.current !== null) {
           cancelAnimationFrame(outlineRafIdRef.current);
@@ -152,14 +159,29 @@ export function PresentationGenerationManager() {
     }
   }, [outlineCompletion]);
 
-  // Watch for outline generation start
+  // 🔥 FIX: Watch for outline generation start with duplicate prevention
   useEffect(() => {
     const startOutlineGeneration = async (): Promise<void> => {
-      if (shouldStartOutlineGeneration) {
+      if (shouldStartOutlineGeneration && !isOutlineGenerationExecuting.current) {
+        const sessionId = Math.random().toString(36).substr(2, 9);
+        console.log(`🚀 Starting outline generation (session: ${sessionId})`);
+        
+        // 🔥 FIX: Set execution flag immediately to prevent duplicates
+        isOutlineGenerationExecuting.current = true;
+
         try {
           setIsGeneratingOutline(true);
-          // Get current state
-          const { presentationInput, setLanguage, language: currentLanguage, isLanguageManuallySet } = usePresentationState.getState();
+          // Get current state - use getState() to get fresh values
+          const state = usePresentationState.getState();
+          const { 
+            presentationInput, 
+            setLanguage, 
+            language: currentLanguage, 
+            isLanguageManuallySet,
+            numSlides,
+            isNumSlidesManuallySet,
+            setNumSlides
+          } = state;
           
           let finalLanguage = currentLanguage;
           
@@ -212,6 +234,8 @@ export function PresentationGenerationManager() {
             outlineRafIdRef.current =
               requestAnimationFrame(updateOutlineWithRAF);
           }
+          
+          console.log(`📤 Calling generateOutline API (session: ${sessionId})`);
           await generateOutline(presentationInput ?? "", {
             body: {
               prompt: presentationInput ?? "",
@@ -220,16 +244,18 @@ export function PresentationGenerationManager() {
             },
           });
         } catch (error) {
-          console.log(error);
+          console.error(`❌ Outline generation error (session: ${sessionId}):`, error);
           // Error is handled by onError callback
         } finally {
-          setIsGeneratingOutline(false);
-          setShouldStartOutlineGeneration(false);
+          console.log(`🏁 Outline generation finished (session: ${sessionId})`);
+          // Don't reset the flag here - let onFinish/onError handle it
         }
+      } else if (shouldStartOutlineGeneration && isOutlineGenerationExecuting.current) {
+        console.warn("⚠️ Outline generation already in progress, skipping duplicate call");
       }
     };
     void startOutlineGeneration();
-  }, [shouldStartOutlineGeneration, setNumSlides, numSlides, isNumSlidesManuallySet, isLanguageManuallySet, maxCards]);
+  }, [shouldStartOutlineGeneration]); // 🔥 FIX: Remove problematic dependencies
 
   const { completion: presentationCompletion, complete: generatePresentation } =
     useCompletion({
@@ -377,6 +403,8 @@ export function PresentationGenerationManager() {
         cancelAnimationFrame(outlineRafIdRef.current);
         outlineRafIdRef.current = null;
       }
+      // 🔥 FIX: Reset execution flag on unmount
+      isOutlineGenerationExecuting.current = false;
     };
   }, []);
 

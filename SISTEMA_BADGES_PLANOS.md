@@ -71,7 +71,7 @@ kelviny.jesus@inventu.ai
 
 ```
 ⚡ Seus Créditos          [💎 Premium]
-Créditos ilimitados
+3000 créditos/mês
 ```
 
 **Implementação:**
@@ -86,7 +86,7 @@ Créditos ilimitados
 👤 Kelviny Jesus
 📧 kelviny.jesus@inventu.ai
 💎 Premium
-⚡ Créditos ilimitados
+⚡ 3000 créditos/mês
 ```
 
 **Implementação:**

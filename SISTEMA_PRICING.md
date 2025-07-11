@@ -58,7 +58,7 @@ Sistema de pricing modal implementado com lógica condicional baseada no plano a
 - ✅ Gere até 30 cartões
 
 **Inclui tudo em Pro, e:**
-- ✅ Créditos de IA ilimitados
+- ✅ Créditos de IA aumentados!
 - ✅ Todos os temas + criação personalizada
 - ✅ Suporte prioritário + consultoria
 - ✅ White label (sem marca)

@@ -44,19 +44,19 @@ Este arquivo criará:
 ### 3. Configuração dos Planos
 
 #### Plano FREE (Padrão):
-- 500 créditos AI por mês
+- 200 créditos AI por mês
 - Máximo 10 cards por apresentação
 - Temas básicos
 - Suporte padrão
 
 #### Plano PRO:
-- 2000 créditos AI por mês
+- 800 créditos AI por mês
 - Máximo 20 cards por apresentação
 - Temas avançados
 - Suporte prioritário
 
 #### Plano PREMIUM:
-- Créditos AI ilimitados
+- 3000 créditos AI por mês
 - Máximo 30 cards por apresentação
 - Temas customizados
 - Suporte prioritário + White label

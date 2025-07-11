@@ -13,14 +13,14 @@ O sistema implementa um modelo de créditos unificado com três planos (FREE, PR
 ## 💳 Estrutura de Planos
 
 ### 🆓 FREE (Gratuito)
-- **500 créditos/mês** (resetam mensalmente)
+- **200 créditos/mês** (resetam mensalmente)
 - **Máximo 10 cards** por apresentação
 - **Imagem básica** apenas (5 créditos)
 - Exportação básica
 - Suporte por email
 
 ### ⭐ PRO ($9.99/mês)
-- **2000 créditos/mês** (resetam mensalmente)
+- **800 créditos/mês** (resetam mensalmente)
 - **Máximo 20 cards** por apresentação
 - **Imagem básica + avançada** (5-10 créditos)
 - Exportação avançada
@@ -28,7 +28,7 @@ O sistema implementa um modelo de créditos unificado com três planos (FREE, PR
 - Suporte prioritário
 
 ### 💎 PREMIUM ($19.99/mês)
-- **Créditos ilimitados**
+- **3000 créditos/mês** (resetam mensalmente)
 - **Máximo 30 cards** por apresentação
 - **Todas as qualidades** (5-15 créditos)
 - Exportação completa
@@ -270,18 +270,18 @@ export async function POST(req: Request) {
 
 ## 📊 Exemplos Práticos com Nova Métrica
 
-### **Plano FREE (500 créditos):**
-- ~12 apresentações completas (500 ÷ 40 = 12.5)
-- ~100 imagens básicas adicionais
-- ~50 imagens avançadas (se tivesse PRO)
+### **Plano FREE (200 créditos):**
+- ~5 apresentações completas (200 ÷ 40 = 5)
+- ~40 imagens básicas adicionais
+- ~20 imagens avançadas (se tivesse PRO)
 
-### **Plano PRO (2000 créditos):**
-- ~50 apresentações completas
-- ~200 imagens avançadas adicionais
+### **Plano PRO (800 créditos):**
+- ~20 apresentações completas (800 ÷ 40 = 20)
+- ~80 imagens avançadas adicionais
 
-### **Plano PREMIUM:**
-- Apresentações ilimitadas
-- Imagens ilimitadas
+### **Plano PREMIUM (3000 créditos):**
+- ~75 apresentações completas (3000 ÷ 40 = 75)
+- ~300 imagens premium adicionais
 
 ## 📊 Monitoramento
 

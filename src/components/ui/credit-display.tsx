@@ -55,7 +55,10 @@ export function CreditDisplay({ className = "" }: CreditDisplayProps) {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80" align="end">
-          <CreditInfoContent isUnlimited={true} />
+          <CreditInfoContent 
+            isUnlimited={true} 
+            currentPlan={currentPlan}
+          />
         </PopoverContent>
       </Popover>
     );
@@ -63,6 +66,7 @@ export function CreditDisplay({ className = "" }: CreditDisplayProps) {
 
   const isLow = percentage > 80;
   const isCritical = percentage > 95;
+  const isPremium = currentPlan === 'PREMIUM';
 
   return (
     <>
@@ -72,10 +76,16 @@ export function CreditDisplay({ className = "" }: CreditDisplayProps) {
             variant="ghost" 
             className={`h-8 px-3 gap-2 hover:bg-accent/50 ${className}`}
           >
-            <Zap className={`h-4 w-4 ${isCritical ? 'text-red-500' : isLow ? 'text-yellow-500' : 'text-blue-500'}`} />
+            <Zap className={`h-4 w-4 ${
+              isPremium ? 'text-yellow-500' :
+              isCritical ? 'text-red-500' : 
+              isLow ? 'text-yellow-500' : 
+              'text-blue-500'
+            }`} />
             <Badge 
               variant={isCritical ? "destructive" : isLow ? "outline" : "secondary"}
               className={`font-medium ${
+                isPremium ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-semibold' :
                 isCritical ? 'bg-red-100 text-red-800 border-red-300' : 
                 isLow ? 'bg-yellow-100 text-yellow-800 border-yellow-300' : 
                 'bg-blue-100 text-blue-800 border-blue-300'
@@ -91,6 +101,7 @@ export function CreditDisplay({ className = "" }: CreditDisplayProps) {
             limit={limit} 
             percentage={percentage}
             isUnlimited={false}
+            currentPlan={currentPlan}
             onOpenPricing={() => setShowPricingModal(true)}
           />
         </PopoverContent>
@@ -114,18 +125,20 @@ interface CreditInfoContentProps {
   limit?: number;
   percentage?: number;
   isUnlimited: boolean;
+  currentPlan?: 'FREE' | 'PRO' | 'PREMIUM';
   onOpenPricing?: () => void;
 }
 
-function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPricing }: CreditInfoContentProps) {
+function CreditInfoContent({ remaining, limit, percentage, isUnlimited, currentPlan, onOpenPricing }: CreditInfoContentProps) {
   const { t } = useTranslation();
+  const isPremium = currentPlan === 'PREMIUM';
 
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-blue-500" />
+          <Zap className={`h-5 w-5 ${isPremium ? 'text-yellow-500' : 'text-blue-500'}`} />
           <h4 className="font-semibold">{t.credits.accountBalance}</h4>
         </div>
         
@@ -136,7 +149,11 @@ function CreditInfoContent({ remaining, limit, percentage, isUnlimited, onOpenPr
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-blue-600">{remaining} {t.userMenu.credits}</div>
+            <div className={`text-2xl font-bold ${
+              isPremium ? 'text-yellow-600' : 'text-blue-600'
+            }`}>
+              {remaining} {t.userMenu.credits}
+            </div>
             <p className="text-sm text-muted-foreground">
               {t.credits.creditsAllowAI}
             </p>

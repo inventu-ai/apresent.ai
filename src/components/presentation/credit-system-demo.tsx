@@ -207,7 +207,7 @@ export function CreditSystemDemo() {
             <div className="p-4 border rounded-lg">
               <h4 className="font-medium mb-2">Plano PREMIUM</h4>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Créditos ilimitados</li>
+                <li>• Créditos aumentados!</li>
                 <li>• Até 30 cards</li>
                 <li>• Todas as qualidades</li>
               </ul>
