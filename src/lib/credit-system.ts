@@ -40,7 +40,31 @@ export const MAX_CARDS_BY_PLAN = {
 } as const;
 
 /**
+ * 🔥 NOVA FUNÇÃO: Verifica se o usuário é ADMIN
+ */
+export async function isUserAdmin(userId: string): Promise<boolean> {
+  try {
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Erro ao verificar role do usuário:', error);
+      return false;
+    }
+    
+    return user?.role === 'ADMIN';
+  } catch (error) {
+    console.error('Erro ao verificar se usuário é admin:', error);
+    return false;
+  }
+}
+
+/**
  * Verifica se o usuário pode consumir créditos para uma ação
+ * 🔥 MODIFICADO: ADMINs têm créditos ilimitados
  */
 export async function canConsumeCredits(
   userId: string, 
@@ -52,11 +76,27 @@ export async function canConsumeCredits(
   currentCredits: number;
   creditLimit: number;
   isUnlimited: boolean;
+  isAdmin?: boolean;
   message?: string;
 }> {
   const cost = CREDIT_COSTS[action] * amount;
   
-  // Verificar limite de créditos
+  // 🔥 NOVA VERIFICAÇÃO: Se é ADMIN, sempre permitir
+  const isAdmin = await isUserAdmin(userId);
+  
+  if (isAdmin) {
+    return {
+      allowed: true,
+      cost: 0, // ADMINs não pagam créditos
+      currentCredits: 0,
+      creditLimit: Infinity,
+      isUnlimited: true,
+      isAdmin: true,
+      message: 'Créditos ilimitados (ADMIN)'
+    };
+  }
+  
+  // Verificar limite de créditos para usuários normais
   const creditCheck = await checkUserLimit(userId, 'ai_credits', cost);
   
   return {
@@ -65,12 +105,14 @@ export async function canConsumeCredits(
     currentCredits: creditCheck.current || 0,
     creditLimit: creditCheck.limit || 0,
     isUnlimited: creditCheck.isUnlimited || false,
+    isAdmin: false,
     message: creditCheck.allowed ? undefined : 'Créditos insuficientes'
   };
 }
 
 /**
  * Consome créditos do usuário para uma ação
+ * 🔥 MODIFICADO: ADMINs não consomem créditos
  */
 export async function consumeCredits(
   userId: string, 
@@ -80,11 +122,25 @@ export async function consumeCredits(
   success: boolean;
   creditsUsed: number;
   remainingCredits: number;
+  isAdmin?: boolean;
   message?: string;
 }> {
   const cost = CREDIT_COSTS[action] * amount;
   
-  // Verificar se pode consumir
+  // 🔥 NOVA VERIFICAÇÃO: Se é ADMIN, não consumir créditos
+  const isAdmin = await isUserAdmin(userId);
+  
+  if (isAdmin) {
+    return {
+      success: true,
+      creditsUsed: 0, // ADMINs não consomem créditos
+      remainingCredits: Infinity,
+      isAdmin: true,
+      message: 'Ação executada sem consumir créditos (ADMIN)'
+    };
+  }
+  
+  // Verificar se pode consumir (usuários normais)
   const canConsume = await canConsumeCredits(userId, action, amount);
   
   if (!canConsume.allowed) {
@@ -92,11 +148,12 @@ export async function consumeCredits(
       success: false,
       creditsUsed: 0,
       remainingCredits: canConsume.currentCredits,
+      isAdmin: false,
       message: canConsume.message
     };
   }
   
-  // Consumir créditos
+  // Consumir créditos (usuários normais)
   await incrementUserUsage(userId, 'ai_credits', cost);
   
   const remainingCredits = canConsume.isUnlimited 
@@ -107,12 +164,14 @@ export async function consumeCredits(
     success: true,
     creditsUsed: cost,
     remainingCredits: Math.max(0, remainingCredits),
+    isAdmin: false,
     message: `${cost} créditos consumidos`
   };
 }
 
 /**
  * Obtém informações de créditos do usuário com verificação automática de reset
+ * 🔥 MODIFICADO: ADMINs mostram créditos ilimitados
  */
 export async function getUserCredits(userId: string): Promise<{
   current: number;
@@ -122,9 +181,27 @@ export async function getUserCredits(userId: string): Promise<{
   percentage: number;
   nextReset: Date | null;
   daysUntilReset: number;
+  isAdmin?: boolean;
   wasReset?: boolean;
 }> {
-  // Verificar se precisa resetar créditos
+  // 🔥 NOVA VERIFICAÇÃO: Se é ADMIN, retornar valores ilimitados
+  const isAdmin = await isUserAdmin(userId);
+  
+  if (isAdmin) {
+    return {
+      current: 0,
+      limit: Infinity,
+      isUnlimited: true,
+      remaining: Infinity,
+      percentage: 0,
+      nextReset: null,
+      daysUntilReset: 0,
+      isAdmin: true,
+      wasReset: false
+    };
+  }
+  
+  // Verificar se precisa resetar créditos (usuários normais)
   const resetCheck = await checkAndResetCreditsIfNeeded(userId);
   
   const { limit, isUnlimited } = await getPlanLimit(userId, 'ai_credits');
@@ -151,19 +228,35 @@ export async function getUserCredits(userId: string): Promise<{
     percentage,
     nextReset,
     daysUntilReset,
+    isAdmin: false,
     wasReset: resetCheck.wasReset
   };
 }
 
 /**
  * Verifica se o usuário pode criar uma apresentação com X cards
+ * 🔥 MODIFICADO: ADMINs podem criar quantos cards quiserem
  */
 export async function canCreateCards(userId: string, cardCount: number): Promise<{
   allowed: boolean;
   maxCards: number;
   planName: string;
+  isAdmin?: boolean;
   message?: string;
 }> {
+  // 🔥 NOVA VERIFICAÇÃO: Se é ADMIN, sempre permitir
+  const isAdmin = await isUserAdmin(userId);
+  
+  if (isAdmin) {
+    return {
+      allowed: true,
+      maxCards: Infinity,
+      planName: 'ADMIN',
+      isAdmin: true,
+      message: 'Limite de cards ilimitado (ADMIN)'
+    };
+  }
+  
   const plan = await getUserCurrentPlan(userId);
   const planName = plan?.name || 'FREE';
   const maxCards = MAX_CARDS_BY_PLAN[planName as keyof typeof MAX_CARDS_BY_PLAN] || 10;
@@ -174,19 +267,35 @@ export async function canCreateCards(userId: string, cardCount: number): Promise
     allowed,
     maxCards,
     planName,
+    isAdmin: false,
     message: allowed ? undefined : `Seu plano ${planName} permite até ${maxCards} cards`
   };
 }
 
 /**
  * Verifica se o usuário pode usar uma qualidade de imagem
+ * 🔥 MODIFICADO: ADMINs podem usar qualquer qualidade
  */
 export async function canUseImageQuality(userId: string, quality: CreditAction): Promise<{
   allowed: boolean;
   planName: string;
   availableQualities: CreditAction[];
+  isAdmin?: boolean;
   message?: string;
 }> {
+  // 🔥 NOVA VERIFICAÇÃO: Se é ADMIN, sempre permitir
+  const isAdmin = await isUserAdmin(userId);
+  
+  if (isAdmin) {
+    return {
+      allowed: true,
+      planName: 'ADMIN',
+      availableQualities: ['BASIC_IMAGE', 'ADVANCED_IMAGE', 'PREMIUM_IMAGE'] as CreditAction[],
+      isAdmin: true,
+      message: 'Acesso a todas as qualidades (ADMIN)'
+    };
+  }
+  
   const plan = await getUserCurrentPlan(userId);
   const planName = plan?.name || 'FREE';
   const availableQualities = IMAGE_QUALITY_BY_PLAN[planName as keyof typeof IMAGE_QUALITY_BY_PLAN] || ['BASIC_IMAGE'] as CreditAction[];
@@ -197,20 +306,39 @@ export async function canUseImageQuality(userId: string, quality: CreditAction):
     allowed,
     planName,
     availableQualities,
+    isAdmin: false,
     message: allowed ? undefined : `Qualidade ${quality} não disponível no plano ${planName}`
   };
 }
 
 /**
  * Verifica se o usuário pode usar um modelo específico de imagem
+ * 🔥 MODIFICADO: ADMINs podem usar qualquer modelo
  */
 export async function canUseImageModel(userId: string, model: ImageModelList): Promise<{
   allowed: boolean;
   planName: string;
   availableModels: ImageModelList[];
   requiredPlan?: 'PRO' | 'PREMIUM';
+  isAdmin?: boolean;
   message?: string;
 }> {
+  // 🔥 NOVA VERIFICAÇÃO: Se é ADMIN, sempre permitir
+  const isAdmin = await isUserAdmin(userId);
+  
+  if (isAdmin) {
+    // ADMINs têm acesso a todos os modelos
+    const allModels = getModelsForPlan('PREMIUM'); // Pega todos os modelos mais avançados
+    
+    return {
+      allowed: true,
+      planName: 'ADMIN',
+      availableModels: allModels,
+      isAdmin: true,
+      message: 'Acesso a todos os modelos (ADMIN)'
+    };
+  }
+  
   // Verificação especial para Google Imagen
   if (model.includes('google-imagen')) {
     const isConfigured = !!(process.env.GOOGLE_CLOUD_PROJECT_ID && 
@@ -227,6 +355,7 @@ export async function canUseImageModel(userId: string, model: ImageModelList): P
         allowed: false,
         planName,
         availableModels,
+        isAdmin: false,
         message: 'Google Imagen temporariamente indisponível. Credenciais não configuradas.'
       };
     }
@@ -253,6 +382,7 @@ export async function canUseImageModel(userId: string, model: ImageModelList): P
     planName,
     availableModels,
     requiredPlan,
+    isAdmin: false,
     message: allowed ? undefined : `Modelo ${model} requer plano ${requiredPlan || 'superior'}`
   };
 }

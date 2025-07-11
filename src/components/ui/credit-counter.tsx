@@ -13,7 +13,7 @@ interface CreditCounterProps {
 }
 
 export function CreditCounter({ className = "", showDetails = true }: CreditCounterProps) {
-  const { current, limit, isUnlimited, remaining, percentage, nextReset, daysUntilReset, wasReset, loading, error } = useUserCredits();
+  const { current, limit, isUnlimited, remaining, percentage, nextReset, daysUntilReset, wasReset, isAdmin, loading, error } = useUserCredits();
   const { currentPlan } = useUserPlan();
 
   if (loading) {
@@ -30,6 +30,21 @@ export function CreditCounter({ className = "", showDetails = true }: CreditCoun
       <div className={`flex items-center gap-2 text-red-500 ${className}`}>
         <AlertCircle className="h-4 w-4" />
         <span className="text-sm">Erro ao carregar créditos</span>
+      </div>
+    );
+  }
+
+  // 🔥 NOVA VERIFICAÇÃO: Exibição especial para ADMINs
+  if (isAdmin) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <Zap className="h-4 w-4 text-purple-500" />
+        <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-300">
+          <span className="text-sm font-bold">👑 ADMIN</span>
+        </Badge>
+        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">
+          <span className="text-xs">∞ Créditos Ilimitados</span>
+        </Badge>
       </div>
     );
   }

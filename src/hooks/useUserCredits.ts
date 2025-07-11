@@ -12,6 +12,7 @@ interface UserCredits {
   nextReset: Date | null;
   daysUntilReset: number;
   wasReset?: boolean;
+  isAdmin?: boolean;
   loading: boolean;
   error?: string;
 }
@@ -59,6 +60,7 @@ export function useUserCredits(): UserCredits {
         nextReset: data.nextReset ? new Date(data.nextReset) : null,
         daysUntilReset: data.daysUntilReset,
         wasReset: data.wasReset,
+        isAdmin: data.isAdmin,
         loading: false,
       });
     } catch (error) {

@@ -69,10 +69,17 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
             
             {/* Role badge */}
             <div className="mt-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                <User className="h-3 w-3 mr-1" />
-                {user.role === "ADMIN" ? "Administrador" : "Usuário"}
-              </span>
+              {user.role === "ADMIN" ? (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900 dark:text-purple-200">
+                  <User className="h-3 w-3 mr-1" />
+                  👑 Administrador
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <User className="h-3 w-3 mr-1" />
+                  Usuário
+                </span>
+              )}
             </div>
           </div>
         </div>
