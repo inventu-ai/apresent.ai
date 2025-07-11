@@ -80,7 +80,10 @@ const TimelineVisualization = ({
   return (
     <div className="relative mx-4">
       {/* Vertical line */}
-      <div className="absolute bottom-0 left-4 top-0 w-0.5 bg-gray-300"></div>
+      <div 
+        className="absolute bottom-0 left-[21px] top-6 w-0.5"
+        style={{ backgroundColor: 'var(--presentation-primary)' }}
+      ></div>
 
       {/* Events */}
       <div className="space-y-8">

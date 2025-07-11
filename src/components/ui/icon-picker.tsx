@@ -162,7 +162,8 @@ const IconPicker = ({
     setIsLoading(true);
     try {
       // Carregar ícones de múltiplas bibliotecas para ter mais opções iniciais
-      const [faModule, mdModule, giModule] = await Promise.all([
+      const [fa6Module, faModule, mdModule, giModule] = await Promise.all([
+        import("react-icons/fa6"),
         import("react-icons/fa"),
         import("react-icons/md"),
         import("react-icons/gi")
@@ -170,6 +171,9 @@ const IconPicker = ({
 
       // Ícones gerais (interface, ações comuns)
       const generalIcons = [
+        // Ícones numéricos para timeline
+        "Fa1", "Fa2", "Fa3", "Fa4", "Fa5",
+        // Outros ícones gerais
         "FaHome", "FaUser", "FaCog", "FaSearch", "FaBell", "FaCalendar", 
         "FaEnvelope", "FaHeart", "FaStar", "FaBookmark", "FaCheck", 
         "FaTimes", "FaEdit", "FaTrash", "FaDownload", "FaUpload", 
@@ -220,14 +224,29 @@ const IconPicker = ({
       // Criar lista de ícones com componentes
       const iconList: IconItem[] = [];
 
-      // Processar ícones FontAwesome
+      // Processar ícones FontAwesome (tentando primeiro fa6, depois fa)
       const faIcons = [...generalIcons, ...presentationIcons]
-        .map((name) => ({
-          name,
-          component: faModule[name]
-            ? React.createElement(faModule[name], { size: 24 })
-            : null,
-        }))
+        .map((name) => {
+          // Tentar primeiro com fa6Module
+          if (fa6Module[name]) {
+            return {
+              name,
+              component: React.createElement(fa6Module[name], { size: 24 })
+            };
+          }
+          // Se não encontrar em fa6, tentar com faModule
+          else if (faModule[name]) {
+            return {
+              name,
+              component: React.createElement(faModule[name], { size: 24 })
+            };
+          }
+          // Se não encontrar em nenhum, retornar null
+          return {
+            name,
+            component: null
+          };
+        })
         .filter((item) => item.component);
       
       iconList.push(...faIcons);
@@ -282,8 +301,13 @@ const IconPicker = ({
 
       // Carregar mais bibliotecas de ícones para busca
       if (termLower.startsWith("fa")) {
-        const mod = await import("react-icons/fa");
-        modules.push(mod as unknown as IconModule);
+        // Carregar tanto fa quanto fa6 para termos que começam com "fa"
+        const [fa6Mod, faMod] = await Promise.all([
+          import("react-icons/fa6"),
+          import("react-icons/fa")
+        ]);
+        modules.push(fa6Mod as unknown as IconModule);
+        modules.push(faMod as unknown as IconModule);
       } else if (termLower.startsWith("fi")) {
         const mod = await import("react-icons/fi");
         modules.push(mod as unknown as IconModule);
@@ -314,7 +338,8 @@ const IconPicker = ({
       } else {
         // Se não houver correspondência de prefixo, buscar em bibliotecas comuns
         // Aumentamos o número de bibliotecas para busca
-        const [fa, md, gi, bs, fi] = await Promise.all([
+        const [fa6, fa, md, gi, bs, fi] = await Promise.all([
+          import("react-icons/fa6"),
           import("react-icons/fa"),
           import("react-icons/md"),
           import("react-icons/gi"),
@@ -322,6 +347,7 @@ const IconPicker = ({
           import("react-icons/fi"),
         ]);
         modules.push(
+          fa6 as unknown as IconModule,
           fa as unknown as IconModule, 
           md as unknown as IconModule,
           gi as unknown as IconModule,
@@ -449,11 +475,37 @@ const IconPicker = ({
       const prefix = iconName.slice(0, 2).toLowerCase();
 
       // Dynamic import based on the prefix
-      let iconModule: IconModule;
+      let iconModule: IconModule | null = null;
+      let iconComponent: ReactNode = null;
+      
       switch (prefix) {
         case "fa": {
-          const mod = await import("react-icons/fa");
-          iconModule = mod as unknown as IconModule;
+          // Para ícones "fa", tentar carregar de ambas as bibliotecas
+          try {
+            // Primeiro tentar fa6
+            const fa6Mod = await import("react-icons/fa6");
+            const fa6IconModule = fa6Mod as unknown as IconModule;
+            
+            if (fa6IconModule[iconName]) {
+              iconComponent = React.createElement(fa6IconModule[iconName], { size: 24 });
+              if (iconComponent) {
+                return iconComponent;
+              }
+            }
+            
+            // Se não encontrar em fa6, tentar fa
+            const faMod = await import("react-icons/fa");
+            const faIconModule = faMod as unknown as IconModule;
+            
+            if (faIconModule[iconName]) {
+              iconComponent = React.createElement(faIconModule[iconName], { size: 24 });
+              if (iconComponent) {
+                return iconComponent;
+              }
+            }
+          } catch (error) {
+            // Silenciar erro
+          }
           break;
         }
         case "fi": {
@@ -527,14 +579,17 @@ const IconPicker = ({
           break;
         }
         default: {
-          const mod = await import("react-icons/fa");
+          const mod = await import("react-icons/fa6");
           iconModule = mod as unknown as IconModule;
           break;
         }
       }
 
-      const IconComponent = iconModule[iconName];
-      return IconComponent ? <IconComponent size={24} /> : null;
+      if (iconModule) {
+        const IconComponent = iconModule[iconName];
+        return IconComponent ? <IconComponent size={24} /> : null;
+      }
+      return null;
     } catch (error) {
       // Silenciar erro
       return null;
@@ -556,8 +611,23 @@ const IconPicker = ({
           let iconModule: IconModule;
 
           if (prefix === "fa" || !prefix) {
-            const mod = await import("react-icons/fa");
-            iconModule = mod as unknown as IconModule;
+            // Tentar carregar de ambas as bibliotecas fa6 e fa
+            try {
+              const [fa6Mod, faMod] = await Promise.all([
+                import("react-icons/fa6"),
+                import("react-icons/fa")
+              ]);
+              
+              // Combinar os módulos para busca
+              iconModule = {
+                ...faMod as unknown as IconModule,
+                ...fa6Mod as unknown as IconModule
+              };
+            } catch (error) {
+              // Fallback para fa6 se houver erro
+              const mod = await import("react-icons/fa6");
+              iconModule = mod as unknown as IconModule;
+            }
           } else if (prefix === "md") {
             const mod = await import("react-icons/md");
             iconModule = mod as unknown as IconModule;
@@ -569,7 +639,7 @@ const IconPicker = ({
             iconModule = mod as unknown as IconModule;
           } else {
             // Default to FA
-            const mod = await import("react-icons/fa");
+            const mod = await import("react-icons/fa6");
             iconModule = mod as unknown as IconModule;
           }
 

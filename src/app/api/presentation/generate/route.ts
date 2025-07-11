@@ -146,12 +146,29 @@ Choose ONE different layout for each slide:
 
 6. TIMELINE: For chronological progression
 \`\`\`xml
-<TIMELINE>
+<TIMELINE style="vertical">
   <DIV><H3>2022</H3><P>Market research completed</P></DIV>
   <DIV><H3>2023</H3><P>Product development phase</P></DIV>
   <DIV><H3>2024</H3><P>Global market expansion</P></DIV>
+  <DIV><H3>2025</H3><P>International partnerships</P></DIV>
+  <DIV><H3>2026</H3><P>New product line launch</P></DIV>
 </TIMELINE>
 \`\`\`
+
+## TIMELINE SLIDE REQUIREMENTS
+- Each timeline must have between 3 and 5 items (DIVs).
+- When using more than 3 items, reduce the spacing between items to maintain slide readability.
+- Each item should have a short title (H3) and a concise description (P).
+- Timeline items are automatically numbered with circular markers.
+- For timeline slides, only place images on the sides of the slide (left or right layout), never at the top.
+- Images are optional for timeline slides - only include them when necessary to enhance understanding of the content.
+- Example of vertical timeline:
+  <TIMELINE style="vertical">
+    <DIV><H3>2022</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>2023</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>2024</H3><P>Short description (max 2-3 lines).</P></DIV>
+    <DIV><H3>2025</H3><P>Short description (max 2-3 lines).</P></DIV>
+  </TIMELINE>
 
 7. PYRAMID: For hierarchical importance
 \`\`\`xml
@@ -231,6 +248,11 @@ For each outline point:
     - Use short paragraphs (maximum 2-3 sentences each)
     - Focus on explaining the chart data, not adding additional context
 11. For slides with tables: omit the image if the table is large; if small, you may include an image, preferably using a lateral layout ("left" or "right").
+12. For TIMELINE components:
+    - Include between 3 and 5 items (DIVs)
+    - Ensure each item has a concise title and description
+    - Only place images on the sides of the slide (left or right layout), never at the top
+    - Images are optional - only include them when necessary to enhance understanding
 
 Now create a complete XML presentation with {TOTAL_SLIDES} slides that significantly expands on the outline.
 `;
