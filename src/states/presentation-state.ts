@@ -15,7 +15,6 @@ interface PresentationState {
   customThemeData: ThemeProperties | null;
   language: string;
   isLanguageManuallySet: boolean; // Flag to track if user manually changed language
-  pageStyle: string;
   showTemplates: boolean;
   presentationInput: string;
   originalPrompt: string; // Store the original full prompt
@@ -51,7 +50,6 @@ interface PresentationState {
   shouldShowExitHeader: boolean;
   setShouldShowExitHeader: (udpdate: boolean) => void;
   setLanguage: (lang: string, isManual?: boolean) => void;
-  setPageStyle: (style: string) => void;
   setShowTemplates: (show: boolean) => void;
   setPresentationInput: (input: string) => void;
   setOriginalPrompt: (prompt: string) => void;
@@ -101,7 +99,6 @@ export const usePresentationState = create<PresentationState>((set) => ({
   isNumSlidesManuallySet: false,
   language: "en-US",
   isLanguageManuallySet: false,
-  pageStyle: "default",
   showTemplates: false,
   presentationInput: "",
   originalPrompt: "",
@@ -148,7 +145,6 @@ export const usePresentationState = create<PresentationState>((set) => ({
       theme: theme,
       customThemeData: customData,
     }),
-  setPageStyle: (style) => set({ pageStyle: style }),
   setShowTemplates: (show) => set({ showTemplates: show }),
   setPresentationInput: (input) => set({ presentationInput: input }),
   setOriginalPrompt: (prompt) => set({ originalPrompt: prompt }),

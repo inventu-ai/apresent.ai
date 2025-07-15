@@ -1,4 +1,3 @@
-import { Layout } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { usePresentationState } from "@/states/presentation-state";
 import { useUserPlanLimits } from "@/hooks/useUserCredits";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export function PresentationControls({
   shouldShowLabel = true,
@@ -20,14 +20,9 @@ export function PresentationControls({
     setNumSlides,
     language,
     setLanguage,
-    pageStyle,
-    setPageStyle,
   } = usePresentationState();
   
-
-  
-
-  
+  const { t } = useTranslation();
   const { maxCards, planName } = useUserPlanLimits();
   
   const SLIDE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30];
@@ -63,12 +58,12 @@ export function PresentationControls({
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 gap-4">
       {/* Number of Slides */}
       <div>
         {shouldShowLabel && (
           <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Number of slides
+            {t.presentation.numberOfSlides}
           </label>
         )}
         <Select
@@ -96,7 +91,7 @@ export function PresentationControls({
                 >
                   <div className="flex items-center justify-between w-full">
                     <span className={!isAllowed ? 'text-gray-300' : 'text-white'}>
-                      {num} {num === 1 ? 'slide' : 'slides'}
+                      {num} {num === 1 ? t.presentation.slide : t.presentation.slides}
                     </span>
                     <div className="ml-8">
                       {getPlanBadge(num)}
@@ -113,7 +108,7 @@ export function PresentationControls({
       <div>
         {shouldShowLabel && (
           <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Language
+            {t.presentation.language}
           </label>
         )}
         <Select key={language} value={language} onValueChange={(lang) => setLanguage(lang, true)}>
@@ -133,40 +128,6 @@ export function PresentationControls({
             <SelectItem value="ru">Russian</SelectItem>
             <SelectItem value="hi">Hindi</SelectItem>
             <SelectItem value="ar">Arabic</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Page Style */}
-      <div>
-        {shouldShowLabel && (
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Page style
-          </label>
-        )}
-        <Select value={pageStyle} onValueChange={setPageStyle}>
-          <SelectTrigger>
-            <div className="flex items-center gap-2">
-              <Layout className="h-4 w-4" />
-              <SelectValue placeholder="Select page style" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="default">
-              <div className="flex items-center gap-3">
-                <span>Default</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="traditional">
-              <div className="flex items-center gap-3">
-                <span>Traditional</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="tall">
-              <div className="flex items-center gap-3">
-                <span>Tall</span>
-              </div>
-            </SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -175,7 +175,7 @@ export function OutlineList() {
         <h2 className="text-sm text-foreground">{t.presentation.outline}</h2>
         {isGeneratingOutline && (
           <span className="animate-pulse text-xs text-muted-foreground">
-            Generating outline...
+            {t.presentation.generatingOutline}
           </span>
         )}
       </div>
