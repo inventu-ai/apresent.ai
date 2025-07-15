@@ -187,6 +187,7 @@ export interface Translations {
     regenerateOutline: string;
     regenerating: string;
     outline: string;
+    generatingOutline: string;
     regenerateTopic: string;
     regeneratingTopic: string;
     topicRegenerated: string;
@@ -198,6 +199,12 @@ export interface Translations {
     moreThemes: string;
     imageGenerationModel: string;
     presentationStyle: string;
+    modelInfo: {
+      speed: string;
+      bestFor: string;
+      description: string;
+      speedLabel: string;
+    };
     loadingPresentationOutline: string;
     pleaseWaitMoment: string;
     cardColor: string;
@@ -242,17 +249,17 @@ export interface Translations {
       bold: string;
       elegant: string;
     };
-    themeDescriptions: {
-      modern: string;
-      professional: string;
-      futuristic: string;
-      classic: string;
-      dark: string;
-      highContrast: string;
-      boldPassionate: string;
-      warm: string;
-      natural: string;
-    };
+      themeDescriptions: {
+        modern: string;
+        professional: string;
+        futuristic: string;
+        classic: string;
+        dark: string;
+        highContrast: string;
+        boldPassionate: string;
+        warm: string;
+        natural: string;
+      };
     themeModal: {
       youHaventCreated: string;
       createFirstTheme: string;
@@ -279,10 +286,12 @@ export interface Translations {
       headingColor: string;
       mutedColor: string;
     };
-    fontLabels: {
-      headingFont: string;
-      bodyFont: string;
-    };
+      fontLabels: {
+        headingFont: string;
+        bodyFont: string;
+        heading: string;
+        body: string;
+      };
     logoUpload: {
       uploadLogo: string;
       addLogoDescription: string;
@@ -614,9 +623,10 @@ export const translations: Record<Language, Translations> = {
       back: 'Voltar',
       prompt: 'Prompt',
       slide: 'slide',
-          regenerateOutline: 'Regenerar Estrutura',
+    regenerateOutline: 'Regenerar Estrutura',
     regenerating: 'Regenerando...',
     outline: 'Estrutura',
+    generatingOutline: 'Gerando estrutura...',
     regenerateTopic: 'Regenerar Tópico',
     regeneratingTopic: 'Regenerando tópico...',
     topicRegenerated: 'Tópico regenerado com sucesso',
@@ -628,6 +638,12 @@ export const translations: Record<Language, Translations> = {
       moreThemes: 'Mais Temas',
       imageGenerationModel: 'Modelo de Geração de Imagem',
       presentationStyle: 'Estilo da Apresentação',
+      modelInfo: {
+        speed: 'Velocidade',
+        bestFor: 'Melhor para',
+        description: 'Descrição',
+        speedLabel: 'Velocidade de geração',
+      },
       loadingPresentationOutline: 'Carregando Estrutura da Apresentação',
       pleaseWaitMoment: 'Por favor, aguarde um momento...',
       cardColor: 'Cor do card',
@@ -712,6 +728,8 @@ export const translations: Record<Language, Translations> = {
       fontLabels: {
         headingFont: 'Fonte do Título',
         bodyFont: 'Fonte do Corpo',
+        heading: 'Título',
+        body: 'Corpo',
       },
       logoUpload: {
         uploadLogo: 'Enviar Logo',
@@ -1035,6 +1053,7 @@ export const translations: Record<Language, Translations> = {
           regenerateOutline: 'Regenerate Outline',
     regenerating: 'Regenerating...',
     outline: 'Outline',
+    generatingOutline: 'Generating outline...',
     regenerateTopic: 'Regenerate Topic',
     regeneratingTopic: 'Regenerating topic...',
     topicRegenerated: 'Topic regenerated successfully',
@@ -1046,6 +1065,12 @@ export const translations: Record<Language, Translations> = {
       moreThemes: 'More Themes',
       imageGenerationModel: 'Image Generation Model',
       presentationStyle: 'Presentation Style',
+      modelInfo: {
+        speed: 'Speed',
+        bestFor: 'Best for',
+        description: 'Description',
+        speedLabel: 'Generation speed',
+      },
       loadingPresentationOutline: 'Loading Presentation Outline',
       pleaseWaitMoment: 'Please wait a moment...',
       cardColor: 'Card color',
@@ -1130,6 +1155,8 @@ export const translations: Record<Language, Translations> = {
       fontLabels: {
         headingFont: 'Heading Font',
         bodyFont: 'Body Font',
+        heading: 'Heading',
+        body: 'Body',
       },
       logoUpload: {
         uploadLogo: 'Upload Logo',
@@ -1453,6 +1480,7 @@ export const translations: Record<Language, Translations> = {
           regenerateOutline: 'Regenerar Esquema',
     regenerating: 'Regenerando...',
     outline: 'Esquema',
+    generatingOutline: 'Generando esquema...',
     regenerateTopic: 'Regenerar Tema',
     regeneratingTopic: 'Regenerando tema...',
     topicRegenerated: 'Tema regenerado exitosamente',
@@ -1464,6 +1492,12 @@ export const translations: Record<Language, Translations> = {
       moreThemes: 'Más Temas',
       imageGenerationModel: 'Modelo de Generación de Imagen',
       presentationStyle: 'Estilo de Presentación',
+      modelInfo: {
+        speed: 'Velocidad',
+        bestFor: 'Mejor para',
+        description: 'Descripción',
+        speedLabel: 'Velocidad de generación',
+      },
       loadingPresentationOutline: 'Cargando Esquema de Presentación',
       pleaseWaitMoment: 'Por favor, espere un momento...',
       cardColor: 'Color de tarjeta',
@@ -1548,6 +1582,8 @@ export const translations: Record<Language, Translations> = {
       fontLabels: {
         headingFont: 'Fuente del Título',
         bodyFont: 'Fuente del Cuerpo',
+        heading: 'Título',
+        body: 'Cuerpo',
       },
       logoUpload: {
         uploadLogo: 'Subir Logo',

@@ -1,12 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@udecode/cn";
 import { useDraggable, useDropLine } from "@udecode/plate-dnd";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Edit } from "lucide-react";
 import { useReadOnly } from "slate-react";
 import { useEditorPlugin } from "@udecode/plate/react";
 import { BlockSelectionPlugin } from "@udecode/plate-selection/react";
+import { 
+  Fa1, 
+  Fa2, 
+  Fa3, 
+  Fa4, 
+  Fa5 
+} from "react-icons/fa6";
 
 import { Button } from "@/components/text-editor/plate-ui/button";
 import {
@@ -18,6 +25,56 @@ import {
 } from "@/components/text-editor/plate-ui/tooltip";
 import { type TElement } from "@udecode/plate-common";
 import { VISUALIZATION_ITEM_ELEMENT } from "./visualization-item-plugin";
+import { IconPicker } from "@/components/ui/icon-picker";
+
+// Componente melhorado para o ícone numérico com opção de edição
+const NumberIcon = ({ index, elementId }: { index: number, elementId: string }) => {
+  const [customIcon, setCustomIcon] = useState<string | null>(null);
+  
+  // Função para obter o ícone numérico baseado no índice
+  const getNumberIconName = (): string => {
+    const numberIcons = [
+      "Fa1", "Fa2", "Fa3", "Fa4", "Fa5"
+    ];
+    
+    if (index < 0) return "Fa1";
+    if (index >= numberIcons.length) return `Fa${index + 1}`;
+    
+    return numberIcons[index] || "Fa1";
+  };
+  
+  // Renderizar o IconPicker com o ícone numérico como padrão
+  return (
+    <div className="timeline-icon-wrapper">
+  <style jsx>{`
+    .timeline-icon-wrapper :global(button) {
+      background-color: var(--presentation-primary) !important;
+      border-color: var(--presentation-primary) !important;
+      color: white !important;
+      border-radius: 9999px !important;
+      border-width: 1px !important;
+      transform: scale(0.8) !important; /* Reduzir o tamanho do botão */
+      height: 40px !important;
+      width: 40px !important;
+      min-height: 40px !important;
+      min-width: 40px !important;
+    }
+    
+    .timeline-icon-wrapper :global(button svg) {
+      height: 26px !important;
+      width: 26px !important;
+    }
+  `}</style>
+  <IconPicker 
+    defaultIcon={customIcon || getNumberIconName()}
+    size="sm"
+    className="text-white"
+    contextId={`timeline-${elementId}-${index}`}
+    onIconSelect={(iconName) => setCustomIcon(iconName)}
+      />
+    </div>
+  );
+};
 
 // TimelineItem component for individual items in the timeline visualization
 export const TimelineItem = ({
@@ -86,9 +143,9 @@ export const TimelineItem = ({
         </div>
       )}
 
-      {/* Circle marker */}
-      <div className="absolute left-0 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white">
-        {index + 1}
+      {/* Ícone numérico */}
+      <div className="absolute left-0.5 top-0.5">
+        <NumberIcon index={index} elementId={element.id as string} />
       </div>
 
       {/* Event content */}
