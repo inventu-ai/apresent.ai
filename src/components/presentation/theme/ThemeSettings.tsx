@@ -19,6 +19,7 @@ import { usePlanBadge } from "@/hooks/usePlanBadge";
 import { getModelsForPlan, IMAGE_MODELS_BY_PLAN, isModelAvailableForPlan } from "@/lib/image-model-restrictions";
 import { useEffect, useState } from "react";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { ModelInfoHoverCard } from "./ModelInfoHoverCard";
 
 const MODEL_INFO: Record<ImageModelList, { label: string; provider: string; category: 'FREE' | 'PRO' | 'PREMIUM' }> = {
   "ideogram-v2-turbo": { label: "Ideogram V2 Turbo", provider: "Ideogram", category: 'FREE' },
@@ -210,30 +211,31 @@ export function ThemeSettings() {
                     }
                     
                     return (
-                      <SelectItem 
-                        key={model} 
-                        value={model}
-                        disabled={!isAvailable}
-                        className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-3">
-                            <div className="flex flex-col">
-                              <span className={!isAvailable ? "text-muted-foreground" : ""}>
-                                {info.label}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {info.provider}
-                              </span>
+                      <ModelInfoHoverCard key={model} model={model}>
+                        <SelectItem 
+                          value={model}
+                          disabled={!isAvailable}
+                          className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-3">
+                              <div className="flex flex-col">
+                                <span className={!isAvailable ? "text-muted-foreground" : ""}>
+                                  {info.label}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {info.provider}
+                                </span>
+                              </div>
                             </div>
+                            {!isAvailable && requiredPlanText && (
+                              <Badge variant="secondary" className="text-xs opacity-60">
+                                🔒 Requer {requiredPlanText}
+                              </Badge>
+                            )}
                           </div>
-                          {!isAvailable && requiredPlanText && (
-                            <Badge variant="secondary" className="text-xs opacity-60">
-                              🔒 Requer {requiredPlanText}
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
+                        </SelectItem>
+                      </ModelInfoHoverCard>
                     );
                   })}
                 </div>

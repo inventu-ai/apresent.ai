@@ -199,12 +199,34 @@ export interface Translations {
     moreThemes: string;
     imageGenerationModel: string;
     presentationStyle: string;
-    modelInfo: {
-      speed: string;
-      bestFor: string;
-      description: string;
-      speedLabel: string;
-    };
+      modelInfo: {
+        speed: string;
+        bestFor: string;
+        description: string;
+        speedLabel: string;
+      };
+      modelDescriptions: {
+        "ideogram-v2-turbo": string;
+        "google-imagen-3-fast": string;
+        "ideogram-v3-turbo": string;
+        "google-imagen-3": string;
+        "dall-e-3": string;
+        "ideogram-v3-quality": string;
+        "google-imagen-4": string;
+        "gpt-image-1": string;
+      };
+      modelBestFor: {
+        rapidIdeation: string;
+        texts: string;
+        colors: string;
+        artisticStyle: string;
+        people: string;
+        photorealism: string;
+        highQuality: string;
+        realisticStyle: string;
+        ultraRealisticImages: string;
+        details: string;
+      };
     loadingPresentationOutline: string;
     pleaseWaitMoment: string;
     cardColor: string;
@@ -644,6 +666,28 @@ export const translations: Record<Language, Translations> = {
         description: 'Descrição',
         speedLabel: 'Velocidade de geração',
       },
+      modelDescriptions: {
+        "ideogram-v2-turbo": "Boa compreensão de prompt e renderização de texto.",
+        "google-imagen-3-fast": "Modelo mais rápido, funciona bem com instruções e prompts detalhados",
+        "ideogram-v3-turbo": "Modelo mais rápido do Ideogram e mais realismo que o v2",
+        "google-imagen-3": "Modelo de alta qualidade, excelente em fotorrealismo, detalhes, menos artefatos e renderização de texto, com capacidades de edição",
+        "dall-e-3": "Modelo de geração anterior da OpenAI, cria imagens altamente estilizadas",
+        "ideogram-v3-quality": "Modelo de maior qualidade do Ideogram",
+        "google-imagen-4": "Modelo recente do Google, alta qualidade de imagem",
+        "gpt-image-1": "Ótimo para prompts complexos e detalhes",
+      },
+      modelBestFor: {
+        rapidIdeation: "Ideação rápida",
+        texts: "Textos",
+        colors: "Cores",
+        artisticStyle: "Estilo artístico",
+        people: "Pessoas",
+        photorealism: "Fotorrealismo",
+        highQuality: "Alta qualidade",
+        realisticStyle: "Estilo realista",
+        ultraRealisticImages: "Imagens ultra realistas",
+        details: "Detalhes",
+      },
       loadingPresentationOutline: 'Carregando Estrutura da Apresentação',
       pleaseWaitMoment: 'Por favor, aguarde um momento...',
       cardColor: 'Cor do card',
@@ -1071,6 +1115,28 @@ export const translations: Record<Language, Translations> = {
         description: 'Description',
         speedLabel: 'Generation speed',
       },
+      modelDescriptions: {
+        "ideogram-v2-turbo": "Good prompt understanding and text rendering.",
+        "google-imagen-3-fast": "Fastest model, works well with detailed instructions and prompts",
+        "ideogram-v3-turbo": "Fastest Ideogram model with more realism than v2",
+        "google-imagen-3": "High-quality model, excellent in photorealism, details, fewer artifacts and text rendering, with editing capabilities",
+        "dall-e-3": "Previous generation OpenAI model, creates highly stylized images",
+        "ideogram-v3-quality": "Highest quality Ideogram model",
+        "google-imagen-4": "Recent Google model, high image quality",
+        "gpt-image-1": "Great for complex prompts and details",
+      },
+      modelBestFor: {
+        rapidIdeation: "Rapid ideation",
+        texts: "Texts",
+        colors: "Colors",
+        artisticStyle: "Artistic style",
+        people: "People",
+        photorealism: "Photorealism",
+        highQuality: "High quality",
+        realisticStyle: "Realistic style",
+        ultraRealisticImages: "Ultra realistic images",
+        details: "Details",
+      },
       loadingPresentationOutline: 'Loading Presentation Outline',
       pleaseWaitMoment: 'Please wait a moment...',
       cardColor: 'Card color',
@@ -1497,6 +1563,28 @@ export const translations: Record<Language, Translations> = {
         bestFor: 'Mejor para',
         description: 'Descripción',
         speedLabel: 'Velocidad de generación',
+      },
+      modelDescriptions: {
+        "ideogram-v2-turbo": "Buena comprensión de prompts y renderizado de texto.",
+        "google-imagen-3-fast": "Modelo más rápido, funciona bien con instrucciones y prompts detallados",
+        "ideogram-v3-turbo": "Modelo más rápido de Ideogram con más realismo que v2",
+        "google-imagen-3": "Modelo de alta calidad, excelente en fotorrealismo, detalles, menos artefactos y renderizado de texto, con capacidades de edición",
+        "dall-e-3": "Modelo de generación anterior de OpenAI, crea imágenes altamente estilizadas",
+        "ideogram-v3-quality": "Modelo de mayor calidad de Ideogram",
+        "google-imagen-4": "Modelo reciente de Google, alta calidad de imagen",
+        "gpt-image-1": "Excelente para prompts complejos y detalles",
+      },
+      modelBestFor: {
+        rapidIdeation: "Ideación rápida",
+        texts: "Textos",
+        colors: "Colores",
+        artisticStyle: "Estilo artístico",
+        people: "Personas",
+        photorealism: "Fotorrealismo",
+        highQuality: "Alta calidad",
+        realisticStyle: "Estilo realista",
+        ultraRealisticImages: "Imágenes ultra realistas",
+        details: "Detalles",
       },
       loadingPresentationOutline: 'Cargando Esquema de Presentación',
       pleaseWaitMoment: 'Por favor, espere un momento...',
