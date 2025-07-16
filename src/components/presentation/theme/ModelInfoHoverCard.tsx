@@ -162,13 +162,30 @@ export function ModelInfoHoverCard({ children, model }: ModelInfoHoverCardProps)
       setTimeoutId(null);
     }
     
-    // Calcular posição do modal (lado esquerdo)
+    // Calcular posição do modal com detecção inteligente
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const modalWidth = 320; // w-80 = 320px
+      const modalHeight = 280; // Altura aproximada do modal
+      const viewportHeight = window.innerHeight;
+      const margin = 8;
+      
+      // Verificar se o modal sairia da parte inferior da tela
+      const wouldOverflowBottom = rect.top + modalHeight > viewportHeight - margin;
+      
+      // Calcular posição Y
+      let yPosition;
+      if (wouldOverflowBottom) {
+        // Posicionar acima do elemento
+        yPosition = Math.max(margin, rect.top - modalHeight - margin);
+      } else {
+        // Posição normal (abaixo/alinhado com o elemento)
+        yPosition = rect.top;
+      }
+      
       const newPosition = {
-        x: Math.max(8, rect.left - modalWidth - 8), // 8px de margem, mas não sair da tela
-        y: rect.top
+        x: Math.max(margin, rect.left - modalWidth - margin), // 8px de margem, mas não sair da tela
+        y: yPosition
       };
       setPosition(newPosition);
     }
