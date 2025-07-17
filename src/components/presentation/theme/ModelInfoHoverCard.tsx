@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { type ImageModelList } from "@/app/_actions/image/generate";
-import { cn } from "@/lib/utils";
 import { 
   Palette, 
   Users, 
@@ -12,8 +11,7 @@ import {
   Star, 
   Eye, 
   Target, 
-  Zap, 
-  Lightbulb 
+  Zap 
 } from "lucide-react";
 
 interface ModelInfoHoverCardProps {
@@ -90,6 +88,28 @@ const getModelBestFor = (model: ImageModelList, t: any): Array<{ icon: React.Com
   }));
 };
 
+const getProviderName = (model: ImageModelList): string => {
+  if (model.includes('ideogram')) return 'Ideogram';
+  if (model.includes('dall-e') || model.includes('gpt-image')) return 'OpenAI';
+  if (model.includes('google-imagen')) return 'Google';
+  return 'Unknown';
+};
+
+const getModelCategory = (model: ImageModelList): 'FREE' | 'PRO' | 'PREMIUM' => {
+  const modelCategories: Record<ImageModelList, 'FREE' | 'PRO' | 'PREMIUM'> = {
+    "ideogram-v2-turbo": 'FREE',
+    "google-imagen-3-fast": 'FREE',
+    "ideogram-v3-turbo": 'PRO',
+    "google-imagen-3": 'PRO',
+    "dall-e-3": 'PREMIUM',
+    "ideogram-v3-quality": 'PREMIUM',
+    "google-imagen-4": 'PREMIUM',
+    "gpt-image-1": 'PREMIUM',
+  };
+  
+  return modelCategories[model] || 'PREMIUM';
+};
+
 // Função para obter dados do modelo com traduções
 const getModelDetails = (model: ImageModelList, t: any) => {
   const speedInfo = getModelSpeed(model);
@@ -107,41 +127,6 @@ const getModelDetails = (model: ImageModelList, t: any) => {
   };
 };
 
-const getProviderName = (model: ImageModelList): string => {
-  if (model.includes('ideogram')) return 'Ideogram';
-  if (model.includes('dall-e') || model.includes('gpt-image')) return 'OpenAI';
-  if (model.includes('google-imagen')) return 'Google';
-  return 'Unknown';
-};
-
-const getModelCategory = (model: ImageModelList): 'FREE' | 'PRO' | 'PREMIUM' => {
-  // Nova estrutura simplificada de modelos
-  const modelCategories: Record<ImageModelList, 'FREE' | 'PRO' | 'PREMIUM'> = {
-    "ideogram-v2-turbo": 'FREE',
-    "google-imagen-3-fast": 'FREE',
-    "ideogram-v3-turbo": 'PRO',
-    "google-imagen-3": 'PRO',
-    "dall-e-3": 'PREMIUM',
-    "ideogram-v3-quality": 'PREMIUM',
-    "google-imagen-4": 'PREMIUM',
-    "gpt-image-1": 'PREMIUM',
-  };
-  
-  return modelCategories[model] || 'PREMIUM';
-};
-
-const getModelSpecialty = (model: ImageModelList): string => {
-  if (model.includes('fast')) return 'Velocidade';
-  if (model.includes('turbo')) return 'Velocidade turbo';
-  if (model.includes('quality')) return 'Alta qualidade';
-  if (model.includes('ideogram')) return 'Logotipos';
-  if (model.includes('dall-e')) return 'Criatividade';
-  if (model.includes('google-imagen-4')) return 'Última geração';
-  if (model.includes('google-imagen')) return 'Fotorrealismo';
-  if (model.includes('gpt-image')) return 'Inovação';
-  return 'Alta qualidade';
-};
-
 const PLAN_COLORS = {
   FREE: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   PRO: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
@@ -156,7 +141,7 @@ export function ModelInfoHoverCard({ children, model }: ModelInfoHoverCardProps)
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseEnter = (e: React.MouseEvent) => {
+  const handleMouseEnter = () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
       setTimeoutId(null);
@@ -252,7 +237,7 @@ export function ModelInfoHoverCard({ children, model }: ModelInfoHoverCardProps)
 
         {/* Velocidade */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2 mt-4">
+          <p className="text-xs font-medium text-muted-foreground mb-2">
             {t.presentation.modelInfo.speed}
           </p>
           {/* Linhas de velocidade expandidas */}
@@ -272,7 +257,7 @@ export function ModelInfoHoverCard({ children, model }: ModelInfoHoverCardProps)
 
         {/* Melhor para */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2 mt-4">
+          <p className="text-xs font-medium text-muted-foreground mb-2">
             {t.presentation.modelInfo.bestFor}
           </p>
           <ul className="space-y-1">

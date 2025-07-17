@@ -282,6 +282,17 @@ export interface Translations {
         warm: string;
         natural: string;
       };
+      themeNames: {
+        daktilo: string;
+        cornflower: string;
+        orbit: string;
+        piano: string;
+        mystique: string;
+        gammaDark: string;
+        crimson: string;
+        sunset: string;
+        forest: string;
+      };
     themeModal: {
       youHaventCreated: string;
       createFirstTheme: string;
@@ -743,6 +754,17 @@ export const translations: Record<Language, Translations> = {
         warm: 'Caloroso e convidativo',
         natural: 'Natural e sereno',
       },
+      themeNames: {
+        daktilo: 'Daktilo',
+        cornflower: 'Centáurea',
+        orbit: 'Órbita',
+        piano: 'Piano',
+        mystique: 'Místico',
+        gammaDark: 'Gamma Dark',
+        crimson: 'Carmesim',
+        sunset: 'Pôr do Sol',
+        forest: 'Floresta',
+      },
       themeModal: {
         youHaventCreated: 'Você ainda não criou nenhum tema',
         createFirstTheme: 'Criar Seu Primeiro Tema',
@@ -1192,6 +1214,17 @@ export const translations: Record<Language, Translations> = {
         warm: 'Warm and inviting',
         natural: 'Natural and serene',
       },
+      themeNames: {
+        daktilo: 'Daktilo',
+        cornflower: 'Cornflower',
+        orbit: 'Orbit',
+        piano: 'Piano',
+        mystique: 'Mystique',
+        gammaDark: 'Gamma Dark',
+        crimson: 'Crimson',
+        sunset: 'Sunset',
+        forest: 'Forest',
+      },
       themeModal: {
         youHaventCreated: 'You haven\'t created any themes yet',
         createFirstTheme: 'Create Your First Theme',
@@ -1640,6 +1673,17 @@ export const translations: Record<Language, Translations> = {
         boldPassionate: 'Audaz y apasionado',
         warm: 'Cálido y acogedor',
         natural: 'Natural y sereno',
+      },
+      themeNames: {
+        daktilo: 'Daktilo',
+        cornflower: 'Aciano',
+        orbit: 'Órbita',
+        piano: 'Piano',
+        mystique: 'Místico',
+        gammaDark: 'Gamma Dark',
+        crimson: 'Carmesí',
+        sunset: 'Atardecer',
+        forest: 'Bosque',
       },
       themeModal: {
         youHaventCreated: 'Aún no has creado ningún tema',

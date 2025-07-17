@@ -55,7 +55,7 @@ export const ArrowItem = ({
     <div
       ref={previewRef}
       className={cn(
-        "group/arrow-item relative mb-2 ml-4 flex h-24 gap-2",
+        "group/arrow-item relative mb-0 ml-4 flex h-28 gap-3",
         isDragging && "opacity-50",
         dropLine && "drop-target",
       )}
@@ -96,7 +96,7 @@ export const ArrowItem = ({
       </div>
 
       {/* Content column */}
-      <div className="flex flex-1 items-center p-4">{children}</div>
+      <div className="flex flex-1 items-center p-5 leading-relaxed">{children}</div>
     </div>
   );
 };

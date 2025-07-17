@@ -134,7 +134,7 @@ export function ThemeSettings() {
                     fontFamily: themeOption.fonts.heading,
                   }}
                 >
-                  {themeOption.name}
+                  {t.presentation.themeNames[themeOption.name as keyof typeof t.presentation.themeNames]}
                 </div>
                 <div
                   className="text-sm"
@@ -143,7 +143,7 @@ export function ThemeSettings() {
                     fontFamily: themeOption.fonts.body,
                   }}
                 >
-                  {themeOption.description}
+                  {t.presentation.themeDescriptions[themeOption.description as keyof typeof t.presentation.themeDescriptions]}
                 </div>
                 <div className="flex gap-2">
                   {[
@@ -163,9 +163,9 @@ export function ThemeSettings() {
                   style={{ color: modeColors.muted }}
                 >
                   <span className="block">
-                    Heading: {themeOption.fonts.heading}
+                    {t.presentation.fontLabels.heading}: {themeOption.fonts.heading}
                   </span>
-                  <span className="block">Body: {themeOption.fonts.body}</span>
+                  <span className="block">{t.presentation.fontLabels.body}: {themeOption.fonts.body}</span>
                 </div>
               </button>
             );
@@ -218,21 +218,19 @@ export function ThemeSettings() {
                           className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
                         >
                           <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-3">
-                              <div className="flex flex-col">
-                                <span className={!isAvailable ? "text-muted-foreground" : ""}>
-                                  {info.label}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {info.provider}
-                                </span>
-                              </div>
+                            <span className={!isAvailable ? "text-muted-foreground" : ""}>
+                              {info.label}
+                            </span>
+                            <div className="flex items-center gap-2 ml-2">
+                              <span className="text-xs text-muted-foreground">
+                                {info.provider}
+                              </span>
+                              {!isAvailable && requiredPlanText && (
+                                <Badge variant="secondary" className="text-xs opacity-60">
+                                  🔒 Requer {requiredPlanText}
+                                </Badge>
+                              )}
                             </div>
-                            {!isAvailable && requiredPlanText && (
-                              <Badge variant="secondary" className="text-xs opacity-60">
-                                🔒 Requer {requiredPlanText}
-                              </Badge>
-                            )}
                           </div>
                         </SelectItem>
                       </ModelInfoHoverCard>

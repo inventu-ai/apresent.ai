@@ -337,7 +337,7 @@ Now create a complete XML slide that significantly expands on the provided topic
 
 // Modelo com temperatura padrão
 const model = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
+  modelName: "gpt-4o-mini-2025-04-14",
   temperature: 0.7,
   streaming: true,
 });

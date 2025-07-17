@@ -31,8 +31,8 @@ export function SlidePreviewRenderer({
   const { slides, isGeneratingPresentation } = usePresentationState();
   const slide = useMemo(() => slides[slideIndex], [slides, slideIndex]);
   
-  // Generate a stable, unique preview ID
-  const previewId = useMemo(() => `preview-${slideId}-${slideIndex}`, [slideId, slideIndex]);
+  // Generate a stable, unique preview ID with timestamp to ensure uniqueness
+  const previewId = useMemo(() => `preview-${slideId}-${slideIndex}-${Date.now()}`, [slideId, slideIndex]);
 
   // Only render on client-side
   useEffect(() => {

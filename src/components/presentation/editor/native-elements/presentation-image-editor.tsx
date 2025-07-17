@@ -292,21 +292,19 @@ export const PresentationImageEditor = ({
                               className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
                             >
                               <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-3">
-                                  <div className="flex flex-col">
-                                    <span className={!isAvailable ? "text-muted-foreground" : ""}>
-                                      {info.label}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      {info.provider}
-                                    </span>
-                                  </div>
+                                <span className={!isAvailable ? "text-muted-foreground" : ""}>
+                                  {info.label}
+                                </span>
+                                <div className="flex items-center gap-2 ml-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {info.provider}
+                                  </span>
+                                  {!isAvailable && requiredPlanText && (
+                                    <Badge variant="secondary" className="text-xs opacity-60">
+                                      🔒 Requer {requiredPlanText}
+                                    </Badge>
+                                  )}
                                 </div>
-                                {!isAvailable && requiredPlanText && (
-                                  <Badge variant="secondary" className="text-xs opacity-60">
-                                    🔒 Requer {requiredPlanText}
-                                  </Badge>
-                                )}
                               </div>
                             </SelectItem>
                           </ModelInfoHoverCard>
