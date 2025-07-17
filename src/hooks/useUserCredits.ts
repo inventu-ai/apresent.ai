@@ -36,7 +36,9 @@ export function useUserCredits(): UserCredits {
       return;
     }
 
-    fetchUserCredits();
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(fetchUserCredits, 200);
+    return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 
   const fetchUserCredits = async () => {
@@ -99,27 +101,35 @@ export function useUserPlanLimits(): PlanLimits {
       return;
     }
 
-    fetchPlanLimits();
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(fetchPlanLimits, 250);
+    return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 
   const fetchPlanLimits = async () => {
     try {
       setLimits(prev => ({ ...prev, loading: true, error: undefined }));
       
-      const response = await fetch('/api/user/plan-limits');
+      const response = await fetch('/api/user/plan-limits', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
-        throw new Error('Erro ao buscar limites do plano');
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
       
       setLimits({
-        maxCards: data.maxCards,
-        planName: data.planName,
+        maxCards: data.maxCards || 10,
+        planName: data.planName || 'FREE',
         loading: false,
       });
     } catch (error) {
+      console.error('Erro ao buscar limites do plano:', error);
       setLimits(prev => ({
         ...prev,
         loading: false,
@@ -152,7 +162,9 @@ export function useImageQualityOptions(): ImageQualityOptions {
       return;
     }
 
-    fetchImageQualityOptions();
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(fetchImageQualityOptions, 300);
+    return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 
   const fetchImageQualityOptions = async () => {

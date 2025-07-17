@@ -16,8 +16,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
+    // Garantir que o userId seja uma string válida
+    const sessionUserId = String(session.user.id).trim();
+    const requestUserId = userId ? String(userId).trim() : '';
+
     // Verify the userId matches the authenticated user
-    if (userId !== session.user.id) {
+    if (requestUserId && requestUserId !== sessionUserId) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -25,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user plan from server-side function
-    const plan = await getUserCurrentPlan(session.user.id);
+    const plan = await getUserCurrentPlan(sessionUserId);
     const planName = plan?.name || 'FREE';
 
     return NextResponse.json({
