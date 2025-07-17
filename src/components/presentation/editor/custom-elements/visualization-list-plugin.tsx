@@ -57,7 +57,7 @@ const ArrowVisualization = ({
   const childrenArray = React.Children.toArray(children);
 
   return (
-    <div className="my-4 mb-8 flex w-full flex-col overflow-visible">
+    <div className="my-4 mb-8 flex w-full flex-col overflow-visible space-y-1">
       {childrenArray.map((child, index) => (
         <ArrowItem key={index} index={index} element={items[index] as TElement}>
           {child}

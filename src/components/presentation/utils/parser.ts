@@ -393,7 +393,7 @@ export class SlideParser {
     if (h1Node) {
       const headingContent = this.getTextContent(h1Node);
       if (headingContent.trim().length > 0) {
-        return `heading-${headingContent.trim()}`;
+        return `heading-${headingContent.trim().substring(0, 50)}`;
       }
     }
 
@@ -430,6 +430,9 @@ export class SlideParser {
       }
       fingerprint = `content-hash-${Math.abs(hash)}`;
     }
+
+    // Add timestamp to ensure uniqueness during streaming
+    fingerprint += `-${Date.now()}`;
 
     return fingerprint;
   }
@@ -582,6 +585,9 @@ export class SlideParser {
   private processTopLevelNode(node: XMLNode): PlateNode | null {
     const tag = node.tag.toUpperCase();
 
+    // Log the slide type being created
+    console.log(`[SLIDE_PARSER] Creating slide component: ${tag}`);
+
     // Handle each possible top-level element type
     switch (tag) {
       case "H1":
@@ -590,47 +596,59 @@ export class SlideParser {
       case "H4":
       case "H5":
       case "H6":
+        console.log(`[SLIDE_PARSER] → Heading component (${tag})`);
         return this.createHeading(
           tag.toLowerCase() as "h1" | "h2" | "h3" | "h4" | "h5" | "h6",
           node
         );
 
       case "P":
+        console.log(`[SLIDE_PARSER] → Paragraph component`);
         return this.createParagraph(node);
 
       case "IMG":
+        console.log(`[SLIDE_PARSER] → Image component`);
         return this.createImage(node);
 
       case "COLUMNS":
+        console.log(`[SLIDE_PARSER] → Columns component (comparison layout)`);
         return this.createColumns(node);
 
       case "BULLETS":
+        console.log(`[SLIDE_PARSER] → Bullets component (key points layout)`);
         return this.createBullets(node);
 
       case "ICONS":
+        console.log(`[SLIDE_PARSER] → Icons component (concepts with symbols)`);
         return this.createIcons(node);
 
       case "CYCLE":
+        console.log(`[SLIDE_PARSER] → Cycle component (process workflow)`);
         return this.createCycle(node);
 
       case "STAIRCASE":
+        console.log(`[SLIDE_PARSER] → Staircase component (progressive advancement)`);
         return this.createStaircase(node);
 
       case "CHART":
+        console.log(`[SLIDE_PARSER] → Chart component (data visualization)`);
         return this.createChart(node);
 
       // Handle all visualization types with a single function
       case "ARROWS":
+        console.log(`[SLIDE_PARSER] → Arrows component (cause-effect flow)`);
         return this.createVisualization(node, "arrow");
 
       case "PYRAMID":
+        console.log(`[SLIDE_PARSER] → Pyramid component (hierarchical importance)`);
         return this.createVisualization(node, "pyramid");
 
       case "TIMELINE":
+        console.log(`[SLIDE_PARSER] → Timeline component (chronological progression)`);
         return this.createVisualization(node, "timeline");
 
       default:
-        console.warn(`Unknown top-level tag: ${tag}`);
+        console.warn(`[SLIDE_PARSER] ❌ Unknown top-level tag: ${tag}`);
         return null;
     }
   }

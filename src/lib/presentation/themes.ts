@@ -53,8 +53,8 @@ export type Themes = keyof typeof themes;
 
 export const themes: Record<ThemeName, ThemeProperties> = {
   daktilo: {
-    name: "Daktilo",
-    description: "Modern and clean",
+    name: "daktilo",
+    description: "modern",
     colors: {
       light: {
         primary: "#3B82F6",
@@ -96,8 +96,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   cornflower: {
-    name: "Cornflower",
-    description: "Professional and bold",
+    name: "cornflower",
+    description: "professional",
     colors: {
       light: {
         primary: "#4F46E5",
@@ -139,8 +139,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   orbit: {
-    name: "Orbit",
-    description: "Futuristic and dynamic",
+    name: "orbit",
+    description: "futuristic",
     colors: {
       light: {
         primary: "#312E81",
@@ -182,8 +182,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   piano: {
-    name: "Piano",
-    description: "Classic and elegant",
+    name: "piano",
+    description: "classic",
     colors: {
       light: {
         primary: "#1F2937",
@@ -225,8 +225,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   mystique: {
-    name: "Mystique",
-    description: "Dark and sophisticated",
+    name: "mystique",
+    description: "dark",
     colors: {
       light: {
         primary: "#7C3AED",
@@ -268,8 +268,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   gammaDark: {
-    name: "Gamma Dark",
-    description: "High contrast",
+    name: "gammaDark",
+    description: "highContrast",
     colors: {
       light: {
         primary: "#06B6D4",
@@ -311,8 +311,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   crimson: {
-    name: "Crimson",
-    description: "Bold and passionate",
+    name: "crimson",
+    description: "boldPassionate",
     colors: {
       light: {
         primary: "#DC2626",
@@ -354,8 +354,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   sunset: {
-    name: "Sunset",
-    description: "Warm and inviting",
+    name: "sunset",
+    description: "warm",
     colors: {
       light: {
         primary: "#EA580C",
@@ -397,8 +397,8 @@ export const themes: Record<ThemeName, ThemeProperties> = {
   },
 
   forest: {
-    name: "Forest",
-    description: "Natural and serene",
+    name: "forest",
+    description: "natural",
     colors: {
       light: {
         primary: "#2E8B57",     // Verde mais suave (Sea Green)

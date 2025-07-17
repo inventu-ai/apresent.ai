@@ -124,7 +124,22 @@ export const usePresentationState = create<PresentationState>((set) => ({
   shouldStartSlideRegeneration: false,
 
   setSlides: (slides) => {
-    set({ slides });
+    // Validate and ensure unique IDs
+    const uniqueSlides = slides.map((slide, index) => {
+      // Check if ID is unique
+      const duplicateIndex = slides.findIndex((s, i) => s.id === slide.id && i !== index);
+      
+      if (duplicateIndex !== -1) {
+        // Generate a new unique ID if duplicate found
+        const newId = `${slide.id}-${index}-${Date.now()}`;
+        console.warn(`[SLIDES] Duplicate slide ID detected: ${slide.id}, generating new ID: ${newId}`);
+        return { ...slide, id: newId };
+      }
+      
+      return slide;
+    });
+    
+    set({ slides: uniqueSlides });
   },
   setCurrentPresentation: (id, title) =>
     set({ currentPresentationId: id, currentPresentationTitle: title }),
