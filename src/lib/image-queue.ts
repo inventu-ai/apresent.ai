@@ -112,9 +112,18 @@ class ImageGenerationQueue {
     generateFunction: (prompt: string, model: string, aspectRatio: string) => Promise<string>
   ): Promise<void> {
     // Verifica se já está processando
-    if (provider === 'google' && this.isProcessingGoogle) return;
-    if (provider === 'apiframe' && this.isProcessingApiframe) return;
-    if (provider === 'ideogram' && this.isProcessingIdeogram) return;
+    if (provider === 'google' && this.isProcessingGoogle) {
+      console.log(`⚠️ Fila ${provider.toUpperCase()} já está sendo processada, ignorando nova solicitação`);
+      return;
+    }
+    if (provider === 'apiframe' && this.isProcessingApiframe) {
+      console.log(`⚠️ Fila ${provider.toUpperCase()} já está sendo processada, ignorando nova solicitação`);
+      return;
+    }
+    if (provider === 'ideogram' && this.isProcessingIdeogram) {
+      console.log(`⚠️ Fila ${provider.toUpperCase()} já está sendo processada, ignorando nova solicitação`);
+      return;
+    }
     
     // Marca como processando
     if (provider === 'google') this.isProcessingGoogle = true;
@@ -126,51 +135,71 @@ class ImageGenerationQueue {
     
     console.log(`🚀 Iniciando processamento da fila ${provider.toUpperCase()} (${queue.length} itens)`);
 
-    while (queue.length > 0) {
-      const item = queue.shift();
-      if (!item) continue;
+    try {
+      while (queue.length > 0) {
+        const item = queue.shift();
+        if (!item) {
+          console.log(`⚠️ Item vazio encontrado na fila ${provider.toUpperCase()}, continuando...`);
+          continue;
+        }
 
-      try {
-        console.log(`🎯 Processando ${provider}: ${item.model} (tentativa ${item.attempts + 1}/${item.maxAttempts})`);
-        
-        // Executa a geração
-        const result = await generateFunction(item.prompt, item.model, item.aspectRatio);
-        
-        console.log(`✅ Sucesso ${provider}: ${item.model} - ${item.id}`);
-        item.resolve(result);
-
-      } catch (error) {
-        item.attempts++;
-        console.error(`❌ Erro ${provider}: ${item.model} - tentativa ${item.attempts}/${item.maxAttempts}:`, error);
-
-        if (item.attempts < item.maxAttempts) {
-          // Recoloca na fila para retry com backoff exponencial
-          const delay = this.calculateBackoffDelay(item.attempts);
-          console.log(`🔄 Reagendando ${provider}: ${item.model} em ${delay}ms`);
+        try {
+          console.log(`🎯 Processando ${provider}: ${item.model} - ${item.id} (tentativa ${item.attempts + 1}/${item.maxAttempts})`);
+          console.log(`📝 Prompt: "${item.prompt.substring(0, 50)}${item.prompt.length > 50 ? '...' : ''}"`);
           
-          setTimeout(() => {
-            queue.unshift(item); // Adiciona no início para prioridade
-          }, delay);
-        } else {
-          // Máximo de tentativas atingido, rejeita
-          console.error(`💥 Máximo de tentativas atingido para ${provider}: ${item.model} - ${item.id}`);
-          item.reject(error instanceof Error ? error : new Error('Falha na geração após múltiplas tentativas'));
+          // Executa a geração
+          const startTime = Date.now();
+          const result = await generateFunction(item.prompt, item.model, item.aspectRatio);
+          const duration = Date.now() - startTime;
+          
+          console.log(`✅ Sucesso ${provider}: ${item.model} - ${item.id} (${duration}ms)`);
+          item.resolve(result);
+
+        } catch (error) {
+          item.attempts++;
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          console.error(`❌ Erro ${provider}: ${item.model} - ${item.id} - tentativa ${item.attempts}/${item.maxAttempts}: ${errorMsg}`);
+
+          if (item.attempts < item.maxAttempts) {
+            // Recoloca na fila para retry com backoff exponencial
+            const delay = this.calculateBackoffDelay(item.attempts);
+            console.log(`🔄 Reagendando ${provider}: ${item.model} - ${item.id} em ${delay}ms`);
+            
+            setTimeout(() => {
+              queue.unshift(item); // Adiciona no início para prioridade
+              console.log(`📥 Item ${item.id} readicionado à fila ${provider.toUpperCase()}`);
+            }, delay);
+          } else {
+            // Máximo de tentativas atingido, rejeita
+            console.error(`💥 Máximo de tentativas atingido para ${provider}: ${item.model} - ${item.id}`);
+            item.reject(error instanceof Error ? error : new Error('Falha na geração após múltiplas tentativas'));
+          }
+        }
+
+        // Delay entre requisições para evitar rate limiting
+        if (queue.length > 0) {
+          console.log(`⏳ Aguardando ${config.delay}ms antes da próxima requisição ${provider}... (${queue.length} itens restantes)`);
+          await this.delay(config.delay);
         }
       }
-
-      // Delay entre requisições para evitar rate limiting
-      if (queue.length > 0) {
-        console.log(`⏳ Aguardando ${config.delay}ms antes da próxima requisição ${provider}...`);
-        await this.delay(config.delay);
+    } catch (error) {
+      console.error(`💥 Erro crítico no processamento da fila ${provider.toUpperCase()}:`, error);
+      
+      // Rejeitar todos os itens restantes na fila
+      while (queue.length > 0) {
+        const item = queue.shift();
+        if (item) {
+          item.reject(new Error(`Processamento da fila ${provider} falhou: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
       }
+    } finally {
+      // Garantir que a flag de processamento seja sempre resetada
+      if (provider === 'google') this.isProcessingGoogle = false;
+      if (provider === 'apiframe') this.isProcessingApiframe = false;
+      if (provider === 'ideogram') this.isProcessingIdeogram = false;
+      
+      console.log(`🏁 Processamento da fila ${provider.toUpperCase()} finalizado`);
     }
-
-    // Marca como não processando
-    if (provider === 'google') this.isProcessingGoogle = false;
-    if (provider === 'apiframe') this.isProcessingApiframe = false;
-    if (provider === 'ideogram') this.isProcessingIdeogram = false;
-    
-    console.log(`🏁 Processamento da fila ${provider.toUpperCase()} finalizado`);
   }
 
   /**

@@ -41,8 +41,11 @@ export default function RootImage({
   const id = useId();
   const [imageUrl, setImageUrl] = useState<string | undefined>(image.url);
   const [isGenerating, setIsGenerating] = useState(!image.url);
-  // Use a ref to track if we've already handled image generation
-  const hasHandledGenerationRef = useRef(false);
+  // Track generation attempts with a more robust approach
+  const [generationAttempts, setGenerationAttempts] = useState(0);
+  const [lastGenerationTime, setLastGenerationTime] = useState<number>(0);
+  const maxGenerationAttempts = 3;
+  const generationTimeoutMs = 30000; // 30 seconds timeout
   // State for image editor sheet
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   // State for image adjustment mode
@@ -81,16 +84,23 @@ export default function RootImage({
   // Generate image with the given prompt (automatic - no credits)
   const generateImage = async (prompt: string) => {
     if (!shouldGenerate) {
+      console.log(`Skipping image generation for slide ${slideIndex} - shouldGenerate is false`);
       return;
     }
+
+    console.log(`🎨 Starting image generation for slide ${slideIndex} with model ${imageModel}`);
+    console.log(`📝 Prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}"`);
+    
     setIsGenerating(true);
     setError(undefined);
+    
     try {
-      
       const result = await generateImageAction(prompt, imageModel, "BASIC_IMAGE", "4:3", false);
       
       if (result.success && result.image?.url) {
         const newImageUrl = result.image.url;
+        console.log(`✅ Image generation successful for slide ${slideIndex}`);
+        console.log(`🔗 Image URL: ${newImageUrl.substring(0, 50)}...`);
 
         setImageUrl(newImageUrl);
 
@@ -115,28 +125,26 @@ export default function RootImage({
         // This will trigger a re-render of both the editor and preview
         setTimeout(() => {
           setSlides(updatedSlides);
-
-          // Force an immediate save to ensure the image URL is persisted
           void saveImmediately();
+          console.log(`💾 Slide ${slideIndex} state updated and saved`);
         }, 100);
 
         // Atualizar os créditos no header após geração bem-sucedida
         await refetchCredits();
 
-        // Ensure the generating state is properly reset
+        // Reset generation state
         setIsGenerating(false);
+        console.log(`🏁 Image generation completed for slide ${slideIndex}`);
       } else {
         const errorMsg = result.error || "Unknown error occurred";
-        console.error("Image generation failed:", errorMsg);
+        console.error(`❌ Image generation failed for slide ${slideIndex}:`, errorMsg);
         setError(`Failed to generate image: ${errorMsg}`);
         setIsGenerating(false);
       }
     } catch (error) {
-      console.error("Error generating image:", error);
+      console.error(`💥 Exception during image generation for slide ${slideIndex}:`, error);
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       setError(`Failed to generate image: ${errorMsg}`);
-      setIsGenerating(false);
-    } finally {
       setIsGenerating(false);
     }
   };
@@ -216,23 +224,72 @@ export default function RootImage({
 
   // Generate image if query is provided but no URL exists
   useEffect(() => {
-    // Skip if we've already handled this element or if there's no query or if URL already exists
-    if (
-      hasHandledGenerationRef.current ||
-      !image.query ||
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      image.url ||
-      imageUrl
-    ) {
+    // Skip if there's no query or if URL already exists
+    if (!image.query || image.url || imageUrl) {
       return;
     }
 
-    // Mark as handled immediately to prevent duplicate requests
-    hasHandledGenerationRef.current = true;
+    // Skip if we've exceeded max attempts
+    if (generationAttempts >= maxGenerationAttempts) {
+      console.warn(`Max generation attempts (${maxGenerationAttempts}) reached for slide ${slideIndex}`);
+      return;
+    }
 
-    // Use the generateImage function we defined above
+    // Skip if we're currently generating
+    if (isGenerating) {
+      return;
+    }
+
+    // Check if we need to wait due to recent attempt
+    const now = Date.now();
+    const timeSinceLastAttempt = now - lastGenerationTime;
+    const minDelayBetweenAttempts = 2000; // 2 seconds
+
+    if (timeSinceLastAttempt < minDelayBetweenAttempts && lastGenerationTime > 0) {
+      // Schedule retry after delay
+      const remainingDelay = minDelayBetweenAttempts - timeSinceLastAttempt;
+      console.log(`Scheduling retry for slide ${slideIndex} in ${remainingDelay}ms`);
+      
+      const timeoutId = setTimeout(() => {
+        setGenerationAttempts(prev => prev + 1);
+        setLastGenerationTime(Date.now());
+      }, remainingDelay);
+
+      return () => clearTimeout(timeoutId);
+    }
+
+    // Start generation
+    console.log(`Starting image generation for slide ${slideIndex}, attempt ${generationAttempts + 1}/${maxGenerationAttempts}`);
+    setGenerationAttempts(prev => prev + 1);
+    setLastGenerationTime(now);
     void generateImage(image.query);
-  }, [image.query, image.url, imageUrl, slideIndex]);
+  }, [image.query, image.url, imageUrl, slideIndex, generationAttempts, isGenerating, lastGenerationTime]);
+
+  // Timeout detection and retry mechanism
+  useEffect(() => {
+    if (!isGenerating || !image.query || imageUrl) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      console.warn(`Image generation timeout for slide ${slideIndex}, attempting retry...`);
+      setIsGenerating(false);
+      setError("Generation timeout, retrying...");
+      
+      // Trigger retry by incrementing attempts (if under limit)
+      if (generationAttempts < maxGenerationAttempts) {
+        setTimeout(() => {
+          setError(undefined);
+          setGenerationAttempts(prev => prev + 1);
+          setLastGenerationTime(Date.now());
+        }, 1000);
+      } else {
+        setError(`Failed to generate image after ${maxGenerationAttempts} attempts`);
+      }
+    }, generationTimeoutMs);
+
+    return () => clearTimeout(timeoutId);
+  }, [isGenerating, slideIndex, generationAttempts, imageUrl, image.query]);
 
   // Handle successful drops
   const onDragEnd = (item: DragItemNode, monitor: DragSourceMonitor) => {
