@@ -30,15 +30,6 @@ export function useUserCredits(): UserCredits {
     loading: true,
   });
 
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setCredits(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
-    fetchUserCredits();
-  }, [session?.user?.id]);
-
   const fetchUserCredits = async () => {
     try {
       setCredits(prev => ({ ...prev, loading: true, error: undefined }));
@@ -72,6 +63,19 @@ export function useUserCredits(): UserCredits {
     }
   };
 
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setCredits(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchUserCredits();
+    }, 200);
+    return () => clearTimeout(timeoutId);
+  }, [session?.user?.id]);
+
   return {
     ...credits,
     refetch: fetchUserCredits,
@@ -93,33 +97,30 @@ export function useUserPlanLimits(): PlanLimits {
     loading: true,
   });
 
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setLimits(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
-    fetchPlanLimits();
-  }, [session?.user?.id]);
-
   const fetchPlanLimits = async () => {
     try {
       setLimits(prev => ({ ...prev, loading: true, error: undefined }));
       
-      const response = await fetch('/api/user/plan-limits');
+      const response = await fetch('/api/user/plan-limits', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
-        throw new Error('Erro ao buscar limites do plano');
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
       
       setLimits({
-        maxCards: data.maxCards,
-        planName: data.planName,
+        maxCards: data.maxCards || 10,
+        planName: data.planName || 'FREE',
         loading: false,
       });
     } catch (error) {
+      console.error('Erro ao buscar limites do plano:', error);
       setLimits(prev => ({
         ...prev,
         loading: false,
@@ -127,6 +128,19 @@ export function useUserPlanLimits(): PlanLimits {
       }));
     }
   };
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setLimits(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchPlanLimits();
+    }, 250);
+    return () => clearTimeout(timeoutId);
+  }, [session?.user?.id]);
 
   return limits;
 }
@@ -145,15 +159,6 @@ export function useImageQualityOptions(): ImageQualityOptions {
     planName: 'FREE',
     loading: true,
   });
-
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setOptions(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
-    fetchImageQualityOptions();
-  }, [session?.user?.id]);
 
   const fetchImageQualityOptions = async () => {
     try {
@@ -180,6 +185,19 @@ export function useImageQualityOptions(): ImageQualityOptions {
       }));
     }
   };
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setOptions(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchImageQualityOptions();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [session?.user?.id]);
 
   return options;
 }

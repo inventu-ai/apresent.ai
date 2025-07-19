@@ -19,8 +19,13 @@ export function useUserPlan() {
       }
 
       try {
-        // Create an API endpoint to get user plan instead of using direct supabase calls
-        const response = await fetch(`/api/user/plan?userId=${session.user.id}`, {
+        // Garantir que o userId seja uma string válida
+        const userId = String(session.user.id).trim();
+        if (!userId) {
+          throw new Error('ID do usuário inválido');
+        }
+
+        const response = await fetch(`/api/user/plan?userId=${encodeURIComponent(userId)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -48,7 +53,11 @@ export function useUserPlan() {
       }
     };
 
-    fetchUserPlan();
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchUserPlan();
+    }, 150);
+    return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 
   return {
@@ -61,4 +70,4 @@ export function useUserPlan() {
       // Re-trigger the effect by updating a state
     }
   };
-} 
+}

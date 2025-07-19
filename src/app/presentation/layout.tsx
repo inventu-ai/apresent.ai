@@ -2,6 +2,9 @@ import React from "react";
 import { PresentationGenerationManager } from "@/components/presentation/dashboard/PresentationGenerationManager";
 import PresentationHeader from "@/components/presentation/presentation-page/PresentationHeader";
 import { PresentationsSidebar } from "@/components/presentation/dashboard/PresentationsSidebar";
+import { ImageQueueDebug } from "@/components/presentation/debug/ImageQueueDebug";
+// Import debug utilities to make them available in the browser console
+import "@/lib/debug-utils";
 
 export default function PresentationLayout({
   children,
@@ -20,6 +23,7 @@ export default function PresentationLayout({
           </div>
         </main>
       </div>
+      <ImageQueueDebug />
     </>
   );
 }

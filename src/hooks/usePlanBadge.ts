@@ -32,10 +32,21 @@ export function usePlanBadge(): PlanBadgeData {
       }
 
       try {
-        const response = await fetch(`/api/user/plan?userId=${session.user.id}`);
+        // Garantir que o userId seja uma string válida
+        const userId = String(session.user.id).trim();
+        if (!userId) {
+          throw new Error('ID do usuário inválido');
+        }
+
+        const response = await fetch(`/api/user/plan?userId=${encodeURIComponent(userId)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         
         if (!response.ok) {
-          throw new Error('Erro ao buscar plano do usuário');
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -57,7 +68,11 @@ export function usePlanBadge(): PlanBadgeData {
       }
     }
 
-    fetchUserPlan();
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchUserPlan();
+    }, 100);
+    return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 
   return planData;
