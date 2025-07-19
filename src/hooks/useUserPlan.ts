@@ -54,7 +54,9 @@ export function useUserPlan() {
     };
 
     // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
-    const timeoutId = setTimeout(fetchUserPlan, 150);
+    const timeoutId = setTimeout(() => {
+      void fetchUserPlan();
+    }, 150);
     return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 

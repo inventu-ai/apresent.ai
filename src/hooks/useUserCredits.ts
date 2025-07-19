@@ -30,17 +30,6 @@ export function useUserCredits(): UserCredits {
     loading: true,
   });
 
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setCredits(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
-    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
-    const timeoutId = setTimeout(fetchUserCredits, 200);
-    return () => clearTimeout(timeoutId);
-  }, [session?.user?.id]);
-
   const fetchUserCredits = async () => {
     try {
       setCredits(prev => ({ ...prev, loading: true, error: undefined }));
@@ -74,6 +63,19 @@ export function useUserCredits(): UserCredits {
     }
   };
 
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setCredits(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchUserCredits();
+    }, 200);
+    return () => clearTimeout(timeoutId);
+  }, [session?.user?.id]);
+
   return {
     ...credits,
     refetch: fetchUserCredits,
@@ -94,17 +96,6 @@ export function useUserPlanLimits(): PlanLimits {
     planName: 'FREE',
     loading: true,
   });
-
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setLimits(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
-    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
-    const timeoutId = setTimeout(fetchPlanLimits, 250);
-    return () => clearTimeout(timeoutId);
-  }, [session?.user?.id]);
 
   const fetchPlanLimits = async () => {
     try {
@@ -138,6 +129,19 @@ export function useUserPlanLimits(): PlanLimits {
     }
   };
 
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setLimits(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchPlanLimits();
+    }, 250);
+    return () => clearTimeout(timeoutId);
+  }, [session?.user?.id]);
+
   return limits;
 }
 
@@ -155,17 +159,6 @@ export function useImageQualityOptions(): ImageQualityOptions {
     planName: 'FREE',
     loading: true,
   });
-
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setOptions(prev => ({ ...prev, loading: false }));
-      return;
-    }
-
-    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
-    const timeoutId = setTimeout(fetchImageQualityOptions, 300);
-    return () => clearTimeout(timeoutId);
-  }, [session?.user?.id]);
 
   const fetchImageQualityOptions = async () => {
     try {
@@ -192,6 +185,19 @@ export function useImageQualityOptions(): ImageQualityOptions {
       }));
     }
   };
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setOptions(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
+    const timeoutId = setTimeout(() => {
+      void fetchImageQualityOptions();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [session?.user?.id]);
 
   return options;
 }

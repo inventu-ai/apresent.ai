@@ -69,7 +69,9 @@ export function usePlanBadge(): PlanBadgeData {
     }
 
     // Adicionar um pequeno delay para evitar múltiplas chamadas simultâneas
-    const timeoutId = setTimeout(fetchUserPlan, 100);
+    const timeoutId = setTimeout(() => {
+      void fetchUserPlan();
+    }, 100);
     return () => clearTimeout(timeoutId);
   }, [session?.user?.id]);
 
